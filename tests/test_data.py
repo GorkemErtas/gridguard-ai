@@ -61,8 +61,8 @@ def test_invalid_negative_and_missing_values(csv_path):
     df.loc[1, col] = np.nan
     df.to_csv(csv_path, index=False)
     loaded = load_consumption(csv_path)
-    assert pd.isna(loaded.readings.iloc[0][0])
-    assert pd.isna(loaded.readings.iloc[1][0])
+    assert pd.isna(loaded.readings.iat[0, 0])
+    assert pd.isna(loaded.readings.iat[1, 0])
 
 
 def test_unlabeled_csv_can_be_scored(csv_path):
