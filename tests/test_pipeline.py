@@ -34,6 +34,9 @@ def test_training_and_scoring_end_to_end(tmp_path):
     assert held_out["customer_id"].is_unique
     assert held_out["true_label"].isin([0, 1]).all()
     assert held_out["risk_score"].between(0, 100).all()
+    assert held_out["model_score"].is_monotonic_decreasing
+    k = min(50, len(held_out))
+    assert abs(held_out["true_label"].head(k).mean() - results["test"]["precision_at_50"]) < 1e-9
 
     output = tmp_path / "ranked.csv"
     rankings = score(data, artifacts / "model.joblib", output)

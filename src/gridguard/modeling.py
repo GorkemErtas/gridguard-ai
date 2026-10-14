@@ -17,7 +17,7 @@ from sklearn.metrics import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from gridguard.features import risk_band, review_signal
+from gridguard.features import review_signal, risk_band
 
 
 def candidate_models(seed: int) -> dict[str, Pipeline]:
@@ -86,10 +86,11 @@ def rank_customers(ids: pd.Series, features: pd.DataFrame, probabilities: np.nda
         {
             "customer_id": ids.to_numpy(dtype=str),
             "risk_score": scores,
+            "model_score": np.asarray(probabilities, dtype=float),
             "risk_band": [risk_band(score) for score in scores],
             "review_signal": features.apply(review_signal, axis=1).to_numpy(),
         }
     )
     return result.sort_values(
-        ["risk_score", "customer_id"], ascending=[False, True]
+        ["model_score", "customer_id"], ascending=[False, True]
     ).reset_index(drop=True)
