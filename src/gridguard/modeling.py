@@ -17,7 +17,7 @@ from sklearn.metrics import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from gridguard.features import risk_band, review_signal
+from gridguard.features import review_signal, risk_band
 
 
 def candidate_models(seed: int) -> dict[str, Pipeline]:
