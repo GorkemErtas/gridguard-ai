@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+.mypy_cache/
+
+# Machine-learning outputs and local datasets
+data/*
+!data/.gitkeep
+artifacts/
+reports/
+*.joblib
+*.sqlite
+*.db
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
