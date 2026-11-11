@@ -5,7 +5,7 @@ import pytest
 
 from gridguard.synthetic import save_synthetic
 from gridguard.training import train
-from scripts.evaluate_holdout import evaluate
+from gridguard.evaluation import evaluate
 
 
 def test_evaluate_holdout_and_errors(tmp_path):
