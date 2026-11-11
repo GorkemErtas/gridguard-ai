@@ -11,7 +11,7 @@ If your data provider distributes a multipart ZIP, keep all archive parts togeth
 ```powershell
 python -m pip install -e ".[app,dev]"
 python -m gridguard.data_preflight --input data/consumption.csv --output reports/data-quality.json
-gridguard train --input data/consumption.csv --source real --sample-size 10000 --output-dir artifacts/real-pilot
+gridguard train --input data/consumption.csv --source custom --sample-size 10000 --output-dir artifacts/real-pilot
 python scripts/evaluate_holdout.py --artifacts artifacts/real-pilot --output-dir reports/real-pilot
 ```
 
