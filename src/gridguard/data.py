@@ -40,7 +40,7 @@ def _parse_date(column: str) -> datetime | None:
 
 
 def load_consumption(path: str | Path, *, require_labels: bool = True) -> ConsumptionData:
-    """Read SGCC-style CSV; enforce unique IDs and chronological date columns."""
+    """Read customer-by-day CSV; enforce unique IDs and chronological dates."""
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"Consumption file not found: {path}")
@@ -95,10 +95,11 @@ def sample_customers(
     data: ConsumptionData, *, size: int | None, seed: int
 ) -> ConsumptionData:
     """Reproducible stratified subsample, preserving minority labels."""
+    _validate_customers(data)
+    if size is not None and size < 80:
+        raise ValueError("Use at least 80 customers for train/validation/test evaluation.")
     if size is None or size >= len(data):
         return data
-    if size < 80:
-        raise ValueError("Use at least 80 customers for train/validation/test evaluation.")
     indices = np.arange(len(data))
     chosen, _ = train_test_split(
         indices,
@@ -107,3 +108,29 @@ def sample_customers(
         random_state=seed,
     )
     return data.subset(np.sort(chosen))
+
+
+def _validate_customers(data: ConsumptionData) -> None:
+    ids = data.customer_ids.astype("string").str.strip()
+    if ids.isna().any() or ids.eq("").any() or ids.duplicated().any():
+        raise ValueError("Customer IDs must be nonempty and unique before partitioning.")
+    if len(data.readings) != len(ids) or (data.labels is not None and len(data.labels) != len(ids)):
+        raise ValueError("Customer IDs, readings and labels must be aligned.")
+
+
+def split_customers(data: ConsumptionData, *, seed: int) -> dict[str, np.ndarray]:
+    """Original positional 60/20/20 split, preserving the pilot's membership/order."""
+    _validate_customers(data)
+    if data.labels is None or not data.labels.isin([0, 1]).all():
+        raise ValueError("Splitting requires binary labels.")
+    labels = data.labels.to_numpy(dtype=int)
+    positives = int(labels.sum())
+    if len(labels) < 80 or positives < 10 or len(labels) - positives < 10:
+        raise ValueError("At least 80 customers with >=10 samples per class are needed.")
+    development, test_idx = train_test_split(
+        np.arange(len(data)), test_size=0.2, random_state=seed, stratify=labels
+    )
+    train_idx, val_idx = train_test_split(
+        development, test_size=0.25, random_state=seed, stratify=labels[development]
+    )
+    return {"train": train_idx, "validation": val_idx, "test": test_idx}

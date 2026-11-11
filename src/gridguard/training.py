@@ -4,11 +4,9 @@ import json
 from pathlib import Path
 
 import joblib
-import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
-from gridguard.data import load_consumption, sample_customers
+from gridguard.data import load_consumption, sample_customers, split_customers
 from gridguard.features import build_features
 from gridguard.modeling import candidate_models, model_metrics, rank_customers
 
@@ -26,20 +24,9 @@ def train(
     assert data.labels is not None
     labels = data.labels.to_numpy(dtype=int)
     positives = int(labels.sum())
-    if len(labels) < 80 or positives < 10 or len(labels) - positives < 10:
-        raise ValueError("At least 80 customers with >=10 samples per class are needed.")
-
+    partitions = split_customers(data, seed=seed)
+    train_idx, val_idx, test_idx = (partitions[key] for key in ("train", "validation", "test"))
     features = build_features(data)
-    indices = np.arange(len(data))
-    development, test_idx = train_test_split(
-        indices, test_size=0.2, random_state=seed, stratify=labels
-    )
-    train_idx, val_idx = train_test_split(
-        development,
-        test_size=0.25,  # 0.25 of 80% -> 20% validation.
-        random_state=seed,
-        stratify=labels[development],
-    )
 
     models = candidate_models(seed)
     val_reports: dict[str, dict] = {}
@@ -48,14 +35,18 @@ def train(
     for name, model in models.items():
         model.fit(features.iloc[train_idx], labels[train_idx])
         probabilities = model.predict_proba(features.iloc[val_idx])[:, 1]
-        val_reports[name] = model_metrics(labels[val_idx], probabilities)
+        val_reports[name] = model_metrics(
+            labels[val_idx], probabilities, customer_ids=data.customer_ids.iloc[val_idx]
+        )
         if name != "dummy_prior" and val_reports[name]["average_precision"] > best_score:
             best_score = val_reports[name]["average_precision"]
             best_name = name
 
     chosen = models[best_name]
     test_probabilities = chosen.predict_proba(features.iloc[test_idx])[:, 1]
-    test_report = model_metrics(labels[test_idx], test_probabilities)
+    test_report = model_metrics(
+        labels[test_idx], test_probabilities, customer_ids=data.customer_ids.iloc[test_idx]
+    )
     ranking = rank_customers(
         data.customer_ids.iloc[test_idx].reset_index(drop=True),
         features.iloc[test_idx].reset_index(drop=True),
