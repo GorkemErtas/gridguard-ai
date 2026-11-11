@@ -3,9 +3,9 @@ import json
 import pandas as pd
 import pytest
 
+from gridguard.evaluation import evaluate
 from gridguard.synthetic import save_synthetic
 from gridguard.training import train
-from gridguard.evaluation import evaluate
 
 
 def test_evaluate_holdout_and_errors(tmp_path):
