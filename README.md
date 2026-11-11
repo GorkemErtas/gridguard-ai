@@ -11,7 +11,7 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 - Validates customer-by-day wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
 - Extracts consumption and data-quality signals without using the target label as a feature.
 - Splits customers into **train / validation / test (60 / 20 / 20)** with stratification and a fixed random seed.
-- Compares Logistic Regression and Random Forest using **validation average precision (PR-AUC)**; reports untouched test-set metrics and **Precision@K**.
+- Compares Logistic Regression and Random Forest using **validation average precision (AP)**; reports held-out test metrics and **Precision/Recall/Lift@K**.
 - Saves the selected model, evaluation report, and **out-of-sample test predictions**.
 - Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
 - Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
@@ -43,11 +43,15 @@ Results are written to `artifacts/` and the generated data goes into `data/`. Bo
 Obtain a dataset under terms that permit your intended research use, record its provenance and license, and place the extracted CSV in `data/consumption.csv`.
 
 ```bash
-gridguard train --input data/consumption.csv --source custom --sample-size 10000
+gridguard experiment --input data/consumption.csv --source custom --sample-size 10000 --output-dir artifacts/real-validation
+# Once validation decisions are final, evaluate the frozen winner once:
+gridguard finalize --input data/consumption.csv --experiment-dir artifacts/real-validation --output-dir artifacts/real-final
 streamlit run app/streamlit_app.py
 ```
 
-Omit `--sample-size` to train on the full file. The sample is stratified by label, not just the first rows. Third-party real-world data are **not included** in this repository; confirm rights before use or redistribution.
+Choose `artifacts/real-final` in the dashboard. Use empty output directories to preserve earlier experiments. Omit `--sample-size` to use the full file; this changes the cohort and cannot be compared directly with the pilot's fixed test split. The sample is stratified by label. Third-party data are **not included**; confirm rights before use or redistribution.
+
+See the [local commands](docs/real-data-evaluation.md) and [pipeline audit with measured validation/final results](docs/pipeline-evaluation.md). `train` remains available for a single configuration; use `--validation-only` during development. Existing model bundles keep the baseline feature calculation.
 
 ### Other commands
 
@@ -78,7 +82,7 @@ CSV / synthetic generator
         |
         +---- app/streamlit_app.py (read-only dashboard)
 
-  cli.py: demo | train | score | export-sqlite
+  cli.py: demo | train | experiment | finalize | score | export-sqlite
   sql/: optional SQLite exploratory analysis
 ```
 
@@ -86,7 +90,7 @@ See [architecture](docs/architecture.md) and [model card](docs/model-card.md) fo
 
 ## Evaluation design
 
-**Why PR-AUC?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection is made using validation **average precision**, followed by a **single** final test evaluation. Precision@K illustrates the real operational question: *if inspection capacity is K, how many truly positive customers are among the top K?*
+**Why Average Precision?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection uses validation **AP**, followed by a **single** final test evaluation. Precision@K measures the fraction of positives among K inspection candidates. Recall@K measures the fraction of all positives found; lift compares precision with prevalence. Rankings use unrounded probabilities and customer-ID tie breaks. AP is not trapezoidal PR-curve area.
 
 The risk score is `round(100 * model.predict_proba(...))`, **not a calibrated probability**. Display bands (low/medium/high) are illustrative and are not company inspection policy.
 
