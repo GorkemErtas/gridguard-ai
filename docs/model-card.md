@@ -14,7 +14,7 @@ Demonstrate statistical analysis, supervised anomaly/fraud-risk modeling, and in
 
 **Demo:** generated from known statistical patterns. Positives exhibit artificially injected consumption drops, so the task is deliberately easy. Metrics must carry the **synthetic** label.
 
-**Optional research dataset:** SGCC Electricity Theft Detection, 42,372 customers over roughly 1,035 days, from the [IEEE PES catalog](https://ieee-pes-data-sharing.org/datasets/detail/663b8e0e-3ace-48f8-b983-4cb59b39fa6f). Its public catalog lists **License: N/A**; research accessibility does not imply permission to redistribute. Download separately and verify usage terms.
+**Optional real-world dataset:** Labeled customer-by-day electricity consumption readings obtained separately. Record the actual dataset source, citation, and permission terms before publishing any empirical results. Public accessibility does not imply redistribution rights.
 
 Both formats use wide daily readings per customer and binary historical \`FLAG\`. No theft dates, geospatial data, detailed inspections, or independent Turkish deployment labels are included.
 
@@ -37,7 +37,7 @@ For highly imbalanced data, performance should be evaluated relative to class pr
 
 - Selection bias and noisy labels from historical inspections.
 - Missing readings caused by meter failures, outages, and data ingestion.
-- Geographic transfer from the SGCC dataset to an İzmir distribution network is untested.
+- Geographic transfer from the training distribution network to another region is untested.
 - A retrospective customer split does not measure time-to-detection.
 - False positives impose inspection costs and can unfairly affect customers.
 - A model may exploit quirks of a simulated anomaly rather than realistic theft patterns.
