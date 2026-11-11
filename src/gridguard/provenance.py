@@ -1,0 +1,76 @@
+"""Aggregate experiment provenance; customer membership stays in local artifacts."""
+
+import hashlib
+import json
+import platform
+from importlib.metadata import version
+from pathlib import Path
+
+import pandas as pd
+
+from gridguard.data import ConsumptionData
+
+
+def file_fingerprint(path: str | Path) -> str:
+    with Path(path).open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
+
+
+def partition_fingerprint(ids) -> str:
+    payload = json.dumps(list(map(str, ids)), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def experiment_metadata(data: ConsumptionData, partitions: dict, *, input_path, sample_size,
+                        source, seed, experiment_id, feature_config) -> dict:
+    dates = pd.to_datetime(data.readings.columns)
+    return {
+        "schema_version": 2,
+        "experiment_id": experiment_id,
+        "dataset": {
+            "source": source,
+            "input_path": str(input_path),  # Local convenience for the dashboard; do not publish.
+            "fingerprint_sha256": file_fingerprint(input_path),
+            "customers": len(data),
+            "requested_sample_size": sample_size,
+            "sampling": "stratified fixed-seed sample, original CSV order retained",
+            "reading_days": len(dates),
+            "date_start": dates[0].date().isoformat(),
+            "date_end": dates[-1].date().isoformat(),
+            "missing_calendar_days": int((dates[-1] - dates[0]).days + 1 - len(dates)),
+            "positive_customers": int(data.labels.sum()),
+            "positive_rate": float(data.labels.mean()),
+            "missing_reading_rate": float(data.readings.isna().to_numpy().mean()),
+        },
+        "methodology": {
+            "split": "customer-level stratified 60/20/20",
+            "seed": seed,
+            "selection_metric": "validation average_precision",
+            "fitted_on": "train only; no train+validation refit",
+            "ranking_ties": "raw probability descending, customer_id ascending",
+            "risk_score": "rounded 100 * uncalibrated predicted probability",
+            "bands": "illustrative: high >=80, medium >=50, low <50",
+        },
+        "split_sizes": {key: len(idx) for key, idx in partitions.items()},
+        "partition_fingerprints": {
+            key: partition_fingerprint(data.customer_ids.iloc[idx]) for key, idx in partitions.items()
+        },
+        "feature_config": feature_config,
+        "preprocessing": {
+            "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
+            "extreme_readings": "retained; no clipping or zero fill",
+            "calendar": "insert missing dates as NaN" if feature_config in ("calendar", "combined")
+                        else "original observed date columns (pilot compatibility)",
+            "windows": "last 30/previous 30 calendar days" if feature_config in ("calendar", "combined")
+                       else "last 30/previous 30 reading columns",
+            "learned_transforms": "train-only median imputation; train-only LR scaling",
+        },
+        "software": {"python": platform.python_version(), **{
+            package: version(package) for package in ("gridguard-ai", "numpy", "pandas",
+                                                       "scikit-learn", "joblib")
+        }},
+    }
+
+
+def write_json(path: Path, value: dict) -> None:
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
