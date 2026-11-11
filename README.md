@@ -8,7 +8,7 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 
 ## What it does
 
-- Validates SGCC-style wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
+- Validates customer-by-day wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
 - Extracts consumption and data-quality signals without using the target label as a feature.
 - Splits customers into **train / validation / test (60 / 20 / 20)** with stratification and a fixed random seed.
 - Compares Logistic Regression and Random Forest using **validation average precision (PR-AUC)**; reports untouched test-set metrics and **Precision@K**.
@@ -38,21 +38,21 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
-### Use the real SGCC dataset
+### Train on a local labeled consumption dataset
 
-Download and extract the dataset yourself from the [IEEE PES data sharing catalog](https://ieee-pes-data-sharing.org/datasets/detail/663b8e0e-3ace-48f8-b983-4cb59b39fa6f), review the source's terms, and place the extracted CSV in `data/sgcc.csv`.
+Obtain a dataset under terms that permit your intended research use, record its provenance and license, and place the extracted CSV in `data/consumption.csv`.
 
 ```bash
-gridguard train --input data/sgcc.csv --source sgcc --sample-size 10000
+gridguard train --input data/consumption.csv --source custom --sample-size 10000
 streamlit run app/streamlit_app.py
 ```
 
-Omit `--sample-size` to train on the full file. The sample is stratified by label, not just the first rows. Real SGCC data are **not included** in this repository because the catalog does not specify a reuse license.
+Omit `--sample-size` to train on the full file. The sample is stratified by label, not just the first rows. Third-party real-world data are **not included** in this repository; confirm rights before use or redistribution.
 
 ### Other commands
 
 ```bash
-gridguard score --input data/sgcc.csv --model artifacts/model.joblib --output reports/risk_ranking.csv
+gridguard score --input data/consumption.csv --model artifacts/model.joblib --output reports/risk_ranking.csv
 gridguard export-sqlite --input data/demo.csv --output data/demo.sqlite --limit-customers 200
 pytest -q
 ruff check .
@@ -90,7 +90,7 @@ See [architecture](docs/architecture.md) and [model card](docs/model-card.md) fo
 
 The risk score is `round(100 * model.predict_proba(...))`, **not a calibrated probability**. Display bands (low/medium/high) are illustrative and are not company inspection policy.
 
-**Known limitations:** historical labels are customer-level (not theft dates), SGCC results may not generalize to Türkiye, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
+**Known limitations:** historical labels are customer-level (not theft dates), results from one distribution network may not generalize to another, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
 
 ## Tech stack
 
@@ -98,4 +98,4 @@ Python · pandas · NumPy · scikit-learn · SQLite · Streamlit · Plotly · py
 
 ## License and data rights
 
-No software license has been selected yet. The source is publicly visible, but reuse rights are not automatically granted. The SGCC dataset has separate, potentially restrictive terms; do not redistribute it with this repository.
+No software license has been selected yet. The source is publicly visible, but reuse rights are not automatically granted. Third-party datasets may have separate, restrictive terms; do not redistribute them without permission.

@@ -31,7 +31,7 @@ class ConsumptionData:
 
 
 def _parse_date(column: str) -> datetime | None:
-    for fmt in ("%m/%d/%Y", "%Y-%m-%d"):
+    for fmt in ("%m/%d/%Y", "%Y-%m-%d", "%Y/%m/%d"):
         try:
             return datetime.strptime(column.strip(), fmt)
         except ValueError:

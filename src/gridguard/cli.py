@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> None:
     training.add_argument("--input", required=True)
     training.add_argument("--output-dir", default="artifacts")
     training.add_argument("--sample-size", type=int)
-    training.add_argument("--source", choices=["sgcc", "custom", "synthetic"], default="custom")
+    training.add_argument("--source", choices=["custom", "synthetic"], default="custom")
     training.add_argument("--seed", type=int, default=42)
 
     scoring = subcommands.add_parser("score", help="Rank all customers with saved model")

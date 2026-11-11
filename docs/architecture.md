@@ -8,7 +8,7 @@ Demonstrate an end-to-end, readable approach to ranking **customer-level** elect
 
 | Layer | Module | Responsibility |
 | --- | --- | --- |
-| Input contract | \`data.py\` | Normalize SGCC wide schema, sort dates, validate IDs and labels, reject unknown columns, treat negative readings as missing |
+| Input contract | \`data.py\` | Normalize wide customer-by-day schema, sort dates, validate IDs and labels, reject unknown columns, treat negative readings as missing |
 | Feature engineering | \`features.py\` | Deterministic and testable customer-level statistical signals |
 | Modeling | \`modeling.py\` | Candidate pipelines, meaningful imbalanced-learning metrics, ranking |
 | Training and inference | \`training.py\` | Stratified 60/20/20 split, validation-only selection, final test, serialization, new-data scoring |
