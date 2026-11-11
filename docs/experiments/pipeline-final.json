@@ -1,0 +1,170 @@
+{
+  "experiment_id": "pipeline-final-20261111",
+  "parent_experiment_id": "pipeline-validation-20261111",
+  "evaluated_code_revision": "d1ba7c07bd58ebcb3aa51fda4eabb77ce47c6d24",
+  "dataset_fingerprint_sha256": "99f8fd315626b1f729a9a03a97cb52ed097ab4d43e5771e21554c9e0c369b9b7",
+  "partition_fingerprints": {
+    "train": "01dff872d859882112b03691d9b5141024081f35eb958f2a9bd88a8f358ac80c",
+    "validation": "71e99b9cad8c30744d81e04e990daf9c6c857078d11b9e033a292a821f343ef5",
+    "test": "7764a3e96170cb25c7d8f089045fd353148e1c9f4009146f80999a73188d4b08"
+  },
+  "split_sizes": {
+    "train": 6000,
+    "validation": 2000,
+    "test": 2000
+  },
+  "software": {
+    "python": "3.13.14",
+    "gridguard-ai": "0.1.0",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0"
+  },
+  "fitted_on": "train only; no train+validation refit",
+  "feature_config": "quality",
+  "selected_model": "random_forest",
+  "selection_metric": "validation average_precision",
+  "frozen_validation_metrics": {
+    "average_precision": 0.31025461192824705,
+    "roc_auc": 0.7825425908068147,
+    "precision_at_50": 0.46,
+    "precision_at_100": 0.41,
+    "precision_at_200": 0.325,
+    "ranking_at_k": {
+      "50": {
+        "evaluated_k": 50,
+        "positives_found": 23,
+        "precision": 0.46,
+        "recall": 0.13529411764705881,
+        "lift": 5.411764705882352
+      },
+      "100": {
+        "evaluated_k": 100,
+        "positives_found": 41,
+        "precision": 0.41,
+        "recall": 0.2411764705882353,
+        "lift": 4.823529411764706
+      },
+      "200": {
+        "evaluated_k": 200,
+        "positives_found": 65,
+        "precision": 0.325,
+        "recall": 0.38235294117647056,
+        "lift": 3.8235294117647056
+      }
+    },
+    "precision_0_5": 0.42105263157894735,
+    "recall_0_5": 0.23529411764705882,
+    "f1_0_5": 0.3018867924528302,
+    "confusion_matrix": [
+      [
+        1775,
+        55
+      ],
+      [
+        130,
+        40
+      ]
+    ],
+    "evaluated_customers": 2000,
+    "positive_prevalence": 0.085
+  },
+  "test": {
+    "average_precision": 0.32281366523385974,
+    "roc_auc": 0.7883066514472805,
+    "precision_at_50": 0.5,
+    "precision_at_100": 0.43,
+    "precision_at_200": 0.345,
+    "ranking_at_k": {
+      "50": {
+        "evaluated_k": 50,
+        "positives_found": 25,
+        "precision": 0.5,
+        "recall": 0.14619883040935672,
+        "lift": 5.847953216374268
+      },
+      "100": {
+        "evaluated_k": 100,
+        "positives_found": 43,
+        "precision": 0.43,
+        "recall": 0.25146198830409355,
+        "lift": 5.029239766081871
+      },
+      "200": {
+        "evaluated_k": 200,
+        "positives_found": 69,
+        "precision": 0.345,
+        "recall": 0.40350877192982454,
+        "lift": 4.035087719298245
+      }
+    },
+    "precision_0_5": 0.45054945054945056,
+    "recall_0_5": 0.23976608187134502,
+    "f1_0_5": 0.31297709923664124,
+    "confusion_matrix": [
+      [
+        1779,
+        50
+      ],
+      [
+        130,
+        41
+      ]
+    ],
+    "evaluated_customers": 2000,
+    "positive_prevalence": 0.0855
+  },
+  "saved_prediction_evaluation": {
+    "source": "custom",
+    "experiment_id": "pipeline-final-20261111",
+    "holdout_provenance": "verified: prediction checksum and disjoint customer partition manifest",
+    "test_customers": 2000,
+    "positive_prevalence": 0.0855,
+    "average_precision": 0.32281366523385974,
+    "roc_auc": 0.7883066514472805,
+    "confusion_matrix_at_0_5": [
+      [
+        1779,
+        50
+      ],
+      [
+        130,
+        41
+      ]
+    ],
+    "precision_at_k": {
+      "50": {
+        "evaluated_k": 50,
+        "positives_found": 25,
+        "precision": 0.5,
+        "recall": 0.14619883040935672,
+        "lift": 5.847953216374268
+      },
+      "100": {
+        "evaluated_k": 100,
+        "positives_found": 43,
+        "precision": 0.43,
+        "recall": 0.25146198830409355,
+        "lift": 5.029239766081871
+      },
+      "200": {
+        "evaluated_k": 200,
+        "positives_found": 69,
+        "precision": 0.345,
+        "recall": 0.40350877192982454,
+        "lift": 4.035087719298245
+      }
+    },
+    "bootstrap": {
+      "seed": 42,
+      "requested_iterations": 1000,
+      "valid_iterations": 1000,
+      "assumption": "independent customers; descriptive interval, not tuning"
+    },
+    "average_precision_bootstrap_95_ci": [
+      0.26173975211061096,
+      0.39047214153525284
+    ]
+  }
+}

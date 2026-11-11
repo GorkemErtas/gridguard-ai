@@ -25,3 +25,7 @@ jobs:
           gridguard demo --customers 120 --days 90
           test -f artifacts/metrics.json
           test -f artifacts/test_predictions.csv
+          gridguard experiment --input data/demo.csv --source synthetic --output-dir artifacts/synthetic-validation
+          gridguard finalize --input data/demo.csv --experiment-dir artifacts/synthetic-validation --output-dir artifacts/synthetic-final
+          python scripts/evaluate_holdout.py --artifacts artifacts/synthetic-final --output-dir reports/synthetic-final --bootstrap 20
+          test -f reports/synthetic-final/error_analysis.json

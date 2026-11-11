@@ -5,14 +5,37 @@ import pandas as pd
 
 from gridguard.data import ConsumptionData
 
+FEATURE_CONFIGS = ("baseline", "calendar", "quality", "combined")
 
-def build_features(data: ConsumptionData) -> pd.DataFrame:
+
+def calendar_readings(data: ConsumptionData) -> pd.DataFrame:
+    """Insert absent dates as NaN, without imputing observed or missing readings."""
+    dates = pd.DatetimeIndex(pd.to_datetime(data.readings.columns))
+    if dates.has_duplicates or not dates.is_monotonic_increasing:
+        raise ValueError("Reading dates must be unique and chronological.")
+    full = pd.date_range(dates[0], dates[-1], freq="D").strftime("%Y-%m-%d")
+    return data.readings.reindex(columns=full)
+
+
+def _longest_streak(mask: np.ndarray) -> np.ndarray:
+    current = np.zeros(len(mask), dtype=int)
+    longest = current.copy()
+    for column in mask.T:
+        current = np.where(column, current + 1, 0)
+        longest = np.maximum(longest, current)
+    return longest
+
+
+def build_features(data: ConsumptionData, *, config: str = "baseline") -> pd.DataFrame:
     """Derive features from readings only, in chronological order.
 
     Missingness is retained as its own feature; remaining feature NaNs are
     imputed strictly inside the fitted training pipeline.
     """
-    readings = data.readings
+    if config not in FEATURE_CONFIGS:
+        raise ValueError(f"Unknown feature configuration: {config}")
+    # Preserve the original 15-feature calculation for existing bundles/pilot.
+    readings = calendar_readings(data) if config in ("calendar", "combined") else data.readings
     observed = readings.notna().sum(axis=1).clip(lower=1)
     changes = readings.diff(axis=1)
     previous = readings.iloc[:, -60:-30].mean(axis=1)
@@ -40,6 +63,12 @@ def build_features(data: ConsumptionData) -> pd.DataFrame:
         }
     )
     features["coefficient_variation"] = features["std_kwh"] / (features["mean_kwh"] + 1)
+    if config in ("quality", "combined"):
+        daily = calendar_readings(data)
+        features["longest_missing_days"] = _longest_streak(daily.isna().to_numpy())
+        # Missing days break a zero streak; missing never means zero.
+        features["longest_zero_days"] = _longest_streak(daily.eq(0).to_numpy())
+        features["iqr_kwh"] = readings.quantile(0.75, axis=1) - readings.quantile(0.25, axis=1)
     return features.replace([np.inf, -np.inf], np.nan).astype("float32")
 
 

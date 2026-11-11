@@ -1,0 +1,753 @@
+{
+  "experiment_id": "pipeline-validation-20261111",
+  "selection_metric": "validation average_precision",
+  "selected_feature_config": "quality",
+  "selected_model": "random_forest",
+  "test_evaluated": false,
+  "dataset": {
+    "source": "custom",
+    "fingerprint_sha256": "99f8fd315626b1f729a9a03a97cb52ed097ab4d43e5771e21554c9e0c369b9b7",
+    "customers": 10000,
+    "requested_sample_size": 10000,
+    "sampling": "stratified fixed-seed sample, original CSV order retained",
+    "reading_days": 1034,
+    "date_start": "2014-01-01",
+    "date_end": "2016-10-31",
+    "missing_calendar_days": 1,
+    "positive_customers": 853,
+    "positive_rate": 0.0853,
+    "missing_reading_rate": 0.256834332688588
+  },
+  "seed": 42,
+  "fitted_on": "train only; no train+validation refit",
+  "split_sizes": {
+    "train": 6000,
+    "validation": 2000,
+    "test": 2000
+  },
+  "partition_fingerprints": {
+    "train": "01dff872d859882112b03691d9b5141024081f35eb958f2a9bd88a8f358ac80c",
+    "validation": "71e99b9cad8c30744d81e04e990daf9c6c857078d11b9e033a292a821f343ef5",
+    "test": "7764a3e96170cb25c7d8f089045fd353148e1c9f4009146f80999a73188d4b08"
+  },
+  "software": {
+    "python": "3.13.14",
+    "gridguard-ai": "0.1.0",
+    "numpy": "2.5.4",
+    "pandas": "3.0.6",
+    "scikit-learn": "1.9.1",
+    "joblib": "1.6.0"
+  },
+  "candidate_parameters": {
+    "dummy_prior": {
+      "constant": null,
+      "random_state": null,
+      "strategy": "prior"
+    },
+    "logistic_regression": {
+      "C": 1.0,
+      "class_weight": "balanced",
+      "dual": false,
+      "fit_intercept": true,
+      "intercept_scaling": 1,
+      "l1_ratio": 0.0,
+      "max_iter": 1500,
+      "n_jobs": null,
+      "penalty": "deprecated",
+      "random_state": null,
+      "solver": "lbfgs",
+      "tol": 0.0001,
+      "verbose": 0,
+      "warm_start": false
+    },
+    "random_forest": {
+      "bootstrap": true,
+      "ccp_alpha": 0.0,
+      "class_weight": "balanced_subsample",
+      "criterion": "gini",
+      "max_depth": 12,
+      "max_features": "sqrt",
+      "max_leaf_nodes": null,
+      "max_samples": null,
+      "min_impurity_decrease": 0.0,
+      "min_samples_leaf": 3,
+      "min_samples_split": 2,
+      "min_weight_fraction_leaf": 0.0,
+      "monotonic_cst": null,
+      "n_estimators": 120,
+      "n_jobs": -1,
+      "oob_score": false,
+      "random_state": 42,
+      "verbose": 0,
+      "warm_start": false
+    }
+  },
+  "runs": {
+    "baseline": {
+      "experiment_id": "pipeline-validation-20261111-baseline",
+      "feature_columns": [
+        "mean_kwh",
+        "median_kwh",
+        "std_kwh",
+        "p95_kwh",
+        "maximum_kwh",
+        "missing_ratio",
+        "zero_ratio",
+        "active_ratio",
+        "recent_kwh",
+        "previous_kwh",
+        "recent_previous_ratio",
+        "recent_drop_ratio",
+        "mean_daily_change",
+        "weekend_weekday_ratio",
+        "coefficient_variation"
+      ],
+      "preprocessing": {
+        "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
+        "extreme_readings": "retained; no clipping or zero fill",
+        "calendar": "original observed date columns (pilot compatibility)",
+        "windows": "last 30/previous 30 reading columns",
+        "learned_transforms": "train-only median imputation; train-only LR scaling"
+      },
+      "selected_model": "random_forest",
+      "validation": {
+        "dummy_prior": {
+          "average_precision": 0.085,
+          "roc_auc": 0.5,
+          "precision_at_50": 0.06,
+          "precision_at_100": 0.12,
+          "precision_at_200": 0.105,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 3,
+              "precision": 0.06,
+              "recall": 0.01764705882352941,
+              "lift": 0.7058823529411764
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 12,
+              "precision": 0.12,
+              "recall": 0.07058823529411765,
+              "lift": 1.4117647058823528
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 21,
+              "precision": 0.105,
+              "recall": 0.12352941176470589,
+              "lift": 1.2352941176470587
+            }
+          },
+          "precision_0_5": 0.0,
+          "recall_0_5": 0.0,
+          "f1_0_5": 0.0,
+          "confusion_matrix": [
+            [
+              1830,
+              0
+            ],
+            [
+              170,
+              0
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "logistic_regression": {
+          "average_precision": 0.25419603646786615,
+          "roc_auc": 0.7405769848923176,
+          "precision_at_50": 0.4,
+          "precision_at_100": 0.35,
+          "precision_at_200": 0.285,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 20,
+              "precision": 0.4,
+              "recall": 0.11764705882352941,
+              "lift": 4.705882352941177
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 35,
+              "precision": 0.35,
+              "recall": 0.20588235294117646,
+              "lift": 4.117647058823529
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 57,
+              "precision": 0.285,
+              "recall": 0.3352941176470588,
+              "lift": 3.352941176470588
+            }
+          },
+          "precision_0_5": 0.19,
+          "recall_0_5": 0.5588235294117647,
+          "f1_0_5": 0.2835820895522388,
+          "confusion_matrix": [
+            [
+              1425,
+              405
+            ],
+            [
+              75,
+              95
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "random_forest": {
+          "average_precision": 0.272489076132073,
+          "roc_auc": 0.7600385728061717,
+          "precision_at_50": 0.4,
+          "precision_at_100": 0.37,
+          "precision_at_200": 0.315,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 20,
+              "precision": 0.4,
+              "recall": 0.11764705882352941,
+              "lift": 4.705882352941177
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 37,
+              "precision": 0.37,
+              "recall": 0.21764705882352942,
+              "lift": 4.352941176470588
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 63,
+              "precision": 0.315,
+              "recall": 0.37058823529411766,
+              "lift": 3.705882352941176
+            }
+          },
+          "precision_0_5": 0.3888888888888889,
+          "recall_0_5": 0.20588235294117646,
+          "f1_0_5": 0.2692307692307692,
+          "confusion_matrix": [
+            [
+              1775,
+              55
+            ],
+            [
+              135,
+              35
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        }
+      }
+    },
+    "calendar": {
+      "experiment_id": "pipeline-validation-20261111-calendar",
+      "feature_columns": [
+        "mean_kwh",
+        "median_kwh",
+        "std_kwh",
+        "p95_kwh",
+        "maximum_kwh",
+        "missing_ratio",
+        "zero_ratio",
+        "active_ratio",
+        "recent_kwh",
+        "previous_kwh",
+        "recent_previous_ratio",
+        "recent_drop_ratio",
+        "mean_daily_change",
+        "weekend_weekday_ratio",
+        "coefficient_variation"
+      ],
+      "preprocessing": {
+        "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
+        "extreme_readings": "retained; no clipping or zero fill",
+        "calendar": "insert missing dates as NaN",
+        "windows": "last 30/previous 30 calendar days",
+        "learned_transforms": "train-only median imputation; train-only LR scaling"
+      },
+      "selected_model": "random_forest",
+      "validation": {
+        "dummy_prior": {
+          "average_precision": 0.085,
+          "roc_auc": 0.5,
+          "precision_at_50": 0.06,
+          "precision_at_100": 0.12,
+          "precision_at_200": 0.105,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 3,
+              "precision": 0.06,
+              "recall": 0.01764705882352941,
+              "lift": 0.7058823529411764
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 12,
+              "precision": 0.12,
+              "recall": 0.07058823529411765,
+              "lift": 1.4117647058823528
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 21,
+              "precision": 0.105,
+              "recall": 0.12352941176470589,
+              "lift": 1.2352941176470587
+            }
+          },
+          "precision_0_5": 0.0,
+          "recall_0_5": 0.0,
+          "f1_0_5": 0.0,
+          "confusion_matrix": [
+            [
+              1830,
+              0
+            ],
+            [
+              170,
+              0
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "logistic_regression": {
+          "average_precision": 0.25460859481163955,
+          "roc_auc": 0.74075056252009,
+          "precision_at_50": 0.4,
+          "precision_at_100": 0.35,
+          "precision_at_200": 0.285,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 20,
+              "precision": 0.4,
+              "recall": 0.11764705882352941,
+              "lift": 4.705882352941177
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 35,
+              "precision": 0.35,
+              "recall": 0.20588235294117646,
+              "lift": 4.117647058823529
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 57,
+              "precision": 0.285,
+              "recall": 0.3352941176470588,
+              "lift": 3.352941176470588
+            }
+          },
+          "precision_0_5": 0.19123505976095617,
+          "recall_0_5": 0.5647058823529412,
+          "f1_0_5": 0.2857142857142857,
+          "confusion_matrix": [
+            [
+              1424,
+              406
+            ],
+            [
+              74,
+              96
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "random_forest": {
+          "average_precision": 0.2838438992959041,
+          "roc_auc": 0.7612664738026358,
+          "precision_at_50": 0.48,
+          "precision_at_100": 0.32,
+          "precision_at_200": 0.3,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 24,
+              "precision": 0.48,
+              "recall": 0.1411764705882353,
+              "lift": 5.647058823529411
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 32,
+              "precision": 0.32,
+              "recall": 0.18823529411764706,
+              "lift": 3.764705882352941
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 60,
+              "precision": 0.3,
+              "recall": 0.35294117647058826,
+              "lift": 3.529411764705882
+            }
+          },
+          "precision_0_5": 0.3333333333333333,
+          "recall_0_5": 0.17647058823529413,
+          "f1_0_5": 0.23076923076923078,
+          "confusion_matrix": [
+            [
+              1770,
+              60
+            ],
+            [
+              140,
+              30
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        }
+      }
+    },
+    "quality": {
+      "experiment_id": "pipeline-validation-20261111-quality",
+      "feature_columns": [
+        "mean_kwh",
+        "median_kwh",
+        "std_kwh",
+        "p95_kwh",
+        "maximum_kwh",
+        "missing_ratio",
+        "zero_ratio",
+        "active_ratio",
+        "recent_kwh",
+        "previous_kwh",
+        "recent_previous_ratio",
+        "recent_drop_ratio",
+        "mean_daily_change",
+        "weekend_weekday_ratio",
+        "coefficient_variation",
+        "longest_missing_days",
+        "longest_zero_days",
+        "iqr_kwh"
+      ],
+      "preprocessing": {
+        "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
+        "extreme_readings": "retained; no clipping or zero fill",
+        "calendar": "original observed date columns (pilot compatibility)",
+        "windows": "last 30/previous 30 reading columns",
+        "learned_transforms": "train-only median imputation; train-only LR scaling"
+      },
+      "selected_model": "random_forest",
+      "validation": {
+        "dummy_prior": {
+          "average_precision": 0.085,
+          "roc_auc": 0.5,
+          "precision_at_50": 0.06,
+          "precision_at_100": 0.12,
+          "precision_at_200": 0.105,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 3,
+              "precision": 0.06,
+              "recall": 0.01764705882352941,
+              "lift": 0.7058823529411764
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 12,
+              "precision": 0.12,
+              "recall": 0.07058823529411765,
+              "lift": 1.4117647058823528
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 21,
+              "precision": 0.105,
+              "recall": 0.12352941176470589,
+              "lift": 1.2352941176470587
+            }
+          },
+          "precision_0_5": 0.0,
+          "recall_0_5": 0.0,
+          "f1_0_5": 0.0,
+          "confusion_matrix": [
+            [
+              1830,
+              0
+            ],
+            [
+              170,
+              0
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "logistic_regression": {
+          "average_precision": 0.2524042613859678,
+          "roc_auc": 0.7480038572806171,
+          "precision_at_50": 0.4,
+          "precision_at_100": 0.34,
+          "precision_at_200": 0.275,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 20,
+              "precision": 0.4,
+              "recall": 0.11764705882352941,
+              "lift": 4.705882352941177
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 34,
+              "precision": 0.34,
+              "recall": 0.2,
+              "lift": 4.0
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 55,
+              "precision": 0.275,
+              "recall": 0.3235294117647059,
+              "lift": 3.235294117647059
+            }
+          },
+          "precision_0_5": 0.1894934333958724,
+          "recall_0_5": 0.5941176470588235,
+          "f1_0_5": 0.28733997155049784,
+          "confusion_matrix": [
+            [
+              1398,
+              432
+            ],
+            [
+              69,
+              101
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "random_forest": {
+          "average_precision": 0.31025461192824705,
+          "roc_auc": 0.7825425908068147,
+          "precision_at_50": 0.46,
+          "precision_at_100": 0.41,
+          "precision_at_200": 0.325,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 23,
+              "precision": 0.46,
+              "recall": 0.13529411764705881,
+              "lift": 5.411764705882352
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 41,
+              "precision": 0.41,
+              "recall": 0.2411764705882353,
+              "lift": 4.823529411764706
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 65,
+              "precision": 0.325,
+              "recall": 0.38235294117647056,
+              "lift": 3.8235294117647056
+            }
+          },
+          "precision_0_5": 0.42105263157894735,
+          "recall_0_5": 0.23529411764705882,
+          "f1_0_5": 0.3018867924528302,
+          "confusion_matrix": [
+            [
+              1775,
+              55
+            ],
+            [
+              130,
+              40
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        }
+      }
+    },
+    "combined": {
+      "experiment_id": "pipeline-validation-20261111-combined",
+      "feature_columns": [
+        "mean_kwh",
+        "median_kwh",
+        "std_kwh",
+        "p95_kwh",
+        "maximum_kwh",
+        "missing_ratio",
+        "zero_ratio",
+        "active_ratio",
+        "recent_kwh",
+        "previous_kwh",
+        "recent_previous_ratio",
+        "recent_drop_ratio",
+        "mean_daily_change",
+        "weekend_weekday_ratio",
+        "coefficient_variation",
+        "longest_missing_days",
+        "longest_zero_days",
+        "iqr_kwh"
+      ],
+      "preprocessing": {
+        "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
+        "extreme_readings": "retained; no clipping or zero fill",
+        "calendar": "insert missing dates as NaN",
+        "windows": "last 30/previous 30 calendar days",
+        "learned_transforms": "train-only median imputation; train-only LR scaling"
+      },
+      "selected_model": "random_forest",
+      "validation": {
+        "dummy_prior": {
+          "average_precision": 0.085,
+          "roc_auc": 0.5,
+          "precision_at_50": 0.06,
+          "precision_at_100": 0.12,
+          "precision_at_200": 0.105,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 3,
+              "precision": 0.06,
+              "recall": 0.01764705882352941,
+              "lift": 0.7058823529411764
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 12,
+              "precision": 0.12,
+              "recall": 0.07058823529411765,
+              "lift": 1.4117647058823528
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 21,
+              "precision": 0.105,
+              "recall": 0.12352941176470589,
+              "lift": 1.2352941176470587
+            }
+          },
+          "precision_0_5": 0.0,
+          "recall_0_5": 0.0,
+          "f1_0_5": 0.0,
+          "confusion_matrix": [
+            [
+              1830,
+              0
+            ],
+            [
+              170,
+              0
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "logistic_regression": {
+          "average_precision": 0.25207864801772156,
+          "roc_auc": 0.7480777884924462,
+          "precision_at_50": 0.4,
+          "precision_at_100": 0.33,
+          "precision_at_200": 0.275,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 20,
+              "precision": 0.4,
+              "recall": 0.11764705882352941,
+              "lift": 4.705882352941177
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 33,
+              "precision": 0.33,
+              "recall": 0.19411764705882353,
+              "lift": 3.8823529411764706
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 55,
+              "precision": 0.275,
+              "recall": 0.3235294117647059,
+              "lift": 3.235294117647059
+            }
+          },
+          "precision_0_5": 0.19101123595505617,
+          "recall_0_5": 0.6,
+          "f1_0_5": 0.2897727272727273,
+          "confusion_matrix": [
+            [
+              1398,
+              432
+            ],
+            [
+              68,
+              102
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        },
+        "random_forest": {
+          "average_precision": 0.3013960718394908,
+          "roc_auc": 0.7757248473159756,
+          "precision_at_50": 0.42,
+          "precision_at_100": 0.42,
+          "precision_at_200": 0.32,
+          "ranking_at_k": {
+            "50": {
+              "evaluated_k": 50,
+              "positives_found": 21,
+              "precision": 0.42,
+              "recall": 0.12352941176470589,
+              "lift": 4.941176470588235
+            },
+            "100": {
+              "evaluated_k": 100,
+              "positives_found": 42,
+              "precision": 0.42,
+              "recall": 0.24705882352941178,
+              "lift": 4.941176470588235
+            },
+            "200": {
+              "evaluated_k": 200,
+              "positives_found": 64,
+              "precision": 0.32,
+              "recall": 0.3764705882352941,
+              "lift": 3.764705882352941
+            }
+          },
+          "precision_0_5": 0.42,
+          "recall_0_5": 0.24705882352941178,
+          "f1_0_5": 0.3111111111111111,
+          "confusion_matrix": [
+            [
+              1772,
+              58
+            ],
+            [
+              128,
+              42
+            ]
+          ],
+          "evaluated_customers": 2000,
+          "positive_prevalence": 0.085
+        }
+      }
+    }
+  }
+}

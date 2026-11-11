@@ -8,10 +8,10 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 
 ## What it does
 
-- Validates SGCC-style wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
+- Validates customer-by-day wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
 - Extracts consumption and data-quality signals without using the target label as a feature.
 - Splits customers into **train / validation / test (60 / 20 / 20)** with stratification and a fixed random seed.
-- Compares Logistic Regression and Random Forest using **validation average precision (PR-AUC)**; reports untouched test-set metrics and **Precision@K**.
+- Compares Logistic Regression and Random Forest using **validation average precision (AP)**; reports held-out test metrics and **Precision/Recall/Lift@K**.
 - Saves the selected model, evaluation report, and **out-of-sample test predictions**.
 - Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
 - Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
@@ -38,21 +38,25 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
-### Use the real SGCC dataset
+### Train on a local labeled consumption dataset
 
-Download and extract the dataset yourself from the [IEEE PES data sharing catalog](https://ieee-pes-data-sharing.org/datasets/detail/663b8e0e-3ace-48f8-b983-4cb59b39fa6f), review the source's terms, and place the extracted CSV in `data/sgcc.csv`.
+Obtain a dataset under terms that permit your intended research use, record its provenance and license, and place the extracted CSV in `data/consumption.csv`.
 
 ```bash
-gridguard train --input data/sgcc.csv --source sgcc --sample-size 10000
+gridguard experiment --input data/consumption.csv --source custom --sample-size 10000 --output-dir artifacts/real-validation
+# Once validation decisions are final, evaluate the frozen winner once:
+gridguard finalize --input data/consumption.csv --experiment-dir artifacts/real-validation --output-dir artifacts/real-final
 streamlit run app/streamlit_app.py
 ```
 
-Omit `--sample-size` to train on the full file. The sample is stratified by label, not just the first rows. Real SGCC data are **not included** in this repository because the catalog does not specify a reuse license.
+Choose `artifacts/real-final` in the dashboard. Use empty output directories to preserve earlier experiments. Omit `--sample-size` to use the full file; this changes the cohort and cannot be compared directly with the pilot's fixed test split. The sample is stratified by label. Third-party data are **not included**; confirm rights before use or redistribution.
+
+See the [local commands](docs/real-data-evaluation.md) and [pipeline audit with measured validation/final results](docs/pipeline-evaluation.md). `train` remains available for a single configuration; use `--validation-only` during development. Existing model bundles keep the baseline feature calculation.
 
 ### Other commands
 
 ```bash
-gridguard score --input data/sgcc.csv --model artifacts/model.joblib --output reports/risk_ranking.csv
+gridguard score --input data/consumption.csv --model artifacts/model.joblib --output reports/risk_ranking.csv
 gridguard export-sqlite --input data/demo.csv --output data/demo.sqlite --limit-customers 200
 pytest -q
 ruff check .
@@ -78,7 +82,7 @@ CSV / synthetic generator
         |
         +---- app/streamlit_app.py (read-only dashboard)
 
-  cli.py: demo | train | score | export-sqlite
+  cli.py: demo | train | experiment | finalize | score | export-sqlite
   sql/: optional SQLite exploratory analysis
 ```
 
@@ -86,11 +90,11 @@ See [architecture](docs/architecture.md) and [model card](docs/model-card.md) fo
 
 ## Evaluation design
 
-**Why PR-AUC?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection is made using validation **average precision**, followed by a **single** final test evaluation. Precision@K illustrates the real operational question: *if inspection capacity is K, how many truly positive customers are among the top K?*
+**Why Average Precision?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection uses validation **AP**, followed by a **single** final test evaluation. Precision@K measures the fraction of positives among K inspection candidates. Recall@K measures the fraction of all positives found; lift compares precision with prevalence. Rankings use unrounded probabilities and customer-ID tie breaks. AP is not trapezoidal PR-curve area.
 
 The risk score is `round(100 * model.predict_proba(...))`, **not a calibrated probability**. Display bands (low/medium/high) are illustrative and are not company inspection policy.
 
-**Known limitations:** historical labels are customer-level (not theft dates), SGCC results may not generalize to Türkiye, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
+**Known limitations:** historical labels are customer-level (not theft dates), results from one distribution network may not generalize to another, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
 
 ## Tech stack
 
@@ -98,4 +102,4 @@ Python · pandas · NumPy · scikit-learn · SQLite · Streamlit · Plotly · py
 
 ## License and data rights
 
-No software license has been selected yet. The source is publicly visible, but reuse rights are not automatically granted. The SGCC dataset has separate, potentially restrictive terms; do not redistribute it with this repository.
+No software license has been selected yet. The source is publicly visible, but reuse rights are not automatically granted. Third-party datasets may have separate, restrictive terms; do not redistribute them without permission.

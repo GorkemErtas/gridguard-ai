@@ -1,0 +1,402 @@
+{
+  "classification_threshold": 0.5,
+  "high_confidence_cutoffs": {
+    "false_positive_min_score": 0.8,
+    "false_negative_max_score": 0.2
+  },
+  "min_group_size": 20,
+  "classification_errors_at_0_5": {
+    "customers": 2000,
+    "positives": 171,
+    "positive_prevalence": 0.0855,
+    "average_precision": 0.32281366523385974,
+    "roc_auc": 0.7883066514472805,
+    "true_negative": 1779,
+    "false_positive": 50,
+    "false_negative": 130,
+    "true_positive": 41,
+    "false_positive_rate": 0.02733734281027884,
+    "false_negative_rate": 0.7602339181286549,
+    "high_confidence_false_positive": 1,
+    "high_confidence_false_negative": 36
+  },
+  "ranking_errors_at_k": {
+    "50": {
+      "evaluated_k": 50,
+      "negatives_in_queue": 25,
+      "positives_outside_queue": 146
+    },
+    "100": {
+      "evaluated_k": 100,
+      "negatives_in_queue": 57,
+      "positives_outside_queue": 128
+    },
+    "200": {
+      "evaluated_k": 200,
+      "negatives_in_queue": 131,
+      "positives_outside_queue": 102
+    }
+  },
+  "data_quality_groups": {
+    "missing_ratio": {
+      "bin_edges": [
+        0,
+        0.1,
+        0.25,
+        0.5,
+        null
+      ],
+      "last_edge": "unbounded",
+      "groups": {
+        "[0.0, 0.1)": {
+          "customers": 984,
+          "positives": 62,
+          "positive_prevalence": 0.06300813008130081,
+          "average_precision": 0.23434340775960624,
+          "roc_auc": 0.7469736197606885,
+          "true_negative": 907,
+          "false_positive": 15,
+          "false_negative": 54,
+          "true_positive": 8,
+          "false_positive_rate": 0.016268980477223426,
+          "false_negative_rate": 0.8709677419354839,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 20,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 12,
+              "negatives_in_queue": 6,
+              "positives_outside_queue": 56
+            },
+            "100": {
+              "customers_in_queue": 25,
+              "negatives_in_queue": 16,
+              "positives_outside_queue": 53
+            },
+            "200": {
+              "customers_in_queue": 54,
+              "negatives_in_queue": 41,
+              "positives_outside_queue": 49
+            }
+          }
+        },
+        "[0.1, 0.25)": {
+          "customers": 282,
+          "positives": 32,
+          "positive_prevalence": 0.11347517730496454,
+          "average_precision": 0.41192180323961364,
+          "roc_auc": 0.839125,
+          "true_negative": 237,
+          "false_positive": 13,
+          "false_negative": 21,
+          "true_positive": 11,
+          "false_positive_rate": 0.052,
+          "false_negative_rate": 0.65625,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 5,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 10,
+              "negatives_in_queue": 5,
+              "positives_outside_queue": 27
+            },
+            "100": {
+              "customers_in_queue": 27,
+              "negatives_in_queue": 16,
+              "positives_outside_queue": 21
+            },
+            "200": {
+              "customers_in_queue": 46,
+              "negatives_in_queue": 26,
+              "positives_outside_queue": 12
+            }
+          }
+        },
+        "[0.25, 0.5)": {
+          "customers": 217,
+          "positives": 27,
+          "positive_prevalence": 0.12442396313364056,
+          "average_precision": 0.41735451478384433,
+          "roc_auc": 0.8331384015594542,
+          "true_negative": 181,
+          "false_positive": 9,
+          "false_negative": 16,
+          "true_positive": 11,
+          "false_positive_rate": 0.04736842105263158,
+          "false_negative_rate": 0.5925925925925926,
+          "high_confidence_false_positive": 1,
+          "high_confidence_false_negative": 1,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 14,
+              "negatives_in_queue": 6,
+              "positives_outside_queue": 19
+            },
+            "100": {
+              "customers_in_queue": 21,
+              "negatives_in_queue": 10,
+              "positives_outside_queue": 16
+            },
+            "200": {
+              "customers_in_queue": 37,
+              "negatives_in_queue": 22,
+              "positives_outside_queue": 12
+            }
+          }
+        },
+        "[0.5, inf)": {
+          "customers": 517,
+          "positives": 50,
+          "positive_prevalence": 0.09671179883945841,
+          "average_precision": 0.33182346107277055,
+          "roc_auc": 0.7617130620985011,
+          "true_negative": 454,
+          "false_positive": 13,
+          "false_negative": 39,
+          "true_positive": 11,
+          "false_positive_rate": 0.027837259100642397,
+          "false_negative_rate": 0.78,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 10,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 14,
+              "negatives_in_queue": 8,
+              "positives_outside_queue": 44
+            },
+            "100": {
+              "customers_in_queue": 27,
+              "negatives_in_queue": 15,
+              "positives_outside_queue": 38
+            },
+            "200": {
+              "customers_in_queue": 63,
+              "negatives_in_queue": 42,
+              "positives_outside_queue": 29
+            }
+          }
+        }
+      }
+    },
+    "coefficient_variation": {
+      "bin_edges": [
+        0,
+        0.5,
+        1,
+        2,
+        null
+      ],
+      "last_edge": "unbounded",
+      "groups": {
+        "[0.0, 0.5)": {
+          "customers": 1174,
+          "positives": 62,
+          "positive_prevalence": 0.05281090289608177,
+          "average_precision": 0.2027063287656666,
+          "roc_auc": 0.7698276862381064,
+          "true_negative": 1098,
+          "false_positive": 14,
+          "false_negative": 56,
+          "true_positive": 6,
+          "false_positive_rate": 0.012589928057553957,
+          "false_negative_rate": 0.9032258064516129,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 22,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 14,
+              "negatives_in_queue": 10,
+              "positives_outside_queue": 58
+            },
+            "100": {
+              "customers_in_queue": 23,
+              "negatives_in_queue": 16,
+              "positives_outside_queue": 55
+            },
+            "200": {
+              "customers_in_queue": 51,
+              "negatives_in_queue": 37,
+              "positives_outside_queue": 48
+            }
+          }
+        },
+        "[0.5, 1.0)": {
+          "customers": 620,
+          "positives": 88,
+          "positive_prevalence": 0.14193548387096774,
+          "average_precision": 0.43391032183034944,
+          "roc_auc": 0.7607014695830485,
+          "true_negative": 507,
+          "false_positive": 25,
+          "false_negative": 56,
+          "true_positive": 32,
+          "false_positive_rate": 0.046992481203007516,
+          "false_negative_rate": 0.6363636363636364,
+          "high_confidence_false_positive": 1,
+          "high_confidence_false_negative": 13,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 30,
+              "negatives_in_queue": 10,
+              "positives_outside_queue": 68
+            },
+            "100": {
+              "customers_in_queue": 63,
+              "negatives_in_queue": 30,
+              "positives_outside_queue": 55
+            },
+            "200": {
+              "customers_in_queue": 117,
+              "negatives_in_queue": 69,
+              "positives_outside_queue": 40
+            }
+          }
+        },
+        "[1.0, 2.0)": {
+          "customers": 157,
+          "positives": 17,
+          "positive_prevalence": 0.10828025477707007,
+          "average_precision": 0.2889548670426177,
+          "roc_auc": 0.7676470588235293,
+          "true_negative": 131,
+          "false_positive": 9,
+          "false_negative": 14,
+          "true_positive": 3,
+          "false_positive_rate": 0.06428571428571428,
+          "false_negative_rate": 0.8235294117647058,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 1,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 6,
+              "negatives_in_queue": 5,
+              "positives_outside_queue": 16
+            },
+            "100": {
+              "customers_in_queue": 12,
+              "negatives_in_queue": 9,
+              "positives_outside_queue": 14
+            },
+            "200": {
+              "customers_in_queue": 25,
+              "negatives_in_queue": 19,
+              "positives_outside_queue": 11
+            }
+          }
+        },
+        "[2.0, inf)": {
+          "customers": 49,
+          "positives": 4,
+          "positive_prevalence": 0.08163265306122448,
+          "average_precision": 0.23950534759358288,
+          "roc_auc": 0.8222222222222223,
+          "true_negative": 43,
+          "false_positive": 2,
+          "false_negative": 4,
+          "true_positive": 0,
+          "false_positive_rate": 0.044444444444444446,
+          "false_negative_rate": 1.0,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 0,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 0,
+              "negatives_in_queue": 0,
+              "positives_outside_queue": 4
+            },
+            "100": {
+              "customers_in_queue": 2,
+              "negatives_in_queue": 2,
+              "positives_outside_queue": 4
+            },
+            "200": {
+              "customers_in_queue": 7,
+              "negatives_in_queue": 6,
+              "positives_outside_queue": 3
+            }
+          }
+        }
+      }
+    },
+    "mean_kwh": {
+      "bin_edges": [
+        0,
+        10,
+        100,
+        1000,
+        null
+      ],
+      "last_edge": "unbounded",
+      "groups": {
+        "[0.0, 10.0)": {
+          "customers": 1452,
+          "positives": 83,
+          "positive_prevalence": 0.05716253443526171,
+          "average_precision": 0.16452101010590636,
+          "roc_auc": 0.7421475529583638,
+          "true_negative": 1351,
+          "false_positive": 18,
+          "false_negative": 75,
+          "true_positive": 8,
+          "false_positive_rate": 0.013148283418553688,
+          "false_negative_rate": 0.9036144578313253,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 26,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 13,
+              "negatives_in_queue": 10,
+              "positives_outside_queue": 80
+            },
+            "100": {
+              "customers_in_queue": 32,
+              "negatives_in_queue": 23,
+              "positives_outside_queue": 74
+            },
+            "200": {
+              "customers_in_queue": 81,
+              "negatives_in_queue": 61,
+              "positives_outside_queue": 63
+            }
+          }
+        },
+        "[10.0, 100.0)": {
+          "customers": 536,
+          "positives": 81,
+          "positive_prevalence": 0.15111940298507462,
+          "average_precision": 0.43507015306975283,
+          "roc_auc": 0.7825261158594492,
+          "true_negative": 427,
+          "false_positive": 28,
+          "false_negative": 54,
+          "true_positive": 27,
+          "false_positive_rate": 0.06153846153846154,
+          "false_negative_rate": 0.6666666666666666,
+          "high_confidence_false_positive": 0,
+          "high_confidence_false_negative": 10,
+          "global_ranking_errors": {
+            "50": {
+              "customers_in_queue": 28,
+              "negatives_in_queue": 12,
+              "positives_outside_queue": 65
+            },
+            "100": {
+              "customers_in_queue": 58,
+              "negatives_in_queue": 30,
+              "positives_outside_queue": 53
+            },
+            "200": {
+              "customers_in_queue": 108,
+              "negatives_in_queue": 66,
+              "positives_outside_queue": 39
+            }
+          }
+        },
+        "[100.0, 1000.0)": {
+          "customers": 12,
+          "suppressed": true
+        }
+      }
+    }
+  }
+}
