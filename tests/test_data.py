@@ -71,3 +71,19 @@ def test_unlabeled_csv_can_be_scored(csv_path):
     loaded = load_consumption(csv_path, require_labels=False)
     assert loaded.labels is None
     assert build_features(loaded).shape[0] == 120
+
+
+def test_sgcc_year_first_slash_date_headers(tmp_path):
+    df = make_synthetic(customers=120, days=80, seed=19)
+    df = df.rename(
+        columns={
+            column: f"{pd.Timestamp(column).year}/{pd.Timestamp(column).month}/{pd.Timestamp(column).day}"
+            for column in df
+            if column not in ("CONS_NO", "FLAG")
+        }
+    )
+    path = tmp_path / "sgcc_dates.csv"
+    df.to_csv(path, index=False)
+    data = load_consumption(path)
+    assert data.readings.columns[0] == "2025-01-01"
+    assert data.readings.shape == (120, 80)
