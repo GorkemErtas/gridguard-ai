@@ -40,8 +40,13 @@ def test_ties_use_same_ids_in_metrics_and_queue():
     assert ranking_order(p, ids).tolist() == [1, 0, 2]
     assert precision_at_k(y, p, 1, customer_ids=ids) == 1
     result = ranking_metrics(y, p, 2, customer_ids=ids)
-    assert result == {"evaluated_k": 2, "positives_found": 1,
-                      "precision": 0.5, "recall": 0.5, "lift": 0.75}
+    assert result == {
+        "evaluated_k": 2,
+        "positives_found": 1,
+        "precision": 0.5,
+        "recall": 0.5,
+        "lift": 0.75,
+    }
     assert ranking_order(p[[2, 1, 0]], ids.iloc[[2, 1, 0]]).tolist() == [1, 2, 0]
     assert precision_at_k(y, p, 99) == pytest.approx(2 / 3)
     assert precision_at_k(np.array([]), np.array([])) == 0

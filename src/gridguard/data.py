@@ -23,7 +23,9 @@ class ConsumptionData:
         return ConsumptionData(
             customer_ids=self.customer_ids.iloc[indices].reset_index(drop=True),
             readings=self.readings.iloc[indices].reset_index(drop=True),
-            labels=None if self.labels is None else self.labels.iloc[indices].reset_index(drop=True),
+            labels=None
+            if self.labels is None
+            else self.labels.iloc[indices].reset_index(drop=True),
         )
 
     def __len__(self) -> int:
@@ -45,9 +47,7 @@ def load_consumption(path: str | Path, *, require_labels: bool = True) -> Consum
     if not path.is_file():
         raise FileNotFoundError(f"Consumption file not found: {path}")
 
-    raw = pd.read_csv(
-        path, low_memory=False, dtype={"CONS_NO": "string", "customer_id": "string"}
-    )
+    raw = pd.read_csv(path, low_memory=False, dtype={"CONS_NO": "string", "customer_id": "string"})
     id_column = next((col for col in ("CONS_NO", "customer_id") if col in raw), None)
     label_column = next((col for col in ("FLAG", "flag") if col in raw), None)
     if id_column is None:
@@ -73,9 +73,11 @@ def load_consumption(path: str | Path, *, require_labels: bool = True) -> Consum
     if len({date for date, _ in dates}) != len(dates):
         raise ValueError("Duplicate daily reading dates are not allowed.")
 
-    readings = raw.loc[:, [col for _, col in dates]].apply(
-        pd.to_numeric, errors="coerce"
-    ).astype("float32")
+    readings = (
+        raw.loc[:, [col for _, col in dates]]
+        .apply(pd.to_numeric, errors="coerce")
+        .astype("float32")
+    )
     readings.columns = [date.strftime("%Y-%m-%d") for date, _ in dates]
     readings = readings.replace([np.inf, -np.inf], np.nan)
     # A negative kWh daily reading is invalid for this dataset contract.
@@ -91,9 +93,34 @@ def load_consumption(path: str | Path, *, require_labels: bool = True) -> Consum
     return ConsumptionData(customer_ids=ids, readings=readings, labels=labels)
 
 
-def sample_customers(
-    data: ConsumptionData, *, size: int | None, seed: int
-) -> ConsumptionData:
+def load_customer_history(path: str | Path, customer_id: str, *, chunk_size: int = 250):
+    """Bounded dashboard lookup using the loader's dates and invalid-reading policy."""
+    for chunk in pd.read_csv(
+        path, chunksize=chunk_size, dtype={"CONS_NO": "string", "customer_id": "string"}
+    ):
+        id_column = next((col for col in ("CONS_NO", "customer_id") if col in chunk), None)
+        if id_column is None:
+            raise ValueError("Expected a CONS_NO or customer_id column.")
+        selected = chunk.loc[chunk[id_column].astype("string").str.strip() == customer_id]
+        if selected.empty:
+            continue
+        dates = sorted((date, col) for col in chunk if (date := _parse_date(str(col))) is not None)
+        if not dates:
+            return pd.DataFrame(columns=["date", "kwh"])
+        if len({date for date, _ in dates}) != len(dates):
+            raise ValueError("Duplicate daily reading dates are not allowed.")
+        values = pd.to_numeric(selected.iloc[0][[col for _, col in dates]], errors="coerce")
+        values = values.replace([np.inf, -np.inf], np.nan).mask(values < 0)
+        history = pd.Series(values.to_numpy(dtype=float), index=[date for date, _ in dates])
+        return (
+            history.reindex(pd.date_range(dates[0][0], dates[-1][0], freq="D"))
+            .rename_axis("date")
+            .reset_index(name="kwh")
+        )
+    return pd.DataFrame(columns=["date", "kwh"])
+
+
+def sample_customers(data: ConsumptionData, *, size: int | None, seed: int) -> ConsumptionData:
     """Reproducible stratified subsample, preserving minority labels."""
     _validate_customers(data)
     if size is not None and size < 80:

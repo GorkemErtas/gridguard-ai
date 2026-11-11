@@ -30,7 +30,7 @@ def inspect_csv(path: str | Path, *, chunk_size: int = 500) -> dict:
     ordered = sorted(dates)
     gaps = sum((b - a).days - 1 for a, b in zip(ordered[:-1], ordered[1:]))
     seen_ids = set()
-    rows = positives = missing = zero = negative = invalid = 0
+    rows = positives = missing = zero = negative = invalid = nonfinite = 0
     all_readings = 0
     positive_min = positive_max = None
 
@@ -52,9 +52,10 @@ def inspect_csv(path: str | Path, *, chunk_size: int = 500) -> dict:
         rows += len(chunk)
         positives += int((labels == 1).sum())
         missing += int(missing_mask.sum())
-        negative += int((values < 0).sum())
+        negative += int(((values < 0) & np.isfinite(values)).sum())
         zero += int((values == 0).sum())
-        invalid += int((chunk[date_columns].notna().to_numpy() & missing_mask).sum())
+        invalid += int((chunk[date_columns].notna().to_numpy() & np.isnan(values)).sum())
+        nonfinite += int(np.isinf(values).sum())
         all_readings += values.size
         positive = values[np.isfinite(values) & (values > 0)]
         if positive.size:
@@ -76,6 +77,8 @@ def inspect_csv(path: str | Path, *, chunk_size: int = 500) -> dict:
         "zero_readings": zero,
         "negative_readings_masked_in_training": negative,
         "nonnumeric_nonempty_cells": invalid,
+        "nonfinite_readings": nonfinite,
+        "training_missing_reading_rate": (missing + negative) / all_readings if all_readings else None,
         "positive_kwh_min": positive_min,
         "positive_kwh_max": positive_max,
     }

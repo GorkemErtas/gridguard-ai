@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from gridguard.data import load_consumption, sample_customers
+from gridguard.data import load_consumption, load_customer_history, sample_customers
 from gridguard.features import build_features, review_signal
 from gridguard.synthetic import make_synthetic
 
@@ -73,7 +73,7 @@ def test_unlabeled_csv_can_be_scored(csv_path):
     assert build_features(loaded).shape[0] == 120
 
 
-def test_sgcc_year_first_slash_date_headers(tmp_path):
+def test_year_first_slash_date_headers(tmp_path):
     df = make_synthetic(customers=120, days=80, seed=19)
     df = df.rename(
         columns={
@@ -82,8 +82,26 @@ def test_sgcc_year_first_slash_date_headers(tmp_path):
             if column not in ("CONS_NO", "FLAG")
         }
     )
-    path = tmp_path / "sgcc_dates.csv"
+    path = tmp_path / "slash_dates.csv"
     df.to_csv(path, index=False)
     data = load_consumption(path)
     assert data.readings.columns[0] == "2025-01-01"
     assert data.readings.shape == (120, 80)
+
+
+def test_customer_history_uses_calendar_and_loader_reading_policy(tmp_path):
+    frame = make_synthetic(customers=100, days=61, seed=19)
+    dates = frame.columns[1:-1].tolist()
+    frame.loc[0, dates[0]] = -10
+    frame.loc[0, dates[1]] = np.inf
+    frame = frame.drop(columns=dates[2])
+    frame = frame.rename(columns={col: pd.Timestamp(col).strftime("%Y/%m/%d")
+                                  for col in frame if col not in ("CONS_NO", "FLAG")})
+    frame.loc[0, "CONS_NO"] = "  review-customer  "
+    path = tmp_path / "history.csv"
+    frame.to_csv(path, index=False)
+    history = load_customer_history(path, "review-customer", chunk_size=5)
+    assert len(history) == 61
+    assert history.kwh.iloc[:3].isna().all()
+    assert history.date.is_monotonic_increasing
+    assert load_customer_history(path, "absent").empty

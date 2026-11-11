@@ -7,12 +7,14 @@ import joblib
 import pandas as pd
 
 from gridguard.data import ConsumptionData, load_consumption, sample_customers, split_customers
+from gridguard.error_analysis import aggregate_errors
 from gridguard.features import FEATURE_CONFIGS, build_features
 from gridguard.modeling import candidate_models, model_metrics, rank_customers
 from gridguard.provenance import (
     experiment_metadata,
     file_fingerprint,
     partition_fingerprint,
+    validation_summary,
     write_json,
 )
 
@@ -48,54 +50,93 @@ def _fit_candidates(data: ConsumptionData, partitions: dict, *, config: str, see
         model.fit(x_train, training.labels.to_numpy(dtype=int))
         probabilities = model.predict_proba(x_val)[:, 1]
         reports[name] = model_metrics(
-            validation.labels.to_numpy(dtype=int), probabilities, customer_ids=validation.customer_ids
+            validation.labels.to_numpy(dtype=int),
+            probabilities,
+            customer_ids=validation.customer_ids,
         )
-    best = max((name for name in models if name != "dummy_prior"),
-               key=lambda name: reports[name]["average_precision"])
-    return models[best], best, x_train.columns.tolist(), reports
+    best = max(
+        (name for name in models if name != "dummy_prior"),
+        key=lambda name: reports[name]["average_precision"],
+    )
+    predictions = x_val[["missing_ratio", "coefficient_variation", "mean_kwh"]].copy()
+    predictions["customer_id"] = validation.customer_ids.to_numpy()
+    predictions["true_label"] = validation.labels.to_numpy()
+    predictions["model_score"] = models[best].predict_proba(x_val)[:, 1]
+    return models[best], best, x_train.columns.tolist(), reports, aggregate_errors(predictions)
 
 
-def _run(data, partitions, *, input_path, output_dir, sample_size, source, seed,
-         experiment_id, feature_config, validation_only):
+def _run(
+    data,
+    partitions,
+    *,
+    input_path,
+    output_dir,
+    sample_size,
+    source,
+    seed,
+    experiment_id,
+    feature_config,
+    validation_only,
+):
     output_dir = Path(output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
-        raise FileExistsError(f"Choose an empty output directory; refusing to overwrite {output_dir}")
+        raise FileExistsError(
+            f"Choose an empty output directory; refusing to overwrite {output_dir}"
+        )
     if feature_config not in FEATURE_CONFIGS:
         raise ValueError(f"Unknown feature configuration: {feature_config}")
-    chosen, best_name, columns, validation = _fit_candidates(
+    chosen, best_name, columns, validation, analysis = _fit_candidates(
         data, partitions, config=feature_config, seed=seed
     )
     report = experiment_metadata(
-        data, partitions, input_path=input_path, sample_size=sample_size, source=source, seed=seed,
-        experiment_id=experiment_id or output_dir.name, feature_config=feature_config
+        data,
+        partitions,
+        input_path=input_path,
+        sample_size=sample_size,
+        source=source,
+        seed=seed,
+        experiment_id=experiment_id or output_dir.name,
+        feature_config=feature_config,
     )
-    report.update({
-        "feature_columns": columns,
-        "candidate_parameters": {
-            name: model.named_steps["classifier"].get_params(deep=False)
-            for name, model in candidate_models(seed).items()
-        },
-        "selected_model": best_name,
-        "validation": validation,
-        "test": None,
-    })
+    report.update(
+        {
+            "feature_columns": columns,
+            "candidate_parameters": {
+                name: model.named_steps["classifier"].get_params(deep=False)
+                for name, model in candidate_models(seed).items()
+            },
+            "selected_model": best_name,
+            "validation": validation,
+            "test": None,
+        }
+    )
     report["methodology"]["test_usage"] = (
-        "not evaluated; validation-only experiment" if validation_only else "final holdout evaluation"
+        "not evaluated; validation-only experiment"
+        if validation_only
+        else "final holdout evaluation"
     )
     output_dir.mkdir(parents=True, exist_ok=True)
+    write_json(output_dir / "validation_error_analysis.json", analysis)
     manifest = {
         "dataset_fingerprint_sha256": report["dataset"]["fingerprint_sha256"],
-        "partitions": {key: data.customer_ids.iloc[idx].astype(str).tolist()
-                       for key, idx in partitions.items()},
+        "partitions": {
+            key: data.customer_ids.iloc[idx].astype(str).tolist() for key, idx in partitions.items()
+        },
     }
     write_json(output_dir / "split_manifest.json", manifest)
     if not validation_only:
-        _write_holdout(data, partitions, chosen, config=feature_config, report=report,
-                       output_dir=output_dir)
+        _write_holdout(
+            data, partitions, chosen, config=feature_config, report=report, output_dir=output_dir
+        )
     bundle = {
-        "model": chosen, "model_name": best_name, "feature_columns": columns, "seed": seed,
-        "feature_config": feature_config, "experiment_id": report["experiment_id"],
-        "fitted_on": "train only", "software": report["software"],
+        "model": chosen,
+        "model_name": best_name,
+        "feature_columns": columns,
+        "seed": seed,
+        "feature_config": feature_config,
+        "experiment_id": report["experiment_id"],
+        "fitted_on": "train only",
+        "software": report["software"],
     }
     joblib.dump(bundle, output_dir / "model.joblib")
     report["model_sha256"] = file_fingerprint(output_dir / "model.joblib")
@@ -103,20 +144,41 @@ def _run(data, partitions, *, input_path, output_dir, sample_size, source, seed,
     return report
 
 
-def train(input_path: str | Path, *, output_dir: str | Path = "artifacts",
-          sample_size: int | None = None, source: str = "custom", seed: int = 42,
-          feature_config: str = "baseline", experiment_id: str | None = None,
-          validation_only: bool = False) -> dict:
+def train(
+    input_path: str | Path,
+    *,
+    output_dir: str | Path = "artifacts",
+    sample_size: int | None = None,
+    source: str = "custom",
+    seed: int = 42,
+    feature_config: str = "baseline",
+    experiment_id: str | None = None,
+    validation_only: bool = False,
+) -> dict:
     data = sample_customers(load_consumption(input_path), size=sample_size, seed=seed)
     return _run(
-        data, split_customers(data, seed=seed), input_path=input_path, output_dir=output_dir,
-        sample_size=sample_size, source=source, seed=seed, feature_config=feature_config,
-        experiment_id=experiment_id, validation_only=validation_only
+        data,
+        split_customers(data, seed=seed),
+        input_path=input_path,
+        output_dir=output_dir,
+        sample_size=sample_size,
+        source=source,
+        seed=seed,
+        feature_config=feature_config,
+        experiment_id=experiment_id,
+        validation_only=validation_only,
     )
 
 
-def experiment(input_path: str | Path, *, output_dir: str | Path, sample_size: int | None = None,
-               source: str = "custom", seed: int = 42, experiment_id: str | None = None) -> dict:
+def experiment(
+    input_path: str | Path,
+    *,
+    output_dir: str | Path,
+    sample_size: int | None = None,
+    source: str = "custom",
+    seed: int = 42,
+    experiment_id: str | None = None,
+) -> dict:
     """Four fixed ablations on identical customers; never predict/evaluate test."""
     output_dir = Path(output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
@@ -127,21 +189,43 @@ def experiment(input_path: str | Path, *, output_dir: str | Path, sample_size: i
     runs = {}
     for config in FEATURE_CONFIGS:
         runs[config] = _run(
-            data, partitions, input_path=input_path, output_dir=output_dir / config,
-            sample_size=sample_size, source=source, seed=seed, feature_config=config,
-            experiment_id=f"{identifier}-{config}", validation_only=True
+            data,
+            partitions,
+            input_path=input_path,
+            output_dir=output_dir / config,
+            sample_size=sample_size,
+            source=source,
+            seed=seed,
+            feature_config=config,
+            experiment_id=f"{identifier}-{config}",
+            validation_only=True,
         )
-    best = max(runs, key=lambda config: runs[config]["validation"][runs[config]["selected_model"]]
-               ["average_precision"])
-    result = {"experiment_id": identifier, "selection_metric": "validation average_precision",
-              "selected_feature_config": best, "selected_model": runs[best]["selected_model"],
-              "test_evaluated": False, "runs": runs}
+    best = max(
+        runs,
+        key=lambda config: runs[config]["validation"][runs[config]["selected_model"]][
+            "average_precision"
+        ],
+    )
+    result = {
+        "experiment_id": identifier,
+        "selection_metric": "validation average_precision",
+        "selected_feature_config": best,
+        "selected_model": runs[best]["selected_model"],
+        "test_evaluated": False,
+        "runs": runs,
+    }
     write_json(output_dir / "experiment.json", result)
+    write_json(output_dir / "validation_summary.json", validation_summary(result))
     return result
 
 
-def finalize(input_path: str | Path, *, experiment_dir: str | Path,
-             output_dir: str | Path, experiment_id: str | None = None) -> dict:
+def finalize(
+    input_path: str | Path,
+    *,
+    experiment_dir: str | Path,
+    output_dir: str | Path,
+    experiment_id: str | None = None,
+) -> dict:
     """Evaluate the validation winner once, using its frozen train-only estimator."""
     experiment_dir, output_dir = Path(experiment_dir), Path(output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
@@ -150,9 +234,21 @@ def finalize(input_path: str | Path, *, experiment_dir: str | Path,
     config = selection["selected_feature_config"]
     if config not in FEATURE_CONFIGS or selection["test_evaluated"]:
         raise ValueError("Expected a validation-only feature selection report.")
+    expected_config = max(
+        selection["runs"],
+        key=lambda key: selection["runs"][key]["validation"][
+            selection["runs"][key]["selected_model"]
+        ]["average_precision"],
+    )
+    if config != expected_config:
+        raise ValueError("Selected feature configuration is not the validation AP winner.")
     run_dir = experiment_dir / config
     report = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
-    if report != selection["runs"][config] or report["test"] is not None:
+    if (
+        report != selection["runs"][config]
+        or report["test"] is not None
+        or report["selected_model"] != selection["selected_model"]
+    ):
         raise ValueError("Selected run differs from the validation-only experiment report.")
     if report["model_sha256"] != file_fingerprint(run_dir / "model.joblib"):
         raise ValueError("Selected model fingerprint mismatch.")
@@ -162,16 +258,31 @@ def finalize(input_path: str | Path, *, experiment_dir: str | Path,
     sample_size = report["dataset"]["requested_sample_size"]
     data = sample_customers(load_consumption(input_path), size=sample_size, seed=seed)
     partitions = split_customers(data, seed=seed)
-    fingerprints = {key: partition_fingerprint(data.customer_ids.iloc[idx])
-                    for key, idx in partitions.items()}
+    fingerprints = {
+        key: partition_fingerprint(data.customer_ids.iloc[idx]) for key, idx in partitions.items()
+    }
     if fingerprints != report["partition_fingerprints"]:
         raise ValueError("Customer partition fingerprints differ from the validation experiment.")
+    manifest = json.loads((run_dir / "split_manifest.json").read_text(encoding="utf-8"))
+    expected_manifest = {
+        "dataset_fingerprint_sha256": report["dataset"]["fingerprint_sha256"],
+        "partitions": {
+            key: data.customer_ids.iloc[idx].astype(str).tolist() for key, idx in partitions.items()
+        },
+    }
+    if manifest != expected_manifest:
+        raise ValueError("Customer split manifest differs from the validation experiment.")
     # Trusted local artifacts only, exactly as in the existing scoring workflow.
     bundle = joblib.load(run_dir / "model.joblib")
     current = experiment_metadata(
-        data, partitions, input_path=input_path, sample_size=sample_size,
-        source=report["dataset"]["source"], seed=seed, experiment_id=experiment_id or output_dir.name,
-        feature_config=config
+        data,
+        partitions,
+        input_path=input_path,
+        sample_size=sample_size,
+        source=report["dataset"]["source"],
+        seed=seed,
+        experiment_id=experiment_id or output_dir.name,
+        feature_config=config,
     )
     if current["software"] != report["software"]:
         raise ValueError("Software versions differ; finalize in the experiment environment.")
@@ -180,10 +291,16 @@ def finalize(input_path: str | Path, *, experiment_dir: str | Path,
     report["dataset"]["input_path"] = str(input_path)
     report["methodology"]["test_usage"] = "final holdout evaluation of frozen validation winner"
     output_dir.mkdir(parents=True, exist_ok=True)
-    manifest = json.loads((run_dir / "split_manifest.json").read_text(encoding="utf-8"))
     write_json(output_dir / "split_manifest.json", manifest)
-    _write_holdout(data, partitions, bundle["model"], config=config, report=report,
-                   output_dir=output_dir)
+    analysis_path = run_dir / "validation_error_analysis.json"
+    if analysis_path.is_file():
+        write_json(
+            output_dir / "validation_error_analysis.json",
+            json.loads(analysis_path.read_text(encoding="utf-8")),
+        )
+    _write_holdout(
+        data, partitions, bundle["model"], config=config, report=report, output_dir=output_dir
+    )
     bundle["experiment_id"] = report["experiment_id"]
     joblib.dump(bundle, output_dir / "model.joblib")
     report["model_sha256"] = file_fingerprint(output_dir / "model.joblib")

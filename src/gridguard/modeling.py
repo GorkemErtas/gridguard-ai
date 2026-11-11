@@ -105,12 +105,18 @@ def model_metrics(y_true: np.ndarray, scores: np.ndarray, *, customer_ids=None) 
     predicted = (scores >= 0.5).astype(int)
     matrix = confusion_matrix(labels, predicted, labels=[0, 1])
     return {
-        "average_precision": float(average_precision_score(labels, scores)) if labels.any() else None,
+        "average_precision": float(average_precision_score(labels, scores))
+        if labels.any()
+        else None,
         "roc_auc": float(roc_auc_score(labels, scores)) if len(np.unique(labels)) == 2 else None,
-        **{f"precision_at_{k}": precision_at_k(labels, scores, k, customer_ids=customer_ids)
-           for k in (50, 100, 200)},
-        "ranking_at_k": {str(k): ranking_metrics(labels, scores, k, customer_ids=customer_ids)
-                         for k in (50, 100, 200)},
+        **{
+            f"precision_at_{k}": precision_at_k(labels, scores, k, customer_ids=customer_ids)
+            for k in (50, 100, 200)
+        },
+        "ranking_at_k": {
+            str(k): ranking_metrics(labels, scores, k, customer_ids=customer_ids)
+            for k in (50, 100, 200)
+        },
         "precision_0_5": float(precision_score(labels, predicted, zero_division=0)),
         "recall_0_5": float(recall_score(labels, predicted, zero_division=0)),
         "f1_0_5": float(f1_score(labels, predicted, zero_division=0)),
@@ -120,7 +126,9 @@ def model_metrics(y_true: np.ndarray, scores: np.ndarray, *, customer_ids=None) 
     }
 
 
-def rank_customers(ids: pd.Series, features: pd.DataFrame, probabilities: np.ndarray) -> pd.DataFrame:
+def rank_customers(
+    ids: pd.Series, features: pd.DataFrame, probabilities: np.ndarray
+) -> pd.DataFrame:
     order = ranking_order(probabilities, ids)
     if len(features) != len(ids):
         raise ValueError("Features and customer IDs must be aligned.")

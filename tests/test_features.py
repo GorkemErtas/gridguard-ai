@@ -44,8 +44,10 @@ def test_dates_sorted_duplicate_dates_and_extreme_readings(tmp_path):
         original = build_features(data, config=config)
         pd.testing.assert_frame_equal(original, build_features(data, config=config))
         # Features depend only on that customer's readings, never labels/population.
-        pd.testing.assert_frame_equal(original.iloc[[0]].reset_index(drop=True),
-                                      build_features(data.subset(np.array([0])), config=config))
+        pd.testing.assert_frame_equal(
+            original.iloc[[0]].reset_index(drop=True),
+            build_features(data.subset(np.array([0])), config=config),
+        )
         assert np.isfinite(original.loc[0, "maximum_kwh"])
     first = data.readings.columns[0]
     frame[pd.Timestamp(first).strftime("%Y/%m/%d")] = 1

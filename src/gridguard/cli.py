@@ -65,8 +65,11 @@ def main(argv: list[str] | None = None) -> None:
     training.add_argument("--seed", type=int, default=42)
     training.add_argument("--feature-config", choices=FEATURE_CONFIGS, default="baseline")
     training.add_argument("--experiment-id")
-    training.add_argument("--validation-only", action="store_true",
-                          help="Select on validation without test predictions or metrics")
+    training.add_argument(
+        "--validation-only",
+        action="store_true",
+        help="Select on validation without test predictions or metrics",
+    )
 
     experiments = subcommands.add_parser("experiment", help="Run four validation-only ablations")
     experiments.add_argument("--input", required=True)
@@ -94,12 +97,14 @@ def main(argv: list[str] | None = None) -> None:
 
     args = parser.parse_args(argv)
     if args.command == "demo":
-        path = save_synthetic(
-            args.output, customers=args.customers, days=args.days, seed=args.seed
-        )
+        path = save_synthetic(args.output, customers=args.customers, days=args.days, seed=args.seed)
         result = train(path, output_dir=args.output_dir, source="synthetic", seed=args.seed)
         print("SYNTHETIC DATA ONLY - not indicative of operational detection quality")
-        print(json.dumps({"selected_model": result["selected_model"], "test": result["test"]}, indent=2))
+        print(
+            json.dumps(
+                {"selected_model": result["selected_model"], "test": result["test"]}, indent=2
+            )
+        )
     elif args.command == "train":
         result = train(
             args.input,
@@ -111,19 +116,33 @@ def main(argv: list[str] | None = None) -> None:
             experiment_id=args.experiment_id,
             validation_only=args.validation_only,
         )
-        print(json.dumps({key: result[key] for key in ("selected_model", "validation", "test")},
-                         indent=2))
+        print(
+            json.dumps(
+                {key: result[key] for key in ("selected_model", "validation", "test")}, indent=2
+            )
+        )
     elif args.command == "experiment":
         result = experiment(
-            args.input, output_dir=args.output_dir, sample_size=args.sample_size,
-            source=args.source, seed=args.seed, experiment_id=args.experiment_id
+            args.input,
+            output_dir=args.output_dir,
+            sample_size=args.sample_size,
+            source=args.source,
+            seed=args.seed,
+            experiment_id=args.experiment_id,
         )
         print(json.dumps({key: value for key, value in result.items() if key != "runs"}, indent=2))
     elif args.command == "finalize":
-        result = finalize(args.input, experiment_dir=args.experiment_dir, output_dir=args.output_dir,
-                          experiment_id=args.experiment_id)
-        print(json.dumps({"selected_model": result["selected_model"], "test": result["test"]},
-                         indent=2))
+        result = finalize(
+            args.input,
+            experiment_dir=args.experiment_dir,
+            output_dir=args.output_dir,
+            experiment_id=args.experiment_id,
+        )
+        print(
+            json.dumps(
+                {"selected_model": result["selected_model"], "test": result["test"]}, indent=2
+            )
+        )
     elif args.command == "score":
         ranked = score(args.input, args.model, args.output)
         print(f"Scored {len(ranked)} customers; saved ranking to {args.output}")

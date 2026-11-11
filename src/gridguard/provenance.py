@@ -21,8 +21,17 @@ def partition_fingerprint(ids) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def experiment_metadata(data: ConsumptionData, partitions: dict, *, input_path, sample_size,
-                        source, seed, experiment_id, feature_config) -> dict:
+def experiment_metadata(
+    data: ConsumptionData,
+    partitions: dict,
+    *,
+    input_path,
+    sample_size,
+    source,
+    seed,
+    experiment_id,
+    feature_config,
+) -> dict:
     dates = pd.to_datetime(data.readings.columns)
     return {
         "schema_version": 2,
@@ -53,24 +62,84 @@ def experiment_metadata(data: ConsumptionData, partitions: dict, *, input_path, 
         },
         "split_sizes": {key: len(idx) for key, idx in partitions.items()},
         "partition_fingerprints": {
-            key: partition_fingerprint(data.customer_ids.iloc[idx]) for key, idx in partitions.items()
+            key: partition_fingerprint(data.customer_ids.iloc[idx])
+            for key, idx in partitions.items()
         },
         "feature_config": feature_config,
         "preprocessing": {
             "invalid_readings": "negative, nonnumeric and nonfinite values become missing",
             "extreme_readings": "retained; no clipping or zero fill",
-            "calendar": "insert missing dates as NaN" if feature_config in ("calendar", "combined")
-                        else "original observed date columns (pilot compatibility)",
-            "windows": "last 30/previous 30 calendar days" if feature_config in ("calendar", "combined")
-                       else "last 30/previous 30 reading columns",
+            "calendar": "insert missing dates as NaN"
+            if feature_config in ("calendar", "combined")
+            else "original observed date columns (pilot compatibility)",
+            "windows": "last 30/previous 30 calendar days"
+            if feature_config in ("calendar", "combined")
+            else "last 30/previous 30 reading columns",
             "learned_transforms": "train-only median imputation; train-only LR scaling",
         },
-        "software": {"python": platform.python_version(), **{
-            package: version(package) for package in ("gridguard-ai", "numpy", "pandas",
-                                                       "scikit-learn", "joblib")
-        }},
+        "software": {
+            "python": platform.python_version(),
+            **{
+                package: version(package)
+                for package in ("gridguard-ai", "numpy", "pandas", "scikit-learn", "joblib")
+            },
+        },
     }
 
 
 def write_json(path: Path, value: dict) -> None:
-    path.write_text(json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
+    path.write_text(
+        json.dumps(value, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8"
+    )
+
+
+def validation_summary(report: dict) -> dict:
+    """Allowlist the aggregate fields appropriate for a research summary."""
+    if report["test_evaluated"] or any(run["test"] is not None for run in report["runs"].values()):
+        raise ValueError("Validation summaries must not include test evaluations.")
+    baseline = report["runs"]["baseline"]
+    return {
+        "experiment_id": report["experiment_id"],
+        "selection_metric": report["selection_metric"],
+        "selected_feature_config": report["selected_feature_config"],
+        "selected_model": report["selected_model"],
+        "test_evaluated": False,
+        "dataset": {
+            key: value
+            for key, value in baseline["dataset"].items()
+            if key
+            in {
+                "source",
+                "fingerprint_sha256",
+                "customers",
+                "reading_days",
+                "date_start",
+                "date_end",
+                "missing_calendar_days",
+                "positive_customers",
+                "positive_rate",
+                "missing_reading_rate",
+                "requested_sample_size",
+                "sampling",
+            }
+        },
+        "seed": baseline["methodology"]["seed"],
+        "fitted_on": baseline["methodology"]["fitted_on"],
+        "split_sizes": baseline["split_sizes"],
+        "partition_fingerprints": baseline["partition_fingerprints"],
+        "software": baseline["software"],
+        "candidate_parameters": baseline["candidate_parameters"],
+        "runs": {
+            config: {
+                key: run[key]
+                for key in (
+                    "experiment_id",
+                    "feature_columns",
+                    "preprocessing",
+                    "selected_model",
+                    "validation",
+                )
+            }
+            for config, run in report["runs"].items()
+        },
+    }

@@ -39,3 +39,18 @@ def test_data_preflight_reports_negative_readings(tmp_path):
     frame.to_csv(path, index=False)
     summary = inspect_csv(path)
     assert summary["negative_readings_masked_in_training"] == 1
+
+
+def test_preflight_distinguishes_nonnumeric_and_nonfinite(tmp_path):
+    frame = make_synthetic(customers=120, days=80, seed=4)
+    column = frame.columns[1]
+    frame[column] = frame[column].astype(object)
+    frame.loc[0, column] = "not-a-reading"
+    frame.loc[1, column] = float("inf")
+    frame.loc[2, column] = -10
+    path = tmp_path / "invalid.csv"
+    frame.to_csv(path, index=False)
+    summary = inspect_csv(path)
+    assert summary["nonnumeric_nonempty_cells"] == 1
+    assert summary["nonfinite_readings"] == 1
+    assert summary["training_missing_reading_rate"] > summary["missing_reading_rate"]

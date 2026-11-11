@@ -28,6 +28,10 @@ def test_ablations_never_extract_test_features_and_record_provenance(tmp_path, m
     result = training.experiment(path, output_dir=output, source="synthetic")
     assert not result["test_evaluated"]
     assert (output / "experiment.json").is_file()
+    public_summary = json.loads((output / "validation_summary.json").read_text())
+    assert "input_path" not in public_summary["dataset"]
+    assert "partitions" not in public_summary
+    assert data.customer_ids.iloc[0] not in json.dumps(public_summary)
     runs = result["runs"]
     for config, report in runs.items():
         assert report["test"] is None
@@ -83,11 +87,13 @@ def test_imputation_and_scaling_fit_only_training_partition(tmp_path, monkeypatc
     training.train(path, output_dir=output, validation_only=True)
     model = joblib.load(output / "model.joblib")["model"]
     x_train = build_features(load_consumption(path).subset(parts["train"]))
-    np.testing.assert_allclose(model.named_steps["imputer"].statistics_,
-                               np.nanmedian(x_train, axis=0))
+    np.testing.assert_allclose(
+        model.named_steps["imputer"].statistics_, np.nanmedian(x_train, axis=0)
+    )
     imputed_train = model.named_steps["imputer"].transform(x_train)
-    np.testing.assert_allclose(model.named_steps["scaler"].mean_, imputed_train.mean(axis=0),
-                               rtol=1e-6)
+    np.testing.assert_allclose(
+        model.named_steps["scaler"].mean_, imputed_train.mean(axis=0), rtol=1e-6
+    )
 
 
 def test_legacy_bundle_scoring_and_no_overwrite(tmp_path):
