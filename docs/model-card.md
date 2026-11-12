@@ -37,6 +37,14 @@ For highly imbalanced data, performance should be evaluated relative to class pr
 
 \`risk_score\` is rounded 100× the model's predicted class-1 probability. The number is **not probability-calibrated**, even though it is derived from \`predict_proba\`. High/medium/low display bands are arbitrary. \`review_signal\` comprises transparent *rules*, **not feature attribution** or causal explanations.
 
+## Optional calibration research
+
+The optional `calibrate` command creates a separate development-only experiment; published models, scores and holdout results stay unchanged. The reference holdout is excluded. Five disjoint development roles separate base fitting, base selection, calibration fitting, mapping selection and diagnostics. Base selection uses AP; mapping selection uses Brier on its own partition. Sigmoid and eligible isotonic mappings wrap a frozen base estimator and are never fitted in the dashboard. Uncalibrated outputs can remain the winner.
+
+Saved reports compare Brier score, log loss, fixed-bin ECE/reliability curves, AP, ROC-AUC and top-K metrics. Isotonic requires at least 1,000 calibration-fitting customers and can create ranking ties; ECE depends on binning and does not prove calibration. The measured example uses synthetic development data only. **Independent final calibration performance is not established**: the historical holdout was inspected and no new independent cohort is available. See the [methodology, measured synthetic results and limitations](probability-calibration.md).
+
+Calibrated values estimate historical positive-label frequency under source-population assumptions. They are not confirmed electricity-theft probabilities. Label noise, inspection selection bias, population representativeness and dataset shift can invalidate calibration. No customer should be accused, penalized or disconnected based solely on raw or calibrated outputs.
+
 ## Risks and limitations
 
 - Selection bias and noisy labels from historical inspections.
@@ -49,4 +57,4 @@ For highly imbalanced data, performance should be evaluated relative to class pr
 
 ## Required future work
 
-Add dated outcome labels, temporal validation, independent-cohort uncertainty analysis, score calibration, business-cost evaluation, drift monitoring, security and privacy review, and human-in-the-loop auditing before any operational use. The available customer-bootstrap AP interval is descriptive and assumes independent customers.
+Add dated outcome labels, temporal validation, independent-cohort uncertainty and calibration validation, business-cost validation, drift monitoring, security and privacy review, and human-in-the-loop auditing before any operational use. The available customer-bootstrap AP interval is descriptive and assumes independent customers; optional development calibration does not complete that independent validation.

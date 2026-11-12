@@ -8,6 +8,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sklearn: [current, minimum]
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -16,6 +20,12 @@ jobs:
           cache: pip
       - name: Install package and development dependencies
         run: python -m pip install -e ".[app,dev]"
+      - name: Check minimum supported scikit-learn
+        if: matrix.sklearn == 'minimum'
+        run: |
+          python -m pip install "scikit-learn==1.4.2" "numpy<2" "pandas>=2.2,<3" "pyarrow<26"
+          python -m pip check
+          python -c "import sklearn, pandas, pyarrow; print(sklearn.__version__, pandas.__version__, pyarrow.__version__)"
       - name: Lint
         run: ruff check .
       - name: Unit and integration tests
@@ -29,3 +39,10 @@ jobs:
           gridguard finalize --input data/demo.csv --experiment-dir artifacts/synthetic-validation --output-dir artifacts/synthetic-final
           python scripts/evaluate_holdout.py --artifacts artifacts/synthetic-final --output-dir reports/synthetic-final --bootstrap 20
           test -f reports/synthetic-final/error_analysis.json
+      - name: Smoke test development-only calibration
+        run: |
+          python -c "from gridguard.synthetic import save_synthetic; save_synthetic('data/calibration-demo.csv', customers=600, days=90, seed=42)"
+          gridguard train --input data/calibration-demo.csv --source synthetic --validation-only --output-dir artifacts/calibration-reference
+          gridguard calibrate --input data/calibration-demo.csv --reference-dir artifacts/calibration-reference --output-dir artifacts/calibration-development
+          test -f artifacts/calibration-development/reliability.json
+          test ! -f artifacts/calibration-development/test_predictions.csv

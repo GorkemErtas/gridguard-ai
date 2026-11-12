@@ -10,7 +10,13 @@ import pandas as pd
 from gridguard.evaluation import _verify_provenance
 from gridguard.features import risk_band
 from gridguard.modeling import model_metrics, ranking_order
-from gridguard.provenance import file_fingerprint
+from gridguard.provenance import file_fingerprint, verify_partition_manifest
+from gridguard.reliability import (
+    CALIBRATION_PARTITIONS,
+    METHODS,
+    reliability_metrics,
+    summaries_match,
+)
 
 
 @dataclass
@@ -32,12 +38,14 @@ def discover_runs(root: str | Path = "artifacts") -> list[str]:
     )
 
 
-def file_signature(folder: str | Path) -> tuple:
+def file_signature(
+    folder: str | Path, names=("metrics.json", "test_predictions.csv", "split_manifest.json")
+) -> tuple:
     """Cache invalidation without reading model weights or raw consumption."""
     root = Path(folder)
     return tuple(
         (name, (root / name).stat().st_mtime_ns, (root / name).stat().st_size)
-        for name in ("metrics.json", "test_predictions.csv", "split_manifest.json")
+        for name in names
         if (root / name).is_file()
     )
 
@@ -98,6 +106,90 @@ def load_run(folder: str | Path) -> DashboardRun:
     predictions["risk_band"] = predictions.risk_score.map(risk_band)
     predictions["rank"] = np.arange(1, len(predictions) + 1)
     return DashboardRun(report, predictions, kind, provenance, warnings)
+
+
+def load_reliability(path: str | Path) -> dict:
+    """Validate saved development diagnostics without opening an estimator bundle.
+
+    Check consumed file fingerprints, complete disjoint membership, diagnostic
+    customer alignment and recomputed summaries. No customer records are returned
+    to the dashboard. Historical runs need no reliability artifact.
+    """
+    path = Path(path)
+    report, warning = optional_report(path)
+    if warning:
+        raise ValueError(warning)
+    if (
+        report.get("artifact_type") != "calibration_reliability"
+        or report.get("schema_version") != 2
+    ):
+        raise ValueError("Unsupported calibration reliability report.")
+    if (
+        report.get("evaluation_scope") != "development_only"
+        or report.get("independent_evaluation") is not None
+        or report["methodology"].get("independent_final_performance_established") is not False
+    ):
+        raise ValueError(
+            "Expected development-only diagnostics; independent final results are not established."
+        )
+    for filename, key in (
+        ("split_manifest.json", "manifest_sha256"),
+        ("calibration_predictions.csv", "predictions_sha256"),
+    ):
+        if file_fingerprint(path.parent / filename) != report.get(key):
+            raise ValueError(f"Calibration artifact fingerprint mismatch: {filename}")
+    manifest, warning = optional_report(path.parent / "split_manifest.json")
+    if warning:
+        raise ValueError(warning)
+    partitions = verify_partition_manifest(report, manifest, names=CALIBRATION_PARTITIONS)
+    methods = report["methods"]
+    if (
+        not isinstance(methods, dict)
+        or "uncalibrated" not in methods
+        or not set(methods) <= set(METHODS)
+        or report["selected_method"] not in methods
+        or report["binning"]["strategy"] != "uniform"
+    ):
+        raise ValueError("Invalid calibration methods or binning metadata.")
+    for method in methods:
+        selection = methods[method]["selection"]
+        loss = selection["brier_score"]
+        if (
+            not isinstance(loss, (int, float))
+            or not np.isfinite(loss)
+            or not 0 <= loss <= 1
+            or selection["customers"] != report["split_sizes"]["calibration_selection"]
+        ):
+            raise ValueError("Invalid calibration-selection summary.")
+    expected = min(
+        (method for method in METHODS if method in methods),
+        key=lambda method: methods[method]["selection"]["brier_score"],
+    )
+    if report["selected_method"] != expected:
+        raise ValueError("Saved mapping differs from the calibration-selection Brier winner.")
+    predictions = pd.read_csv(
+        path.parent / "calibration_predictions.csv",
+        dtype={"customer_id": "string"},
+        float_precision="round_trip",
+    )
+    required = {"customer_id", "true_label", *methods}
+    if not required.issubset(predictions) or predictions.empty:
+        raise ValueError("Missing calibration diagnostic prediction columns or customers.")
+    predictions["customer_id"] = predictions.customer_id.str.strip()
+    if set(predictions.customer_id) != set(partitions["development_evaluation"]):
+        raise ValueError(
+            "Calibration diagnostic customers differ from recorded evaluation membership."
+        )
+    for method in methods:
+        computed = reliability_metrics(
+            predictions.true_label,
+            predictions[method],
+            customer_ids=predictions.customer_id,
+            n_bins=report["binning"]["n_bins"],
+        )
+        if not summaries_match(methods[method]["development_evaluation"], computed):
+            raise ValueError("Saved reliability metrics differ from the diagnostic predictions.")
+    return report
 
 
 def filter_queue(predictions: pd.DataFrame, *, capacity: int, bands: list[str], search=""):
