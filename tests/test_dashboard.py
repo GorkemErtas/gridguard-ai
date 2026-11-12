@@ -148,6 +148,7 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     assert not app.exception
     for section in [
         "Model performance",
+        "Model Reliability",
         "Inspection queue",
         "Inspection Capacity Planning",
         "Customer analytics",

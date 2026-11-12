@@ -15,6 +15,7 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 - Saves the selected model, evaluation report, and **out-of-sample test predictions**.
 - Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
 - Compares inspection capacities with retrospective top-K metrics, random baselines, marginal yield and optional illustrative financial scenarios.
+- Supports optional development-only probability calibration and a read-only Model Reliability view, preserving published holdout results.
 - Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
 - Supports optional SQLite export and sample SQL queries.
 
@@ -39,7 +40,7 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
-The dark analytics dashboard provides Overview, Model performance, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
+The dark analytics dashboard provides Overview, Model performance, Model Reliability, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
 
 ### Train on a local labeled consumption dataset
 
@@ -96,6 +97,8 @@ See [architecture](docs/architecture.md) and [model card](docs/model-card.md) fo
 **Why Average Precision?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection uses validation **AP**, followed by a **single** final test evaluation. Precision@K measures the fraction of positives among K inspection candidates. Recall@K measures the fraction of all positives found; lift compares precision with prevalence. Rankings use unrounded probabilities and customer-ID tie breaks. AP is not trapezoidal PR-curve area.
 
 The risk score is `round(100 * model.predict_proba(...))`, **not a calibrated probability**. Display bands (low/medium/high) are illustrative and are not company inspection policy.
+
+Optional [`gridguard calibrate`](docs/probability-calibration.md) creates a separate experiment with disjoint base fitting/selection, calibration fitting/selection and diagnostic roles. It compares uncalibrated, sigmoid and eligible isotonic outputs using proper scores, reliability diagrams and existing ranking metrics. The previously inspected holdout is excluded; independent final calibration performance is not established. **Model Reliability** reads saved diagnostics and never trains a calibrator. Calibrated values concern historical labels and cannot establish confirmed theft.
 
 **Known limitations:** historical labels are customer-level (not theft dates), results from one distribution network may not generalize to another, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
 

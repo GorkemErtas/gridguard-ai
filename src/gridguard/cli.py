@@ -85,6 +85,17 @@ def main(argv: list[str] | None = None) -> None:
     finalizing.add_argument("--output-dir", required=True)
     finalizing.add_argument("--experiment-id")
 
+    calibration = subcommands.add_parser(
+        "calibrate", help="Development-only calibration; exclude the recorded final holdout"
+    )
+    calibration.add_argument("--input", required=True)
+    calibration.add_argument("--reference-dir", required=True)
+    calibration.add_argument("--output-dir", required=True)
+    calibration.add_argument("--seed", type=int, default=42)
+    calibration.add_argument("--feature-config", choices=FEATURE_CONFIGS, default="baseline")
+    calibration.add_argument("--n-bins", type=int, default=10)
+    calibration.add_argument("--experiment-id")
+
     scoring = subcommands.add_parser("score", help="Rank all customers with saved model")
     scoring.add_argument("--input", required=True)
     scoring.add_argument("--model", default="artifacts/model.joblib")
@@ -141,6 +152,33 @@ def main(argv: list[str] | None = None) -> None:
         print(
             json.dumps(
                 {"selected_model": result["selected_model"], "test": result["test"]}, indent=2
+            )
+        )
+    elif args.command == "calibrate":
+        from gridguard.calibration import calibrate
+
+        result = calibrate(
+            args.input,
+            reference_dir=args.reference_dir,
+            output_dir=args.output_dir,
+            seed=args.seed,
+            feature_config=args.feature_config,
+            n_bins=args.n_bins,
+            experiment_id=args.experiment_id,
+        )
+        print(
+            json.dumps(
+                {
+                    key: result[key]
+                    for key in (
+                        "experiment_id",
+                        "evaluation_scope",
+                        "selected_model",
+                        "selected_method",
+                        "skipped_methods",
+                    )
+                },
+                indent=2,
             )
         )
     elif args.command == "score":

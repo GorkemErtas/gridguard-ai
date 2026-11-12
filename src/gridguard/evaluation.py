@@ -10,7 +10,7 @@ from sklearn.metrics import average_precision_score
 
 from gridguard.error_analysis import aggregate_errors
 from gridguard.modeling import model_metrics
-from gridguard.provenance import file_fingerprint, partition_fingerprint, write_json
+from gridguard.provenance import file_fingerprint, verify_partition_manifest, write_json
 
 
 def _verify_provenance(artifacts: Path, report: dict, predictions: pd.DataFrame) -> str:
@@ -23,23 +23,7 @@ def _verify_provenance(artifacts: Path, report: dict, predictions: pd.DataFrame)
     ):
         raise ValueError("Holdout prediction fingerprint mismatch.")
     manifest = json.loads((artifacts / "split_manifest.json").read_text(encoding="utf-8"))
-    if manifest["dataset_fingerprint_sha256"] != report["dataset"]["fingerprint_sha256"]:
-        raise ValueError("Dataset fingerprint mismatch in split manifest.")
-    parts = manifest["partitions"]
-    seen = set()
-    for key in ("train", "validation", "test"):
-        ids = pd.Series(parts[key], dtype="string").str.strip()
-        if (
-            ids.isna().any()
-            or ids.eq("").any()
-            or ids.duplicated().any()
-            or len(ids) != report["split_sizes"][key]
-            or seen.intersection(ids)
-        ):
-            raise ValueError("Split manifest contains invalid or overlapping customer partitions.")
-        if partition_fingerprint(ids) != report["partition_fingerprints"][key]:
-            raise ValueError("Customer partition fingerprint mismatch.")
-        seen.update(ids)
+    parts = verify_partition_manifest(report, manifest)
     if set(predictions.customer_id) != set(parts["test"]):
         raise ValueError("Prediction customers differ from the held-out test partition.")
     return "verified: prediction checksum and disjoint customer partition manifest"

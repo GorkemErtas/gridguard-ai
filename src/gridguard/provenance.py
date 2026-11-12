@@ -21,6 +21,39 @@ def partition_fingerprint(ids) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
+def verify_partition_manifest(
+    report: dict, manifest: dict, *, names=("train", "validation", "test")
+) -> dict[str, list[str]]:
+    """Verify recorded sizes, fingerprints and disjoint customer membership.
+
+    Shared by holdout evaluation and optional development-only workflows.
+    This verifies consistency, not authenticity of untrusted local files.
+    """
+    if manifest["dataset_fingerprint_sha256"] != report["dataset"]["fingerprint_sha256"]:
+        raise ValueError("Dataset fingerprint mismatch in split manifest.")
+    parts = manifest["partitions"]
+    if not isinstance(parts, dict) or set(parts) != set(names):
+        raise ValueError("Split manifest partition names differ from the expected protocol.")
+    seen, normalized = set(), {}
+    for key in names:
+        if not isinstance(parts[key], list):
+            raise ValueError("Split manifest customer partitions must be lists.")
+        ids = pd.Series(parts[key], dtype="string").str.strip()
+        if (
+            ids.isna().any()
+            or ids.eq("").any()
+            or ids.duplicated().any()
+            or len(ids) != report["split_sizes"][key]
+            or seen.intersection(ids)
+        ):
+            raise ValueError("Split manifest contains invalid or overlapping customer partitions.")
+        if partition_fingerprint(ids) != report["partition_fingerprints"][key]:
+            raise ValueError("Customer partition fingerprint mismatch.")
+        seen.update(ids)
+        normalized[key] = ids.tolist()
+    return normalized
+
+
 def experiment_metadata(
     data: ConsumptionData,
     partitions: dict,

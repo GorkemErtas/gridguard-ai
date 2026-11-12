@@ -20,6 +20,7 @@ reports/
 # Customer-level outputs must stay local even with a custom output directory.
 split_manifest.json
 test_predictions.csv
+calibration_predictions.csv
 errors.csv
 risk_ranking.csv
 *.sqlite

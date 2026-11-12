@@ -14,6 +14,7 @@ from gridguard.dashboard import (
     discover_runs,
     file_signature,
     filter_queue,
+    load_reliability,
     load_run,
     optional_report,
     prediction_metrics,
@@ -23,6 +24,7 @@ from gridguard.dashboard import (
 )
 from gridguard.data import load_customer_history
 from gridguard.modeling import ranking_metrics
+from gridguard.reliability import ECE_NOTICE
 
 st.set_page_config(
     page_title="GridGuard AI | Risk analytics", page_icon=":material/bolt:", layout="wide"
@@ -49,6 +51,11 @@ def customer_history(path, customer_id, modified):
 def read_capacity_curve(predictions):
     capacities = np.linspace(0, len(predictions), min(len(predictions) + 1, 101), dtype=int)
     return capacity_plan(predictions, capacities)
+
+
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_reliability(path, signature):
+    return load_reliability(path)
 
 
 def number(value, percent=False):
@@ -109,6 +116,7 @@ page = st.sidebar.radio(
     [
         "Overview",
         "Model performance",
+        "Model Reliability",
         "Inspection queue",
         "Inspection Capacity Planning",
         "Customer analytics",
@@ -118,6 +126,144 @@ page = st.sidebar.radio(
 st.sidebar.caption("Local artifacts · Read-only analytics")
 st.title(page)
 st.caption("GridGuard AI / Electricity consumption risk analytics")
+if page == "Model Reliability":
+    path = Path(
+        st.text_input(
+            "Saved reliability report",
+            value=os.environ.get(
+                "GRIDGUARD_RELIABILITY_REPORT", str(Path(artifact_dir) / "reliability.json")
+            ),
+            key="reliability_path",
+        )
+    )
+    try:
+        reliability = read_reliability(
+            str(path),
+            file_signature(
+                path.parent, names=(path.name, "split_manifest.json", "calibration_predictions.csv")
+            ),
+        )
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        st.info(
+            "No valid saved reliability evaluation is available. Run the optional calibration workflow first."
+        )
+        st.caption(str(exc))
+        st.stop()
+    st.warning(
+        "Development-only calibration diagnostics. Independent final performance is not established. "
+        "The previously inspected final holdout was excluded from this experiment."
+    )
+    if reliability["dataset"].get("source") == "synthetic":
+        st.warning(
+            "Synthetic demonstration; these diagnostics do not establish real-world reliability."
+        )
+    st.caption(
+        "Calibrated outputs estimate the dataset's historical positive-label frequency under modeling "
+        "assumptions. They are not confirmed theft probabilities. Dataset shift, label quality and "
+        "population representativeness can invalidate calibration; independent human review is required."
+    )
+    selected_method = reliability["selected_method"]
+    methods = reliability["methods"]
+    cards(
+        [
+            ("Selected mapping", selected_method),
+            (
+                "Development Brier score",
+                number(methods[selected_method]["development_evaluation"]["brier_score"]),
+            ),
+            (
+                "Development log loss",
+                number(methods[selected_method]["development_evaluation"]["log_loss"]),
+            ),
+            ("Development ECE", number(methods[selected_method]["development_evaluation"]["ece"])),
+        ]
+    )
+    st.caption(
+        "The saved mapping was selected by Brier score on calibration_selection, before diagnostic evaluation. No fitting occurs in this view."
+    )
+    summaries = pd.DataFrame(
+        [
+            {
+                "method": method,
+                **{
+                    key: metrics["development_evaluation"][key]
+                    for key in (
+                        "customers",
+                        "brier_score",
+                        "log_loss",
+                        "ece",
+                        "average_precision",
+                        "roc_auc",
+                        "distinct_probabilities",
+                    )
+                },
+            }
+            for method, metrics in methods.items()
+        ]
+    )
+    table(summaries, "Development-only probability and discrimination comparison")
+    chart(
+        px.bar(summaries, x="method", y="brier_score"),
+        "Development Brier score comparison (lower is better)",
+    )
+    diagram = go.Figure()
+    diagram.add_trace(
+        go.Scatter(x=[0, 1], y=[0, 1], mode="lines", name="Reference diagonal", line_dash="dash")
+    )
+    bins = []
+    ranking = []
+    for method, result in methods.items():
+        metrics = result["development_evaluation"]
+        populated = [item for item in metrics["bins"] if item["count"]]
+        diagram.add_trace(
+            go.Scatter(
+                x=[item["mean_probability"] for item in populated],
+                y=[item["positive_fraction"] for item in populated],
+                mode="lines+markers",
+                name=method,
+                text=[f"Customers: {item['count']}" for item in populated],
+                hovertemplate="Mean probability %{x:.3f}<br>Positive-label fraction %{y:.3f}<br>%{text}<extra>%{fullData.name}</extra>",
+            )
+        )
+        bins.extend({"method": method, **item} for item in metrics["bins"])
+        ranking.extend(
+            {"method": method, "requested_k": k, **values}
+            for k, values in metrics["ranking_at_k"].items()
+        )
+        for warning in metrics["warnings"]:
+            st.caption(f"{method}: {warning}")
+    diagram.update_xaxes(title="Mean predicted positive-label probability", range=[0, 1])
+    diagram.update_yaxes(title="Observed positive-label fraction", range=[0, 1])
+    chart(diagram, "Development reliability diagram")
+    table(pd.DataFrame(bins), "Fixed reliability bins, including counts and empty bins")
+    st.caption(ECE_NOTICE)
+    st.subheader("Development ranking comparison")
+    table(pd.DataFrame(ranking), "Precision, recall and lift before and after calibration")
+    st.caption(
+        "AP and ROC-AUC appear above. Isotonic can introduce ties; sigmoid can also change rankings through reversal or numerical saturation. Actual probabilities and customer-ID tie breaks are used throughout."
+    )
+    st.subheader("Saved methodology and provenance")
+    table(
+        pd.DataFrame(
+            [
+                {"Property": key, "Value": str(value)}
+                for key, value in {
+                    "experiment": reliability["experiment_id"],
+                    "base model": reliability["selected_model"],
+                    "feature configuration": reliability["feature_config"],
+                    "source": reliability["dataset"]["source"],
+                    "dataset fingerprint": reliability["dataset"]["fingerprint_sha256"],
+                    "partitions": reliability["split_sizes"],
+                    "methodology": reliability["methodology"],
+                    "software": reliability["software"],
+                    "skipped methods": reliability["skipped_methods"],
+                }.items()
+            ]
+        ),
+        "Calibration methods, partition roles, seed and software metadata",
+    )
+    st.stop()
+
 try:
     run, computed = read_artifacts(artifact_dir, file_signature(artifact_dir))
 except (OSError, ValueError, KeyError, TypeError) as exc:

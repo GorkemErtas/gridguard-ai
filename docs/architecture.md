@@ -14,6 +14,7 @@ Demonstrate an end-to-end, readable approach to ranking **customer-level** elect
 | Experiment provenance | `provenance.py` | Dataset/partition checksums, versions, preprocessing metadata, aggregate validation summary |
 | Evaluation and error analysis | `evaluation.py`, `error_analysis.py` | Saved-holdout integrity, bootstrap AP interval, aggregate threshold/top-K errors and fixed quality groups |
 | Capacity planning | `capacity_planning.py` | Pure retrospective capacity/random/marginal scenarios reusing ranking metrics, plus illustrative financial arithmetic |
+| Optional calibration | `calibration.py`, `reliability.py` | Disjoint development fitting/selection/diagnostics, frozen sigmoid/isotonic mappings, pure reliability metrics; old holdout excluded |
 | Dashboard helpers | `dashboard.py` | Read-only artifact validation, deterministic queues, privacy-preserving exports and optional reports |
 | Training and inference | \`training.py\` | Stratified 60/20/20 split, validation-only selection, final test, serialization, new-data scoring |
 | Orchestration | \`cli.py\` | Explicit workflows; optional bounded SQLite export |
@@ -32,6 +33,7 @@ The dashboard consumes saved predictions and metrics; it does not retrain on eve
 7. \`gridguard score\` is an inference workflow and MUST NOT be used as proof of held-out accuracy on the same training data.
 8. `gridguard experiment` uses only train/validation features and saves a frozen validation winner; `finalize` evaluates that same estimator without refitting. Empty output directories preserve earlier experiments.
 9. New holdout exports include a prediction checksum and private split manifest. Evaluation rejects overlap, membership substitution and mixed artifacts; old reports are explicitly unverified.
+10. Optional calibration verifies the reference manifest, excludes its holdout, and splits development customers into five disjoint roles. Separate partitions fit mappings, select by Brier score and report diagnostics. Model Reliability consumes verified saved diagnostics without estimator loading/fitting. See [calibration rationale and methodology](probability-calibration.md).
 
 Feature configurations are recorded with the model, so inference applies the training-time calculation. Baseline remains compatible with existing bundles. Calendar handling and the three quality features are explicit controlled ablations. See the [audit](pipeline-evaluation.md) and [reproduction commands](real-data-evaluation.md).
 
