@@ -21,6 +21,8 @@ reports/
 split_manifest.json
 test_predictions.csv
 calibration_predictions.csv
+anomaly_predictions.csv
+anomaly_benchmark.json
 errors.csv
 risk_ranking.csv
 *.sqlite

@@ -45,6 +45,12 @@ Saved reports compare Brier score, log loss, fixed-bin ECE/reliability curves, A
 
 Calibrated values estimate historical positive-label frequency under source-population assumptions. They are not confirmed electricity-theft probabilities. Label noise, inspection selection bias, population representativeness and dataset shift can invalidate calibration. No customer should be accused, penalized or disconnected based solely on raw or calibrated outputs.
 
+## Optional anomaly benchmark
+
+The optional `benchmark-anomaly` workflow compares Isolation Forest and a robust median/MAD baseline with a fresh, fixed RF using the same original training customers and shared train-only imputation. The historical holdout is excluded. Two disjoint development cohorts provide preliminary diagnostics and evaluation reporting; no method, feature, threshold or ensemble is selected from evaluation outcomes. Historical supervised and calibration results remain unchanged.
+
+Native anomaly scores are not probabilities or confirmed theft evidence. Unusual readings may indicate outages, data quality problems, customer differences or ordinary consumption variability. Disagreement does not establish that either model is wrong. The [benchmark guide](anomaly-benchmark.md) records methodology, mathematical definitions, synthetic measurements and limitations, including why additional positives outside a top-K queue do not establish improved yield at equal capacity. Independent final/operational performance is not established.
+
 ## Risks and limitations
 
 - Selection bias and noisy labels from historical inspections.

@@ -96,6 +96,18 @@ def main(argv: list[str] | None = None) -> None:
     calibration.add_argument("--n-bins", type=int, default=10)
     calibration.add_argument("--experiment-id")
 
+    anomaly = subcommands.add_parser(
+        "benchmark-anomaly", help="Fixed development-only anomaly comparison"
+    )
+    anomaly.add_argument("--input", required=True)
+    anomaly.add_argument("--reference-dir", required=True)
+    anomaly.add_argument("--output-dir", required=True)
+    anomaly.add_argument("--seed", type=int, default=42)
+    anomaly.add_argument("--feature-config", choices=FEATURE_CONFIGS, default="baseline")
+    anomaly.add_argument("--capacities", type=int, nargs="+", default=[50, 100, 200])
+    anomaly.add_argument("--min-group-size", type=int, default=20)
+    anomaly.add_argument("--experiment-id")
+
     scoring = subcommands.add_parser("score", help="Rank all customers with saved model")
     scoring.add_argument("--input", required=True)
     scoring.add_argument("--model", default="artifacts/model.joblib")
@@ -177,6 +189,29 @@ def main(argv: list[str] | None = None) -> None:
                         "selected_method",
                         "skipped_methods",
                     )
+                },
+                indent=2,
+            )
+        )
+    elif args.command == "benchmark-anomaly":
+        from gridguard.anomaly import benchmark
+
+        result = benchmark(
+            args.input,
+            reference_dir=args.reference_dir,
+            output_dir=args.output_dir,
+            seed=args.seed,
+            feature_config=args.feature_config,
+            capacities=args.capacities,
+            min_group_size=args.min_group_size,
+            experiment_id=args.experiment_id,
+        )
+        print(
+            json.dumps(
+                {
+                    "experiment_id": result["experiment_id"],
+                    "evaluation_scope": result["evaluation_scope"],
+                    "split_sizes": result["split_sizes"],
                 },
                 indent=2,
             )

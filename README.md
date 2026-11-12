@@ -16,6 +16,7 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 - Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
 - Compares inspection capacities with retrospective top-K metrics, random baselines, marginal yield and optional illustrative financial scenarios.
 - Supports optional development-only probability calibration and a read-only Model Reliability view, preserving published holdout results.
+- Benchmarks Isolation Forest and robust median/MAD against a fresh fixed RF, with disjoint development cohorts and aggregate complementarity analysis.
 - Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
 - Supports optional SQLite export and sample SQL queries.
 
@@ -40,7 +41,9 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
-The dark analytics dashboard provides Overview, Model performance, Model Reliability, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
+The dark analytics dashboard provides Overview, Model performance, Model Reliability, Anomaly Detection, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
+
+The optional [anomaly benchmark](docs/anomaly-benchmark.md) adds an **Anomaly Detection** workspace. It compares native anomaly rankings with a fresh development RF without changing published models or reusing the final holdout. Saved reports include ranking overlap, tie-aware correlation and missing-reading groups; anomaly scores are not probabilities or confirmed theft evidence.
 
 ### Train on a local labeled consumption dataset
 

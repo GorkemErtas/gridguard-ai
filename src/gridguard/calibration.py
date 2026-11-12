@@ -1,6 +1,5 @@
 """Opt-in, development-only calibration experiments; never score the old holdout."""
 
-import json
 from pathlib import Path
 
 import joblib
@@ -14,12 +13,13 @@ try:  # Keep the existing sklearn>=1.4 contract.
 except ImportError:  # sklearn 1.4/1.5: supported prefit API, no estimator refit.
     FrozenEstimator = None
 
-from gridguard.data import ConsumptionData, load_consumption
+from gridguard.data import ConsumptionData
 from gridguard.features import FEATURE_CONFIGS, build_features
 from gridguard.modeling import ranking_metrics, ranking_order
 from gridguard.provenance import (
     experiment_metadata,
     file_fingerprint,
+    load_reference_development,
     partition_fingerprint,
     verify_partition_manifest,
     write_json,
@@ -136,27 +136,7 @@ def calibrate(
     reference_dir, output_dir = Path(reference_dir), Path(output_dir)
     if output_dir.exists() and any(output_dir.iterdir()):
         raise FileExistsError(f"Choose an empty calibration output directory: {output_dir}")
-    parent = json.loads((reference_dir / "metrics.json").read_text(encoding="utf-8"))
-    if parent.get("schema_version", 1) < 2:
-        raise ValueError(
-            "Calibration requires a schema-v2 reference with a recorded split manifest."
-        )
-    manifest = json.loads((reference_dir / "split_manifest.json").read_text(encoding="utf-8"))
-    original_parts = verify_partition_manifest(parent, manifest)
-    if not original_parts["test"]:
-        raise ValueError("The reference must record a nonempty reserved final holdout.")
-    if file_fingerprint(input_path) != parent["dataset"]["fingerprint_sha256"]:
-        raise ValueError("Dataset fingerprint differs from the reference experiment.")
-    full = load_consumption(input_path)
-    positions = {customer: i for i, customer in enumerate(full.customer_ids)}
-    all_reference = [customer for ids in original_parts.values() for customer in ids]
-    if (
-        len(all_reference) != parent["dataset"]["customers"]
-        or not set(all_reference) <= positions.keys()
-    ):
-        raise ValueError("Reference customer membership differs from the source dataset.")
-    development_ids = original_parts["train"] + original_parts["validation"]
-    development = full.subset(np.array([positions[customer] for customer in development_ids]))
+    development, parent, original_parts = load_reference_development(input_path, reference_dir)
     partitions = split_development(development, seed=seed)
     report = experiment_metadata(
         development,

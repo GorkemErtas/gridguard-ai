@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from gridguard.data import ConsumptionData
+from gridguard.data import ConsumptionData, load_consumption
 
 
 def file_fingerprint(path: str | Path) -> str:
@@ -52,6 +52,34 @@ def verify_partition_manifest(
         seen.update(ids)
         normalized[key] = ids.tolist()
     return normalized
+
+
+def load_reference_development(input_path, reference_dir):
+    """Verify a standard schema-v2 reference and return only train+validation.
+
+    Used by opt-in development workflows. Historical models/predictions/metrics
+    are never used for selection. Source schema validation reads the CSV, but
+    downstream feature extraction cannot access its reserved test customers.
+    """
+    reference_dir = Path(reference_dir)
+    parent = json.loads((reference_dir / "metrics.json").read_text(encoding="utf-8"))
+    if not isinstance(parent, dict) or parent.get("schema_version", 1) < 2:
+        raise ValueError(
+            "Development requires a schema-v2 reference with a recorded split manifest."
+        )
+    manifest = json.loads((reference_dir / "split_manifest.json").read_text(encoding="utf-8"))
+    parts = verify_partition_manifest(parent, manifest)
+    if not parts["test"]:
+        raise ValueError("The reference must record a nonempty reserved final holdout.")
+    if file_fingerprint(input_path) != parent["dataset"]["fingerprint_sha256"]:
+        raise ValueError("Dataset fingerprint differs from the reference experiment.")
+    full = load_consumption(input_path)
+    positions = {customer: i for i, customer in enumerate(full.customer_ids)}
+    membership = [customer for ids in parts.values() for customer in ids]
+    if len(membership) != parent["dataset"]["customers"] or not set(membership) <= positions.keys():
+        raise ValueError("Reference customer membership differs from the source dataset.")
+    indices = [positions[customer] for customer in parts["train"] + parts["validation"]]
+    return full.subset(indices), parent, parts
 
 
 def experiment_metadata(

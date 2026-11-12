@@ -54,11 +54,22 @@ def candidate_models(seed: int) -> dict[str, Pipeline]:
     }
 
 
-def ranking_order(scores: np.ndarray, customer_ids=None) -> np.ndarray:
-    """Rank raw probabilities; ties use customer ID (or stable input order)."""
+def ranking_order(
+    scores: np.ndarray, customer_ids=None, *, score_domain="probability"
+) -> np.ndarray:
+    """Descending scores, then ID; legacy probability validation stays default.
+
+    The explicit unbounded domain supports finite anomaly scores without
+    normalizing them into apparent probabilities. No calibration is implied.
+    """
     scores = np.asarray(scores, dtype=float)
-    if scores.ndim != 1 or not np.isfinite(scores).all() or ((scores < 0) | (scores > 1)).any():
+    if score_domain not in ("probability", "unbounded"):
+        raise ValueError("score_domain must be probability or unbounded.")
+    invalid = scores.ndim != 1 or not np.isfinite(scores).all()
+    if score_domain == "probability" and (invalid or ((scores < 0) | (scores > 1)).any()):
         raise ValueError("Expected a one-dimensional array of finite probabilities in [0, 1].")
+    if invalid:
+        raise ValueError("Expected one-dimensional finite scores.")
     if customer_ids is None:
         return np.argsort(-scores, kind="stable")
     ids = pd.Series(customer_ids, dtype="string").reset_index(drop=True).str.strip()
@@ -74,11 +85,13 @@ def _metric_inputs(y_true, scores) -> tuple[np.ndarray, np.ndarray]:
     return labels.astype(int), scores
 
 
-def ranking_metrics(y_true, scores, k: int = 50, *, customer_ids=None) -> dict:
+def ranking_metrics(
+    y_true, scores, k: int = 50, *, customer_ids=None, score_domain="probability"
+) -> dict:
     if not isinstance(k, (int, np.integer)) or k < 1:
         raise ValueError("k must be a positive integer.")
     labels, scores = _metric_inputs(y_true, scores)
-    order = ranking_order(scores, customer_ids)
+    order = ranking_order(scores, customer_ids, score_domain=score_domain)
     count = min(k, len(labels))
     found = int(labels[order[:count]].sum())
     precision = found / count if count else 0.0
@@ -97,6 +110,34 @@ def precision_at_k(y_true: np.ndarray, scores: np.ndarray, k: int = 50, *, custo
     return ranking_metrics(y_true, scores, k, customer_ids=customer_ids)["precision"]
 
 
+def score_metrics(
+    y_true, scores, *, customer_ids, capacities=(50, 100, 200), score_domain="probability"
+):
+    """Threshold-free metrics shared by probability and anomaly evaluations."""
+    scores = np.asarray(scores, dtype=float)
+    ranking_order(scores, customer_ids, score_domain=score_domain)
+    result = {"average_precision": None, "roc_auc": None, "ranking_at_k": {}}
+    if y_true is None:
+        return result
+    labels, scores = _metric_inputs(y_true, scores)
+    if not len(labels):
+        return result
+    result["ranking_at_k"] = {
+        str(k): ranking_metrics(
+            labels, scores, k, customer_ids=customer_ids, score_domain=score_domain
+        )
+        for k in capacities
+    }
+    if len(labels):
+        result["average_precision"] = (
+            float(average_precision_score(labels, scores)) if labels.any() else None
+        )
+        result["roc_auc"] = (
+            float(roc_auc_score(labels, scores)) if len(np.unique(labels)) == 2 else None
+        )
+    return result
+
+
 def model_metrics(y_true: np.ndarray, scores: np.ndarray, *, customer_ids=None) -> dict:
     labels, scores = _metric_inputs(y_true, scores)
     ranking_order(scores, customer_ids)
@@ -104,19 +145,15 @@ def model_metrics(y_true: np.ndarray, scores: np.ndarray, *, customer_ids=None) 
         raise ValueError("Metrics require at least one customer.")
     predicted = (scores >= 0.5).astype(int)
     matrix = confusion_matrix(labels, predicted, labels=[0, 1])
+    ranking = score_metrics(labels, scores, customer_ids=customer_ids)
     return {
-        "average_precision": float(average_precision_score(labels, scores))
-        if labels.any()
-        else None,
-        "roc_auc": float(roc_auc_score(labels, scores)) if len(np.unique(labels)) == 2 else None,
+        "average_precision": ranking["average_precision"],
+        "roc_auc": ranking["roc_auc"],
         **{
-            f"precision_at_{k}": precision_at_k(labels, scores, k, customer_ids=customer_ids)
+            f"precision_at_{k}": ranking["ranking_at_k"][str(k)]["precision"]
             for k in (50, 100, 200)
         },
-        "ranking_at_k": {
-            str(k): ranking_metrics(labels, scores, k, customer_ids=customer_ids)
-            for k in (50, 100, 200)
-        },
+        "ranking_at_k": ranking["ranking_at_k"],
         "precision_0_5": float(precision_score(labels, predicted, zero_division=0)),
         "recall_0_5": float(recall_score(labels, predicted, zero_division=0)),
         "f1_0_5": float(f1_score(labels, predicted, zero_division=0)),
