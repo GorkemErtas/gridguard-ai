@@ -146,7 +146,13 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     )
     app.run()
     assert not app.exception
-    for section in ["Model performance", "Inspection queue", "Customer analytics", "Data quality"]:
+    for section in [
+        "Model performance",
+        "Inspection queue",
+        "Inspection Capacity Planning",
+        "Customer analytics",
+        "Data quality",
+    ]:
         app.sidebar.radio[0].set_value(section).run()
         assert not app.exception, section
     from gridguard.synthetic import make_synthetic
@@ -163,3 +169,152 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     app.sidebar.radio[0].set_value("Inspection queue").run()
     app.multiselect[0].set_value([]).run()
     assert "No customers" in app.info[0].value
+
+
+def planning_app(folder, monkeypatch):
+    pytest.importorskip("streamlit")
+    from pathlib import Path
+
+    from streamlit.testing.v1 import AppTest
+
+    monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(folder))
+    app = AppTest.from_file(
+        str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=15
+    ).run()
+    app.sidebar.radio[0].set_value("Inspection Capacity Planning").run()
+    assert not app.exception
+    return app
+
+
+def test_planning_capacity_controls_export_and_read_only_integrity(
+    dashboard_artifacts, monkeypatch
+):
+    import joblib
+    from sklearn.pipeline import Pipeline
+
+    import gridguard.dashboard as dashboard
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("Capacity planning must not load estimators or fit a pipeline")
+
+    monkeypatch.setattr(joblib, "load", forbidden)
+    monkeypatch.setattr(Pipeline, "fit", forbidden)
+    before = {path.name: path.read_bytes() for path in dashboard_artifacts.iterdir()}
+    exported = {}
+
+    def capture(queue, *, include_ids=False):
+        exported["queue"] = queue.copy()
+        exported["csv"] = private_export(queue, include_ids=include_ids).decode()
+        return exported["csv"].encode()
+
+    monkeypatch.setattr(dashboard, "private_export", capture)
+    app = planning_app(dashboard_artifacts, monkeypatch)
+    assert any("Retrospective decision support" in item.value for item in app.info)
+    app.text_input(key="planning_comparison").set_value("0, 1, 2, 3, 99").run()
+    app.slider(key="planning_capacity").set_value(1).run()
+    assert not app.exception
+    assert exported["queue"].customer_id.tolist() == ["a"]
+    assert "customer_id" not in exported["csv"]
+    assert "true_label" not in exported["csv"]
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics["Retrospective Precision@K"] == "100.0%"
+    assert metrics["Retrospective Recall@K"] == "50.0%"
+    assert metrics["Random expected positives"] == "0.500"
+    assert len(app.get("plotly_chart")) == 3
+    scenarios = next(
+        frame.value for frame in app.dataframe if "Additional inspections" in frame.value
+    )
+    assert scenarios["Requested K"].tolist() == [0, 1, 2, 3, 99]
+    assert scenarios["Actual K"].tolist() == [0, 1, 2, 3, 4]
+    assert scenarios["Observed positives"].tolist() == [0, 1, 1, 2, 2]
+    assert scenarios["Additional observed positives"].tolist() == [0, 1, 0, 1, 0]
+    app.slider(key="planning_capacity").set_value(0).run()
+    assert not app.exception
+    assert exported["queue"].empty
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics["Retrospective Precision@K"] == "Unavailable"
+    assert metrics["Retrospective Recall@K"] == "0.0%"
+    app.slider(key="planning_capacity").set_value(4).run()
+    app.checkbox(key="planning_include_ids").check().run()
+    assert not app.exception
+    assert exported["queue"].customer_id.tolist() == ["a", "z", "m", "=external"]
+    assert "'=external" in exported["csv"]
+    assert "true_label" not in exported["csv"]
+    assert {path.name: path.read_bytes() for path in dashboard_artifacts.iterdir()} == before
+
+
+def test_planning_financial_controls(dashboard_artifacts, monkeypatch):
+    app = planning_app(dashboard_artifacts, monkeypatch)
+    assert not app.checkbox(key="planning_financial").value
+    assert not any("Illustrative model net" in frame.value for frame in app.dataframe)
+    app.checkbox(key="planning_financial").check().run()
+    app.number_input(key="planning_cost").set_value(20.0)
+    app.number_input(key="planning_recovery").set_value(100.0).run()
+    assert not app.exception
+    assert any("not validated financial forecasts" in warning.value for warning in app.warning)
+    finances = next(
+        frame.value for frame in app.dataframe if "Illustrative model net" in frame.value
+    )
+    assert finances.loc[finances["Requested K"].eq(4), "Total inspection cost"].iloc[0] == 80
+    assert finances.loc[finances["Requested K"].eq(4), "Illustrative model net"].iloc[0] == 120
+    app.slider(key="planning_capacity").set_value(1).run()
+    assert not app.exception
+    finances = next(
+        frame.value for frame in app.dataframe if "Illustrative model net" in frame.value
+    )
+    assert finances.loc[finances["Requested K"].eq(1), "Illustrative model net"].iloc[0] == 80
+    assert finances.loc[finances["Requested K"].eq(1), "Illustrative random net"].iloc[0] == 30
+
+
+def test_planning_invalid_comparisons_are_recoverable(dashboard_artifacts, monkeypatch):
+    app = planning_app(dashboard_artifacts, monkeypatch)
+    for value in ("-1, 2", "1.5", "not a capacity"):
+        app.text_input(key="planning_comparison").set_value(value).run()
+        assert not app.exception
+        assert "nonnegative whole-number capacities" in app.error[0].value
+    app.text_input(key="planning_comparison").set_value("").run()
+    assert not app.exception
+    assert not app.error
+    assert app.slider(key="planning_capacity").value == 4
+
+
+@pytest.mark.parametrize("labels", [None, [0, 0, 0, 0], [1]])
+def test_planning_unlabeled_zero_positive_and_singleton_ui(
+    dashboard_artifacts, monkeypatch, labels
+):
+    path = dashboard_artifacts / "test_predictions.csv"
+    frame = pd.read_csv(path)
+    if labels is None:
+        frame = frame.drop(columns="true_label")
+    else:
+        frame = frame.head(len(labels)).copy()
+        frame["true_label"] = labels
+    frame.to_csv(path, index=False)
+    report_path = dashboard_artifacts / "metrics.json"
+    report = json.loads(report_path.read_text())
+    report["split_sizes"]["test"] = len(frame)
+    report_path.write_text(json.dumps(report))
+    app = planning_app(dashboard_artifacts, monkeypatch)
+    metrics = {metric.label: metric.value for metric in app.metric}
+    if labels is None:
+        assert all(value == "Unavailable" for value in metrics.values())
+        assert app.checkbox(key="planning_financial").disabled
+        assert not app.get("plotly_chart")
+    elif not any(labels):
+        assert metrics["Retrospective Precision@K"] == "0.0%"
+        assert metrics["Retrospective Recall@K"] == "Unavailable"
+        assert metrics["Retrospective Lift@K"] == "Unavailable"
+        assert metrics["Random expected positives"] == "0.000"
+    else:
+        assert metrics["Retrospective Precision@K"] == "100.0%"
+        app.slider(key="planning_capacity").set_value(0).run()
+        assert not app.exception
+
+
+def test_planning_validation_only_run_has_no_customer_scenarios(tmp_path, monkeypatch):
+    (tmp_path / "metrics.json").write_text(json.dumps({"test": None, "validation": {}}))
+    app = planning_app(tmp_path, monkeypatch)
+    assert any("requires saved customer predictions" in info.value for info in app.info)
+    assert not app.slider
+    assert not app.checkbox
+    assert not app.get("download_button")

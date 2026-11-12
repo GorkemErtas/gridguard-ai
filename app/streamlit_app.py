@@ -3,11 +3,13 @@
 import os
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from gridguard.capacity_planning import FINANCIAL_NOTICE, capacity_plan, financial_scenarios
 from gridguard.dashboard import (
     discover_runs,
     file_signature,
@@ -41,6 +43,12 @@ def read_optional(path, modified):
 @st.cache_data(ttl=300, max_entries=16, show_spinner=False)
 def customer_history(path, customer_id, modified):
     return load_customer_history(path, customer_id)
+
+
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_capacity_curve(predictions):
+    capacities = np.linspace(0, len(predictions), min(len(predictions) + 1, 101), dtype=int)
+    return capacity_plan(predictions, capacities)
 
 
 def number(value, percent=False):
@@ -98,7 +106,14 @@ artifact_dir = (
 )
 page = st.sidebar.radio(
     "Workspace",
-    ["Overview", "Model performance", "Inspection queue", "Customer analytics", "Data quality"],
+    [
+        "Overview",
+        "Model performance",
+        "Inspection queue",
+        "Inspection Capacity Planning",
+        "Customer analytics",
+        "Data quality",
+    ],
 )
 st.sidebar.caption("Local artifacts · Read-only analytics")
 st.title(page)
@@ -348,6 +363,206 @@ elif page == "Inspection queue":
                 "Export omits ground-truth labels and reading indicators. Without IDs it is not anonymous: "
                 "ranks and scores may still link records. Keep all exports private."
             )
+
+elif page == "Inspection Capacity Planning":
+    if predictions.empty:
+        st.info("Inspection capacity planning requires saved customer predictions.")
+    else:
+        st.info(
+            "Retrospective decision support on the full selected cohort. Historical positive labels "
+            "are observed outcomes, not proof of theft or future inspection success. "
+            "Choose capacity from operational constraints; do not tune models on this holdout."
+        )
+        st.caption(f"Cohort: {len(predictions):,} customers | Provenance: {run.provenance}")
+        capacity = st.slider(
+            "Inspection capacity (K)",
+            min_value=0,
+            max_value=len(predictions),
+            value=min(50, len(predictions)),
+            step=1,
+            key="planning_capacity",
+        )
+        comparison = st.text_input(
+            "Comparison capacities (comma-separated)",
+            "0, 50, 100, 200",
+            max_chars=400,
+            help="Nonnegative whole numbers. Requests above cohort size are capped.",
+            key="planning_comparison",
+        )
+        try:
+            capacities = [int(value.strip()) for value in comparison.split(",") if value.strip()]
+            scenarios = capacity_plan(predictions, [capacity, *capacities])
+        except ValueError:
+            st.error(
+                "Enter comma-separated nonnegative whole-number capacities, such as 0, 50, 100."
+            )
+            st.stop()
+        current = scenarios.loc[scenarios.requested_k.eq(capacity)].iloc[0]
+        cards(
+            [
+                ("Retrospective Precision@K", number(current.precision, True)),
+                ("Retrospective Recall@K", number(current.recall, True)),
+                ("Retrospective Lift@K", number(current.lift)),
+                ("Observed positives in top K", number(current.positives_found)),
+                ("Random expected positives", number(current.random_expected_positives)),
+            ]
+        )
+        if "true_label" in predictions:
+            curve = read_capacity_curve(predictions)
+            left, right = st.columns(2)
+            for container, metric, baseline in (
+                (left, "precision", "random_precision"),
+                (right, "recall", "random_recall"),
+            ):
+                with container, st.container(border=True):
+                    figure = px.line(
+                        curve.rename(
+                            columns={
+                                metric: "Model ranking",
+                                baseline: "Random selection (expected)",
+                            }
+                        ),
+                        x="evaluated_k",
+                        y=["Model ranking", "Random selection (expected)"],
+                        labels={"evaluated_k": "Inspections (K)", "value": f"{metric.title()}@K"},
+                    )
+                    figure.update_yaxes(range=[0, 1])
+                    figure.add_vline(x=capacity, line_dash="dot")
+                    chart(figure, f"Retrospective {metric.title()}@K")
+            figure = px.line(
+                curve.rename(
+                    columns={
+                        "positives_found": "Model ranking (observed)",
+                        "random_expected_positives": "Random selection (expected)",
+                    }
+                ),
+                x="evaluated_k",
+                y=["Model ranking (observed)", "Random selection (expected)"],
+                labels={"evaluated_k": "Inspections (K)", "value": "Positive labels"},
+            )
+            figure.add_vline(x=capacity, line_dash="dot")
+            chart(figure, "Retrospective model selection versus random baseline")
+        else:
+            st.info(
+                "Ground-truth labels are unavailable. Outcome metrics, random baselines and "
+                "financial scenarios cannot be calculated from raw scores."
+            )
+        st.caption(
+            "Random selection means uniform sampling without replacement from this same cohort: "
+            "expected positives = actual K × observed prevalence. It is an expectation, not a "
+            "simulated outcome. Curves sample at most 101 capacities; scenario rows use exact K. "
+            "At K=0, precision and lift are undefined. With no positives, recall and lift are undefined."
+        )
+        st.subheader("Operational scenario comparison")
+        table(
+            scenarios[
+                [
+                    "requested_k",
+                    "evaluated_k",
+                    "precision",
+                    "recall",
+                    "lift",
+                    "positives_found",
+                    "random_expected_positives",
+                    "marginal_inspections",
+                    "marginal_positives",
+                    "marginal_yield",
+                ]
+            ].rename(
+                columns={
+                    "requested_k": "Requested K",
+                    "evaluated_k": "Actual K",
+                    "precision": "Precision@K",
+                    "recall": "Recall@K",
+                    "lift": "Lift@K",
+                    "positives_found": "Observed positives",
+                    "random_expected_positives": "Random expected positives",
+                    "marginal_inspections": "Additional inspections",
+                    "marginal_positives": "Additional observed positives",
+                    "marginal_yield": "Marginal yield",
+                }
+            ),
+            "Retrospective operational capacity scenarios",
+        )
+        st.caption(
+            "Rows are sorted by requested K. Marginal yield is additional observed positives / "
+            "additional inspections since the previous row (the first starts at zero). "
+            "Capped requests can have identical actual K and undefined marginal yield. "
+            "This view uses the full cohort; Inspection queue eligibility filters do not apply."
+        )
+        st.subheader("Illustrative financial scenario")
+        financial = st.checkbox(
+            "Enable illustrative financial calculations",
+            value=False,
+            disabled="true_label" not in predictions,
+            key="planning_financial",
+        )
+        if financial and "true_label" in predictions:
+            st.warning(FINANCIAL_NOTICE)
+            st.caption(
+                "Use the same currency units for both inputs. Every actual inspection incurs the "
+                "entered cost. Each observed positive is assigned the hypothetical recovery value. "
+                "Random selection uses the same capacity and cost. Net = recovery minus inspection "
+                "costs; other costs, collection rates and timing are excluded."
+            )
+            cost = st.number_input(
+                "Cost per inspection (currency units)",
+                min_value=0.0,
+                value=0.0,
+                key="planning_cost",
+            )
+            recovery = st.number_input(
+                "Hypothetical recovery per observed positive (currency units)",
+                min_value=0.0,
+                value=0.0,
+                key="planning_recovery",
+            )
+            try:
+                finances = financial_scenarios(
+                    scenarios, inspection_cost=cost, recovery_per_positive=recovery
+                )
+            except ValueError as exc:
+                st.error(str(exc))
+            else:
+                table(
+                    finances.drop(
+                        columns=["positives_found", "random_expected_positives", "notice"]
+                    ).rename(
+                        columns={
+                            "requested_k": "Requested K",
+                            "evaluated_k": "Actual K",
+                            "inspection_cost_total": "Total inspection cost",
+                            "hypothetical_model_recovery": "Hypothetical model recovery",
+                            "hypothetical_random_recovery": "Hypothetical random recovery",
+                            "illustrative_model_net": "Illustrative model net",
+                            "illustrative_random_net": "Illustrative random net",
+                        }
+                    ),
+                    "Illustrative financial scenarios, not validated financial forecasts",
+                )
+        st.subheader("Prioritized inspection candidates")
+        # load_run has already validated and ordered the full cohort by raw score and ID.
+        queue = predictions.head(capacity)
+        table(
+            queue[["rank", "customer_id", "model_score", "risk_score", "risk_band"]],
+            "Selected top-K inspection candidates without ground-truth labels",
+        )
+        include = st.checkbox(
+            "Include customer IDs in private local CSV", value=False, key="planning_include_ids"
+        )
+        st.download_button(
+            "Download capacity inspection candidates",
+            private_export(queue, include_ids=include),
+            "inspection_candidates.csv",
+            "text/csv",
+            icon=":material/download:",
+        )
+        st.caption(
+            "Raw score descending, customer ID ascending for ties; rounded risk scores do not "
+            "determine order. CSVs always omit labels and reading signals. IDs are excluded by "
+            "default. Ranks and scores can still link records; keep exports private. "
+            "A ranking alone never confirms electricity theft."
+        )
 
 elif page == "Customer analytics":
     if predictions.empty:

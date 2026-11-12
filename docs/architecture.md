@@ -13,6 +13,8 @@ Demonstrate an end-to-end, readable approach to ranking **customer-level** elect
 | Modeling | \`modeling.py\` | Candidate pipelines, meaningful imbalanced-learning metrics, ranking |
 | Experiment provenance | `provenance.py` | Dataset/partition checksums, versions, preprocessing metadata, aggregate validation summary |
 | Evaluation and error analysis | `evaluation.py`, `error_analysis.py` | Saved-holdout integrity, bootstrap AP interval, aggregate threshold/top-K errors and fixed quality groups |
+| Capacity planning | `capacity_planning.py` | Pure retrospective capacity/random/marginal scenarios reusing ranking metrics, plus illustrative financial arithmetic |
+| Dashboard helpers | `dashboard.py` | Read-only artifact validation, deterministic queues, privacy-preserving exports and optional reports |
 | Training and inference | \`training.py\` | Stratified 60/20/20 split, validation-only selection, final test, serialization, new-data scoring |
 | Orchestration | \`cli.py\` | Explicit workflows; optional bounded SQLite export |
 | Presentation | \`app/streamlit_app.py\` | **Read-only** holdout report, inspection queue and reading plot |
