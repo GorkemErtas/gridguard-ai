@@ -14,6 +14,7 @@ GridGuard AI is a reproducible, lightweight machine-learning demonstration for e
 - Compares Logistic Regression and Random Forest using **validation average precision (AP)**; reports held-out test metrics and **Precision/Recall/Lift@K**.
 - Saves the selected model, evaluation report, and **out-of-sample test predictions**.
 - Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
+- Compares inspection capacities with retrospective top-K metrics, random baselines, marginal yield and optional illustrative financial scenarios.
 - Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
 - Supports optional SQLite export and sample SQL queries.
 
@@ -38,7 +39,7 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
-The dark analytics dashboard provides Overview, Model performance, Inspection queue, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. No model training is required to view an existing experiment.
+The dark analytics dashboard provides Overview, Model performance, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
 
 ### Train on a local labeled consumption dataset
 
