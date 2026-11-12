@@ -1,5 +1,7 @@
 """Classifier specifications, reproducible metrics, and risk ranking."""
 
+from numbers import Real
+
 import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyClassifier
@@ -138,13 +140,75 @@ def score_metrics(
     return result
 
 
+def classification_metrics(y_true, scores, *, threshold=0.5, customer_ids=None):
+    """Confusion counts and rates at a declared threshold; equality is positive.
+
+    Undefined rates are null. Legacy model_metrics retains its established
+    zero_division=0 precision/recall/F1 policy and historical output keys.
+    """
+    if (
+        isinstance(threshold, (bool, np.bool_))
+        or not isinstance(threshold, Real)
+        or not np.isfinite(threshold)
+        or not 0 <= threshold <= 1
+    ):
+        raise ValueError("Threshold must be finite and in [0, 1].")
+    ranking_order(scores, customer_ids)
+    count = len(scores)
+    result = {
+        "threshold": float(threshold),
+        "customers": count,
+        "positive_customers": None,
+        "confusion_matrix": None,
+        **{
+            key: None
+            for key in (
+                "true_negative",
+                "false_positive",
+                "false_negative",
+                "true_positive",
+                "precision",
+                "recall",
+                "f1",
+                "false_positive_rate",
+                "false_negative_rate",
+            )
+        },
+    }
+    if y_true is None:
+        return result
+    labels, values = _metric_inputs(y_true, scores)
+    matrix = (
+        confusion_matrix(labels, values >= threshold, labels=[0, 1])
+        if count
+        else np.zeros((2, 2), dtype=int)
+    )
+    tn, fp, fn, tp = matrix.ravel().tolist()
+    return {
+        **result,
+        "positive_customers": int(labels.sum()),
+        "confusion_matrix": matrix.tolist(),
+        "true_negative": tn,
+        "false_positive": fp,
+        "false_negative": fn,
+        "true_positive": tp,
+        "precision": tp / (tp + fp) if tp + fp else None,
+        "recall": tp / (tp + fn) if tp + fn else None,
+        "f1": 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else None,
+        "false_positive_rate": fp / (fp + tn) if fp + tn else None,
+        "false_negative_rate": fn / (fn + tp) if fn + tp else None,
+    }
+
+
 def model_metrics(y_true: np.ndarray, scores: np.ndarray, *, customer_ids=None) -> dict:
     labels, scores = _metric_inputs(y_true, scores)
     ranking_order(scores, customer_ids)
     if not len(labels):
         raise ValueError("Metrics require at least one customer.")
     predicted = (scores >= 0.5).astype(int)
-    matrix = confusion_matrix(labels, predicted, labels=[0, 1])
+    matrix = np.asarray(
+        classification_metrics(labels, scores, customer_ids=customer_ids)["confusion_matrix"]
+    )
     ranking = score_metrics(labels, scores, customer_ids=customer_ids)
     return {
         "average_precision": ranking["average_precision"],

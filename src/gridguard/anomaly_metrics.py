@@ -27,12 +27,19 @@ def inspection_capacities(values):
     return sorted(set(int(k) for k in values))
 
 
-def score_distribution(scores, *, bins=20):
+def score_distribution(scores, *, bins=20, histogram_range=None):
     """Native-score summaries/histogram; rescale arithmetic only to avoid overflow."""
     scores = np.asarray(scores, dtype=float)
     ranking_order(scores, score_domain="unbounded")
     if isinstance(bins, (bool, np.bool_)) or not isinstance(bins, (int, np.integer)) or bins < 1:
         raise ValueError("Histogram bins must be a positive integer.")
+    bounds = None if histogram_range is None else np.asarray(histogram_range, dtype=float)
+    if bounds is not None and (
+        bounds.shape != (2,) or not np.isfinite(bounds).all() or bounds[0] >= bounds[1]
+    ):
+        raise ValueError("Histogram range must contain two increasing finite bounds.")
+    if bounds is not None and ((scores < bounds[0]) | (scores > bounds[1])).any():
+        raise ValueError("Histogram range must contain all scores.")
     result = {
         "customers": len(scores),
         "distinct_scores": int(len(np.unique(scores))),
@@ -46,14 +53,20 @@ def score_distribution(scores, *, bins=20):
     quantiles = np.quantile(normalized, [0, 0.05, 0.5, 0.95, 1]) * scale
     result.update(zip(("minimum", "p05", "median", "p95", "maximum"), map(float, quantiles)))
     result.update(mean=float(normalized.mean() * scale), std=float(normalized.std() * scale))
-    if result["distinct_scores"] == 1:
+    if result["distinct_scores"] == 1 and bounds is None:
         result["histogram"] = [
             {"lower": float(scores[0]), "upper": float(scores[0]), "count": len(scores)}
         ]
     else:
-        counts, edges = np.histogram(normalized, bins=bins)
+        histogram_scale = max(scale, float(np.abs(bounds).max())) if bounds is not None else scale
+        histogram_bounds = tuple(bounds / histogram_scale) if bounds is not None else None
+        counts, edges = np.histogram(scores / histogram_scale, bins=bins, range=histogram_bounds)
         result["histogram"] = [
-            {"lower": float(left * scale), "upper": float(right * scale), "count": int(count)}
+            {
+                "lower": float(left * histogram_scale),
+                "upper": float(right * histogram_scale),
+                "count": int(count),
+            }
             for left, right, count in zip(edges[:-1], edges[1:], counts)
         ]
     return result

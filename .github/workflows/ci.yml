@@ -51,3 +51,8 @@ jobs:
           gridguard benchmark-anomaly --input data/calibration-demo.csv --reference-dir artifacts/calibration-reference --output-dir artifacts/anomaly-development
           test -f artifacts/anomaly-development/anomaly_benchmark.json
           test ! -f artifacts/anomaly-development/test_predictions.csv
+      - name: Smoke test development-only explainability
+        run: |
+          gridguard explain --input data/calibration-demo.csv --reference-dir artifacts/calibration-reference --output-dir artifacts/explainability-development --n-repeats 3
+          test -f artifacts/explainability-development/explainability.json
+          test ! -f artifacts/explainability-development/test_predictions.csv

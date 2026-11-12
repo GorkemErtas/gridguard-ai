@@ -149,6 +149,7 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     for section in [
         "Model performance",
         "Model Reliability",
+        "Model Explainability",
         "Anomaly Detection",
         "Inspection queue",
         "Inspection Capacity Planning",

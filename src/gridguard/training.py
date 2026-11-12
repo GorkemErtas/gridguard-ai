@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 
 import joblib
+import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
 from gridguard.data import ConsumptionData, load_consumption, sample_customers, split_customers
 from gridguard.error_analysis import aggregate_errors
@@ -17,6 +19,38 @@ from gridguard.provenance import (
     validation_summary,
     write_json,
 )
+
+
+def development_partitions(data, reference, *, seed=42):
+    """Retain verified original train; split original validation into two roles.
+
+    Input must come from load_reference_development. Shared by optional anomaly
+    and explainability workflows; no historical holdout is accessible here.
+    """
+    if data.customer_ids.tolist() != reference["train"] + reference["validation"]:
+        raise ValueError("Development customers differ from the verified reference order.")
+    training = np.arange(len(reference["train"]))
+    pool = np.arange(len(training), len(data))
+    if set(data.labels.iloc[training]) != {0, 1}:
+        raise ValueError("The supervised training comparator requires both label classes.")
+    labels = data.labels.iloc[pool].to_numpy(dtype=int)
+    if len(labels) < 4 or min(int(labels.sum()), int((1 - labels).sum())) < 2:
+        raise ValueError("Reference validation requires >=4 customers and >=2 per class.")
+    validation, evaluation = train_test_split(
+        pool, test_size=0.5, stratify=labels, random_state=seed
+    )
+    return {
+        "train": training,
+        "development_validation": validation,
+        "development_evaluation": evaluation,
+    }
+
+
+def fit_development_baseline(features, labels, *, seed=42):
+    """Fit the existing fixed RF pipeline, using one worker for deterministic sums."""
+    model = candidate_models(seed)["random_forest"]
+    model.named_steps["classifier"].set_params(n_jobs=1)
+    return model.fit(features, labels)
 
 
 def _write_holdout(data, partitions, chosen, *, config, report, output_dir):

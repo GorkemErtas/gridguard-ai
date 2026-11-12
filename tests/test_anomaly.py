@@ -208,7 +208,9 @@ def test_reference_corruption_fails_before_fitting(anomaly_reference, tmp_path, 
     manifest["partitions"]["test"][0] = manifest["partitions"]["train"][0]
     write_json(folder / "split_manifest.json", manifest)
     monkeypatch.setattr(
-        anomaly, "candidate_models", lambda *a: pytest.fail("No fitting on invalid reference")
+        anomaly,
+        "fit_development_baseline",
+        lambda *a, **kw: pytest.fail("No fitting on invalid reference"),
     )
     with pytest.raises(ValueError, match="overlapping"):
         anomaly.benchmark(path, reference_dir=folder, output_dir=tmp_path / "bad")

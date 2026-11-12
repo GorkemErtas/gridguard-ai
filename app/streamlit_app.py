@@ -15,6 +15,7 @@ from gridguard.dashboard import (
     file_signature,
     filter_queue,
     load_anomaly_benchmark,
+    load_explainability,
     load_reliability,
     load_run,
     optional_report,
@@ -24,6 +25,7 @@ from gridguard.dashboard import (
     queue_metrics,
 )
 from gridguard.data import load_customer_history
+from gridguard.explainability_metrics import IMPORTANCE_NOTICE
 from gridguard.modeling import ranking_metrics
 from gridguard.reliability import ECE_NOTICE
 
@@ -62,6 +64,11 @@ def read_reliability(path, signature):
 @st.cache_data(ttl=300, max_entries=8, show_spinner=False)
 def read_anomaly(path, signature):
     return load_anomaly_benchmark(path)
+
+
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_explainability(path, signature):
+    return load_explainability(path)
 
 
 def number(value, percent=False):
@@ -123,6 +130,7 @@ page = st.sidebar.radio(
         "Overview",
         "Model performance",
         "Model Reliability",
+        "Model Explainability",
         "Anomaly Detection",
         "Inspection queue",
         "Inspection Capacity Planning",
@@ -133,6 +141,240 @@ page = st.sidebar.radio(
 st.sidebar.caption("Local artifacts · Read-only analytics")
 st.title(page)
 st.caption("GridGuard AI / Electricity consumption risk analytics")
+if page == "Model Explainability":
+    path = Path(
+        st.text_input(
+            "Saved explainability report",
+            value=os.environ.get(
+                "GRIDGUARD_EXPLAINABILITY_REPORT", str(Path(artifact_dir) / "explainability.json")
+            ),
+            key="explain_path",
+        )
+    )
+    try:
+        explanation = read_explainability(
+            str(path),
+            file_signature(
+                path.parent,
+                names=(
+                    path.name,
+                    "split_manifest.json",
+                    "explainability_predictions.csv",
+                    "permutation_repeats.json",
+                ),
+            ),
+        )
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        st.info(
+            "No valid saved explainability report is available. Run the optional explain workflow first."
+        )
+        st.caption(str(exc))
+        st.stop()
+    st.warning(
+        "Development-only analysis of a fresh fixed RF, not the historical final model. "
+        "Importance and error analysis use separate customer cohorts. The inspected final holdout "
+        "was excluded; independent final performance is not established."
+    )
+    if explanation["dataset"].get("source") == "synthetic":
+        st.warning(
+            "Synthetic demonstration; simulated outcomes do not establish operational performance."
+        )
+    st.caption(
+        "Scores are uncalibrated ranking signals. Outcomes refer to historical positive labels, "
+        "not confirmed theft. Label noise, inspection selection and missing event dates limit "
+        "interpretation. These are global associations, not individual or causal explanations."
+    )
+    importance, errors = explanation["importance"], explanation["errors"]
+    cards(
+        [
+            ("Importance customers", str(importance["customers"])),
+            ("Error evaluation customers", str(errors["customers"])),
+            ("Importance cohort AP", number(importance["baseline_average_precision"])),
+            ("Error cohort AP", number(errors["ranking"]["average_precision"])),
+        ]
+    )
+    st.subheader("Global permutation importance")
+    importance_frame = pd.DataFrame(importance["features"]).sort_values(
+        "mean_decrease", ascending=False, na_position="last"
+    )
+    table(importance_frame, "AP permutation importance, standard deviation and negative means")
+    if importance["status"] == "available":
+        chart(
+            px.bar(
+                importance_frame,
+                x="mean_decrease",
+                y="feature",
+                orientation="h",
+                error_x="std_decrease",
+                color="negative_mean",
+                labels={"mean_decrease": "Mean AP decrease", "feature": "Original feature"},
+            ),
+            "AP permutation importance: mean with repeat standard deviation",
+        )
+    else:
+        st.info(f"Permutation importance unavailable: {importance['status']}.")
+    st.caption(IMPORTANCE_NOTICE)
+    st.caption(
+        f"Saved repeats: {importance['n_repeats']}; seed: {importance['seed']}. One repeat yields zero empirical SD, not certainty."
+    )
+    st.subheader("Errors at predeclared thresholds")
+    thresholds = explanation["configuration"]["thresholds"]
+    threshold = st.selectbox(
+        "Saved decision threshold", thresholds, index=thresholds.index(0.5), key="explain_threshold"
+    )
+    current = next(row for row in errors["thresholds"] if row["threshold"] == threshold)
+    cards(
+        [
+            (key.replace("_", " ").title(), str(current[key]))
+            for key in ("true_positive", "false_positive", "true_negative", "false_negative")
+        ]
+    )
+    if current["confusion_matrix"] is not None:
+        chart(
+            go.Figure(
+                go.Heatmap(
+                    z=current["confusion_matrix"],
+                    x=["Predicted negative", "Predicted positive"],
+                    y=["Observed negative", "Observed positive"],
+                    texttemplate="%{z}",
+                    showscale=False,
+                )
+            ),
+            f"Confusion matrix at saved threshold {threshold:g}",
+        )
+    table(
+        pd.DataFrame(
+            [
+                {key: value for key, value in row.items() if key != "confusion_matrix"}
+                for row in errors["thresholds"]
+            ]
+        ),
+        "Precision, recall and errors at fixed thresholds",
+    )
+    table(
+        pd.DataFrame(
+            [
+                {"requested_k": k, **values}
+                for k, values in errors["ranking"]["ranking_at_k"].items()
+            ]
+        ),
+        "Error cohort Precision and Recall at predefined inspection capacities",
+    )
+    st.caption(
+        "Threshold equality is positive. Only saved thresholds/capacities are shown; no threshold optimization occurs. Undefined rates remain unavailable."
+    )
+    st.subheader("Data-quality error associations at primary threshold 0.5")
+    fixed = errors["fixed_error_analysis"]
+    if fixed:
+        grouped = fixed["data_quality_groups"]
+        grouping = st.selectbox("Predefined error groups", list(grouped), key="explain_groups")
+        group_rows = []
+        for name, group in grouped[grouping].get("groups", {}).items():
+            reliable = group["rate_status"] == "available"
+            group_rows.append(
+                {
+                    "group": name,
+                    "customers": group["customers"],
+                    "positives": group.get("positives"),
+                    "false_positive": group.get("false_positive"),
+                    "false_negative": group.get("false_negative"),
+                    "false_positive_rate": group.get("false_positive_rate") if reliable else None,
+                    "false_negative_rate": group.get("false_negative_rate") if reliable else None,
+                    "rate_status": group["rate_status"],
+                }
+            )
+        group_frame = pd.DataFrame(group_rows)
+        table(group_frame, "Group support, false positives, false negatives and rate reliability")
+        if not group_frame.empty:
+            chart(
+                px.bar(
+                    group_frame,
+                    x="group",
+                    y=["false_positive_rate", "false_negative_rate"],
+                    barmode="group",
+                ),
+                "Error rates by predefined group at threshold 0.5",
+            )
+    st.caption(
+        f"Groups always use primary threshold 0.5, independently of the threshold selector above. "
+        f"Small groups below {errors['min_group_size']} are suppressed; rates need at least five "
+        "positives and negatives. Counts are descriptive; missingness can reflect outages or collection "
+        "problems. Group differences do not establish causal data-quality effects."
+    )
+    st.subheader("Score and feature distributions by outcome")
+    feature = st.selectbox(
+        "Original feature", importance_frame.feature.tolist(), key="explain_feature"
+    )
+    for selected_feature in ("risk_score", feature):
+        distributions = [
+            row
+            for row in errors["outcome_distributions"]
+            if row["threshold"] == threshold and row["feature"] == selected_feature
+        ]
+        bins = []
+        for row in distributions:
+            if row["distribution"]:
+                bins.extend(
+                    {
+                        "outcome": row["outcome"],
+                        "value": item["lower"] / 2 + item["upper"] / 2,
+                        "fraction": item["count"] / row["observed_values"],
+                    }
+                    for item in row["distribution"]["histogram"]
+                )
+        if bins:
+            chart(
+                px.bar(
+                    pd.DataFrame(bins),
+                    x="value",
+                    y="fraction",
+                    color="outcome",
+                    barmode="overlay",
+                    opacity=0.55,
+                ),
+                f"{selected_feature}: binned distributions at threshold {threshold:g}",
+            )
+        table(
+            pd.DataFrame(
+                [
+                    {key: value for key, value in row.items() if key != "distribution"}
+                    for row in distributions
+                ]
+            ),
+            f"{selected_feature} outcome counts, observed values and suppression status",
+        )
+    st.caption(
+        "Shared bins compare fractions of observed values within each outcome, not outcome prevalence. "
+        "Features remain un-imputed in diagnostics; missing counts stay visible. Small observed cohorts "
+        "have no value distributions. Risk score is rounded 100 times the raw ranking score, not a calibrated probability."
+    )
+    st.subheader("Configuration and provenance")
+    table(
+        pd.DataFrame(
+            [
+                {"Property": key, "Value": str(value)}
+                for key, value in {
+                    "experiment": explanation["experiment_id"],
+                    "source": explanation["dataset"]["source"],
+                    "dataset fingerprint": explanation["dataset"]["fingerprint_sha256"],
+                    "feature configuration": explanation["feature_config"],
+                    "model parameters": explanation["model_parameters"],
+                    "partitions": explanation["split_sizes"],
+                    "configuration": explanation["configuration"],
+                    "methodology": explanation["methodology"],
+                    "software": explanation["software"],
+                }.items()
+            ]
+        ),
+        "Explainability methodology, partition roles, seeds and software",
+    )
+    for warning in errors["warnings"]:
+        st.caption(warning)
+    st.caption(
+        "Saved aggregate diagnostics only. No customer identifiers, model loading, fitting or model rescoring in this workspace."
+    )
+    st.stop()
+
 if page == "Anomaly Detection":
     path = Path(
         st.text_input(
