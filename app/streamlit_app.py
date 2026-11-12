@@ -14,6 +14,7 @@ from gridguard.dashboard import (
     discover_runs,
     file_signature,
     filter_queue,
+    load_anomaly_benchmark,
     load_reliability,
     load_run,
     optional_report,
@@ -56,6 +57,11 @@ def read_capacity_curve(predictions):
 @st.cache_data(ttl=300, max_entries=8, show_spinner=False)
 def read_reliability(path, signature):
     return load_reliability(path)
+
+
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_anomaly(path, signature):
+    return load_anomaly_benchmark(path)
 
 
 def number(value, percent=False):
@@ -117,6 +123,7 @@ page = st.sidebar.radio(
         "Overview",
         "Model performance",
         "Model Reliability",
+        "Anomaly Detection",
         "Inspection queue",
         "Inspection Capacity Planning",
         "Customer analytics",
@@ -126,6 +133,174 @@ page = st.sidebar.radio(
 st.sidebar.caption("Local artifacts · Read-only analytics")
 st.title(page)
 st.caption("GridGuard AI / Electricity consumption risk analytics")
+if page == "Anomaly Detection":
+    path = Path(
+        st.text_input(
+            "Saved anomaly benchmark",
+            value=os.environ.get(
+                "GRIDGUARD_ANOMALY_REPORT", str(Path(artifact_dir) / "anomaly_benchmark.json")
+            ),
+            key="anomaly_path",
+        )
+    )
+    try:
+        anomaly = read_anomaly(
+            str(path),
+            file_signature(
+                path.parent, names=(path.name, "split_manifest.json", "anomaly_predictions.csv")
+            ),
+        )
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        st.info(
+            "No valid saved anomaly benchmark is available. Run the optional benchmark workflow first."
+        )
+        st.caption(str(exc))
+        st.stop()
+    st.warning(
+        "Development-only benchmark. Independent final performance is not established. "
+        "The inspected final holdout was excluded. The RF comparator is newly fitted, "
+        "not the historical published model. No method or threshold was selected on evaluation outcomes."
+    )
+    if anomaly["dataset"].get("source") == "synthetic":
+        st.warning(
+            "Synthetic demonstration; simulated labels do not establish operational detection quality."
+        )
+    st.caption(
+        "Anomaly scores are not probabilities or confirmed theft evidence. Unusual consumption can "
+        "reflect outages, missing readings or collection errors. Disagreement does not establish that "
+        "either method is wrong. Historical customer-level labels lack event dates; human review is required."
+    )
+    partition = st.selectbox(
+        "Saved development cohort",
+        ["development_evaluation", "development_validation"],
+        key="anomaly_partition",
+    )
+    evaluation = anomaly["evaluations"][partition]
+    cards(
+        [
+            ("Development customers", str(evaluation["customers"])),
+            ("Observed positive labels", str(evaluation["positive_customers"])),
+            ("Training customers", str(anomaly["split_sizes"]["train"])),
+            ("Excluded holdout customers", str(anomaly["split_sizes"]["excluded_holdout"])),
+        ]
+    )
+    for warning in evaluation["warnings"]:
+        st.caption(warning)
+    rows, rankings = [], []
+    for method, metrics in evaluation["methods"].items():
+        rows.append(
+            {
+                "method": method,
+                "AP": metrics["average_precision"],
+                "ROC-AUC": metrics["roc_auc"],
+                "distinct scores": metrics["distribution"]["distinct_scores"],
+            }
+        )
+        rankings.extend(
+            {"method": method, "requested_k": k, **values}
+            for k, values in metrics["ranking_at_k"].items()
+        )
+    summary = pd.DataFrame(rows)
+    table(summary, "Supervised versus unsupervised development discrimination")
+    chart(
+        px.bar(summary, x="method", y=["AP", "ROC-AUC"], barmode="group"),
+        "Development discrimination comparison",
+    )
+    table(pd.DataFrame(rankings), "Development Precision, Recall and Lift at predeclared K")
+    st.subheader("Top-K overlap and complementarity")
+    correlations, overlap = [], []
+    for pair in evaluation["complementarity"]:
+        correlations.append(
+            {
+                "left": pair["left_method"],
+                "right": pair["right_method"],
+                "Spearman rho": pair["spearman_rho"],
+            }
+        )
+        for row in pair["top_k"]:
+            overlap.append(
+                {
+                    "left": pair["left_method"],
+                    "right": pair["right_method"],
+                    **{
+                        key: value
+                        for key, value in row.items()
+                        if key not in ("left_only", "right_only")
+                    },
+                    "left_only_customers": row["left_only"]["customers"],
+                    "right_only_customers": row["right_only"]["customers"],
+                    "left_only_positive_rate": row["left_only"]["positive_rate"],
+                    "right_only_positive_rate": row["right_only"]["positive_rate"],
+                    "left_rate_status": row["left_only"]["status"],
+                    "right_rate_status": row["right_only"]["status"],
+                }
+            )
+    table(pd.DataFrame(correlations), "Tie-aware Spearman rank correlation")
+    table(pd.DataFrame(overlap), "Top-K intersections, Jaccard and nonoverlap label rates")
+    st.caption(
+        "For RF comparisons, right-only customers are anomaly-only and left-only customers are "
+        "supervised-only. Spearman uses average score ranks, without ID tie breaking; constant "
+        "scores have undefined correlation. Top-K ties use customer ID. Small nonoverlap groups "
+        "have unavailable label rates. No ensemble is fitted."
+    )
+    st.subheader("Native score distributions")
+    for method, metrics in evaluation["methods"].items():
+        histogram = pd.DataFrame(metrics["distribution"]["histogram"])
+        if not histogram.empty:
+            histogram["score"] = histogram.lower / 2 + histogram.upper / 2
+            chart(px.bar(histogram, x="score", y="count"), f"{method}: native score distribution")
+    st.caption(
+        "Each method has its own score units and axis. Absolute score magnitudes are not comparable across methods."
+    )
+    st.subheader("Missing-reading-rate groups")
+    group_rows = []
+    for group in evaluation["missing_reading_groups"]:
+        for method in evaluation["methods"]:
+            metrics = group["methods"][method] if group["methods"] else {}
+            group_rows.append(
+                {
+                    "group": group["group"],
+                    "customers": group["customers"],
+                    "positive_customers": group["positive_customers"],
+                    "status": group["status"],
+                    "method": method,
+                    "AP": metrics.get("average_precision"),
+                    "ROC-AUC": metrics.get("roc_auc"),
+                }
+            )
+    table(
+        pd.DataFrame(group_rows), "Development discrimination by fixed missing-reading-rate groups"
+    )
+    st.caption(
+        f"Existing missing-rate bins are reused. Group discrimination needs at least {evaluation['min_group_size']} "
+        f"customers and {evaluation['min_class_support']} per class. These are descriptive safeguards, not "
+        "power calculations, fairness conclusions or formal privacy guarantees. Null metrics are unavailable."
+    )
+    st.subheader("Configuration and provenance")
+    table(
+        pd.DataFrame(
+            [
+                {"Property": key, "Value": str(value)}
+                for key, value in {
+                    "experiment": anomaly["experiment_id"],
+                    "source": anomaly["dataset"]["source"],
+                    "dataset fingerprint": anomaly["dataset"]["fingerprint_sha256"],
+                    "feature configuration": anomaly["feature_config"],
+                    "partitions": anomaly["split_sizes"],
+                    "model parameters": anomaly["model_parameters"],
+                    "score definitions": anomaly["score_definitions"],
+                    "methodology": anomaly["methodology"],
+                    "software": anomaly["software"],
+                }.items()
+            ]
+        ),
+        "Fixed method configurations, score definitions and provenance",
+    )
+    st.caption(
+        "This view reads verified saved aggregates, exposes no customer identifiers, and never loads or trains a model."
+    )
+    st.stop()
+
 if page == "Model Reliability":
     path = Path(
         st.text_input(

@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from gridguard.anomaly_metrics import ANOMALY_PARTITIONS, benchmark_summary
 from gridguard.evaluation import _verify_provenance
 from gridguard.features import risk_band
 from gridguard.modeling import model_metrics, ranking_order
@@ -108,22 +109,16 @@ def load_run(folder: str | Path) -> DashboardRun:
     return DashboardRun(report, predictions, kind, provenance, warnings)
 
 
-def load_reliability(path: str | Path) -> dict:
-    """Validate saved development diagnostics without opening an estimator bundle.
-
-    Check consumed file fingerprints, complete disjoint membership, diagnostic
-    customer alignment and recomputed summaries. No customer records are returned
-    to the dashboard. Historical runs need no reliability artifact.
-    """
+def _development_artifacts(path, *, artifact_type, partition_names, prediction_name):
+    """Shared read-only validation for saved development evaluation artifacts."""
     path = Path(path)
     report, warning = optional_report(path)
     if warning:
         raise ValueError(warning)
-    if (
-        report.get("artifact_type") != "calibration_reliability"
-        or report.get("schema_version") != 2
-    ):
-        raise ValueError("Unsupported calibration reliability report.")
+    if report.get("artifact_type") != artifact_type or report.get("schema_version") != 2:
+        raise ValueError("Unsupported saved development evaluation report.")
+    if not isinstance(report.get("methodology"), dict):
+        raise ValueError("Invalid evaluation methodology metadata.")
     if (
         report.get("evaluation_scope") != "development_only"
         or report.get("independent_evaluation") is not None
@@ -134,14 +129,31 @@ def load_reliability(path: str | Path) -> dict:
         )
     for filename, key in (
         ("split_manifest.json", "manifest_sha256"),
-        ("calibration_predictions.csv", "predictions_sha256"),
+        (prediction_name, "predictions_sha256"),
     ):
         if file_fingerprint(path.parent / filename) != report.get(key):
-            raise ValueError(f"Calibration artifact fingerprint mismatch: {filename}")
+            raise ValueError(f"Evaluation artifact fingerprint mismatch: {filename}")
     manifest, warning = optional_report(path.parent / "split_manifest.json")
     if warning:
         raise ValueError(warning)
-    partitions = verify_partition_manifest(report, manifest, names=CALIBRATION_PARTITIONS)
+    partitions = verify_partition_manifest(report, manifest, names=partition_names)
+    predictions = pd.read_csv(
+        path.parent / prediction_name, dtype={"customer_id": "string"}, float_precision="round_trip"
+    )
+    if "customer_id" not in predictions or predictions.empty:
+        raise ValueError("Missing evaluation prediction customers.")
+    predictions["customer_id"] = predictions.customer_id.str.strip()
+    return report, partitions, predictions
+
+
+def load_reliability(path: str | Path) -> dict:
+    """Verify saved calibration summaries without opening an estimator bundle."""
+    report, partitions, predictions = _development_artifacts(
+        path,
+        artifact_type="calibration_reliability",
+        partition_names=CALIBRATION_PARTITIONS,
+        prediction_name="calibration_predictions.csv",
+    )
     methods = report["methods"]
     if (
         not isinstance(methods, dict)
@@ -167,15 +179,9 @@ def load_reliability(path: str | Path) -> dict:
     )
     if report["selected_method"] != expected:
         raise ValueError("Saved mapping differs from the calibration-selection Brier winner.")
-    predictions = pd.read_csv(
-        path.parent / "calibration_predictions.csv",
-        dtype={"customer_id": "string"},
-        float_precision="round_trip",
-    )
     required = {"customer_id", "true_label", *methods}
     if not required.issubset(predictions) or predictions.empty:
         raise ValueError("Missing calibration diagnostic prediction columns or customers.")
-    predictions["customer_id"] = predictions.customer_id.str.strip()
     if set(predictions.customer_id) != set(partitions["development_evaluation"]):
         raise ValueError(
             "Calibration diagnostic customers differ from recorded evaluation membership."
@@ -189,6 +195,40 @@ def load_reliability(path: str | Path) -> dict:
         )
         if not summaries_match(methods[method]["development_evaluation"], computed):
             raise ValueError("Saved reliability metrics differ from the diagnostic predictions.")
+    return report
+
+
+def load_anomaly_benchmark(path: str | Path) -> dict:
+    """Return aggregate, verified benchmark data; never return customer records."""
+    report, partitions, predictions = _development_artifacts(
+        path,
+        artifact_type="anomaly_benchmark",
+        partition_names=ANOMALY_PARTITIONS,
+        prediction_name="anomaly_predictions.csv",
+    )
+    if report.get("benchmark_version") != 1:
+        raise ValueError("Unsupported anomaly benchmark version.")
+    names = {"development_validation", "development_evaluation"}
+    if (
+        "partition" not in predictions
+        or set(predictions.partition) != names
+        or set(report["evaluations"]) != names
+    ):
+        raise ValueError("Anomaly prediction partition roles differ from the evaluation protocol.")
+    for name in sorted(names):
+        frame = predictions.loc[predictions.partition.eq(name)]
+        if set(frame.customer_id) != set(partitions[name]):
+            raise ValueError(
+                "Anomaly prediction customers differ from recorded evaluation membership."
+            )
+        ranking_order(frame["supervised_rf"], frame.customer_id)
+        computed = benchmark_summary(
+            frame,
+            capacities=report["configuration"]["capacities"],
+            min_group_size=report["configuration"]["min_group_size"],
+        )
+        if not summaries_match(report["evaluations"][name], computed):
+            raise ValueError("Saved anomaly summaries differ from the evaluation predictions.")
     return report
 
 
