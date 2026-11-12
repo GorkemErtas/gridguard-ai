@@ -32,7 +32,9 @@ def _classification_summary(labels, scores) -> dict:
     }
 
 
-def aggregate_errors(predictions: pd.DataFrame, *, min_group_size: int = 20) -> dict:
+def aggregate_errors(
+    predictions: pd.DataFrame, *, min_group_size: int = 20, capacities=(50, 100, 200)
+) -> dict:
     """Fixed descriptive bins/cutoffs; never optimize thresholds on these errors.
 
     Small-group rates are suppressed for cautious sharing, not a formal privacy guarantee.
@@ -46,7 +48,7 @@ def aggregate_errors(predictions: pd.DataFrame, *, min_group_size: int = 20) -> 
     overall = _classification_summary(y, p)
     queues = {}
     ranking_errors = {}
-    for k in (50, 100, 200):
+    for k in capacities:
         mask = np.zeros(len(y), dtype=bool)
         mask[order[:k]] = True
         queues[str(k)] = mask

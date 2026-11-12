@@ -23,6 +23,9 @@ test_predictions.csv
 calibration_predictions.csv
 anomaly_predictions.csv
 anomaly_benchmark.json
+explainability_predictions.csv
+permutation_repeats.json
+explainability.json
 errors.csv
 risk_ranking.csv
 *.sqlite

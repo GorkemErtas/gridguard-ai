@@ -108,6 +108,20 @@ def main(argv: list[str] | None = None) -> None:
     anomaly.add_argument("--min-group-size", type=int, default=20)
     anomaly.add_argument("--experiment-id")
 
+    explaining = subcommands.add_parser(
+        "explain", help="Development-only permutation importance and error analysis"
+    )
+    explaining.add_argument("--input", required=True)
+    explaining.add_argument("--reference-dir", required=True)
+    explaining.add_argument("--output-dir", required=True)
+    explaining.add_argument("--seed", type=int, default=42)
+    explaining.add_argument("--feature-config", choices=FEATURE_CONFIGS, default="baseline")
+    explaining.add_argument("--n-repeats", type=int, default=10)
+    explaining.add_argument("--thresholds", type=float, nargs="+", default=[0.2, 0.5, 0.8])
+    explaining.add_argument("--capacities", type=int, nargs="+", default=[50, 100, 200])
+    explaining.add_argument("--min-group-size", type=int, default=20)
+    explaining.add_argument("--experiment-id")
+
     scoring = subcommands.add_parser("score", help="Rank all customers with saved model")
     scoring.add_argument("--input", required=True)
     scoring.add_argument("--model", default="artifacts/model.joblib")
@@ -212,6 +226,32 @@ def main(argv: list[str] | None = None) -> None:
                     "experiment_id": result["experiment_id"],
                     "evaluation_scope": result["evaluation_scope"],
                     "split_sizes": result["split_sizes"],
+                },
+                indent=2,
+            )
+        )
+    elif args.command == "explain":
+        from gridguard.explainability import explain
+
+        result = explain(
+            args.input,
+            reference_dir=args.reference_dir,
+            output_dir=args.output_dir,
+            seed=args.seed,
+            feature_config=args.feature_config,
+            n_repeats=args.n_repeats,
+            thresholds=args.thresholds,
+            capacities=args.capacities,
+            min_group_size=args.min_group_size,
+            experiment_id=args.experiment_id,
+        )
+        print(
+            json.dumps(
+                {
+                    "experiment_id": result["experiment_id"],
+                    "evaluation_scope": result["evaluation_scope"],
+                    "importance_customers": result["importance"]["customers"],
+                    "error_customers": result["errors"]["customers"],
                 },
                 indent=2,
             )

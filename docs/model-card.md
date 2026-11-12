@@ -51,6 +51,14 @@ The optional `benchmark-anomaly` workflow compares Isolation Forest and a robust
 
 Native anomaly scores are not probabilities or confirmed theft evidence. Unusual readings may indicate outages, data quality problems, customer differences or ordinary consumption variability. Disagreement does not establish that either model is wrong. The [benchmark guide](anomaly-benchmark.md) records methodology, mathematical definitions, synthetic measurements and limitations, including why additional positives outside a top-K queue do not establish improved yield at equal capacity. Independent final/operational performance is not established.
 
+## Optional model explainability and error analysis
+
+The optional `explain` command fits a fresh fixed RF on the original reference training customers, retaining train-only preprocessing. It excludes the historical holdout and splits reference validation into disjoint importance and error-evaluation cohorts. It does not explain the historical validation-selected final estimator. No feature, method, threshold or capacity is selected from diagnostic outcomes; independent final performance is not established.
+
+Global permutation importance measures the decrease in development Average Precision after shuffling each original engineered feature through the frozen pipeline. Reports retain negative means and the population standard deviation across fixed-seed repeats. Repeat variability is not a confidence interval or uncertainty over training samples. Correlated/derived features can mask or share importance, and AP saturation can produce near-zero numerical values despite perfect ranking. Small, single-class or unavailable cohorts are explicitly marked.
+
+Error analysis compares observed labels with predictions at predefined thresholds and capacities, with confusion counts, missing-reading/consumption groups and feature/risk-score distributions. Sparse groups are suppressed or marked unreliable. An FP/FN is disagreement with a historical or synthetic flag, not proof of innocence or theft. Features and missingness may be associated with errors without causing them. Saved artifacts are local and versioned; the read-only dashboard exposes only aggregates and never loads, trains or rescores a model. See [methodology, clean and noisy synthetic measurements, reproduction and operational limits](model-explainability.md).
+
 ## Risks and limitations
 
 - Selection bias and noisy labels from historical inspections.

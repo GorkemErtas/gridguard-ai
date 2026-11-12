@@ -9,8 +9,13 @@ import pandas as pd
 
 from gridguard.anomaly_metrics import ANOMALY_PARTITIONS, benchmark_summary
 from gridguard.evaluation import _verify_provenance
+from gridguard.explainability_metrics import (
+    EXPLAINABILITY_PARTITIONS,
+    error_diagnostics,
+    importance_summary,
+)
 from gridguard.features import risk_band
-from gridguard.modeling import model_metrics, ranking_order
+from gridguard.modeling import model_metrics, ranking_order, score_metrics
 from gridguard.provenance import file_fingerprint, verify_partition_manifest
 from gridguard.reliability import (
     CALIBRATION_PARTITIONS,
@@ -229,6 +234,74 @@ def load_anomaly_benchmark(path: str | Path) -> dict:
         )
         if not summaries_match(report["evaluations"][name], computed):
             raise ValueError("Saved anomaly summaries differ from the evaluation predictions.")
+    return report
+
+
+def load_explainability(path: str | Path) -> dict:
+    """Verify saved repeat/error arithmetic; never open, fit or rescore an estimator."""
+    path = Path(path)
+    report, partitions, predictions = _development_artifacts(
+        path,
+        artifact_type="model_explainability",
+        partition_names=EXPLAINABILITY_PARTITIONS,
+        prediction_name="explainability_predictions.csv",
+    )
+    if report.get("explainability_version") != 1:
+        raise ValueError("Unsupported explainability version.")
+    names = {"development_importance", "development_evaluation"}
+    if "partition" not in predictions or set(predictions.partition) != names:
+        raise ValueError("Explainability prediction roles differ from the recorded protocol.")
+    features = report["feature_columns"]
+    if not {"true_label", "model_score", *features}.issubset(predictions):
+        raise ValueError("Missing explainability labels, scores or feature columns.")
+    if predictions.columns[: len(features)].tolist() != features:
+        raise ValueError("Original feature names/order differ from saved diagnostics.")
+    for name in names:
+        frame = predictions.loc[predictions.partition.eq(name)]
+        if set(frame.customer_id) != set(partitions[name]):
+            raise ValueError("Explainability customers differ from recorded partition membership.")
+        ranking_order(frame.model_score, frame.customer_id)
+    if file_fingerprint(path.parent / "permutation_repeats.json") != report.get("repeats_sha256"):
+        raise ValueError("Permutation repeat fingerprint mismatch.")
+    repeats, warning = optional_report(path.parent / "permutation_repeats.json")
+    if warning:
+        raise ValueError(warning)
+    summary = importance_summary(repeats)
+    importance_frame = predictions.loc[predictions.partition.eq("development_importance")]
+    expected_status = "single_class" if importance_frame.true_label.nunique() < 2 else "available"
+    baseline = score_metrics(
+        importance_frame.true_label,
+        importance_frame.model_score,
+        customer_ids=importance_frame.customer_id,
+        capacities=(),
+    )
+    if (
+        repeats["feature_names"] != features
+        or repeats["status"] != expected_status
+        or repeats["customers"] != len(importance_frame)
+        or repeats["positive_customers"] != int(importance_frame.true_label.sum())
+        or repeats["n_repeats"] != report["configuration"]["n_repeats"]
+        or repeats["seed"] != report["methodology"]["permutation_seed"]
+        or (
+            expected_status == "available"
+            and not summaries_match(
+                repeats["baseline_average_precision"], baseline["average_precision"]
+            )
+        )
+        or not summaries_match(report["importance"], summary)
+    ):
+        raise ValueError(
+            "Saved permutation summary differs from repeats or importance-cohort metadata."
+        )
+    computed = error_diagnostics(
+        predictions.loc[predictions.partition.eq("development_evaluation")],
+        features,
+        thresholds=report["configuration"]["thresholds"],
+        capacities=report["configuration"]["capacities"],
+        min_group_size=report["configuration"]["min_group_size"],
+    )
+    if not summaries_match(report["errors"], computed):
+        raise ValueError("Saved error diagnostics differ from the evaluation predictions/features.")
     return report
 
 

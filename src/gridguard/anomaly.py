@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import IsolationForest
-from sklearn.model_selection import train_test_split
 from sklearn.utils.validation import check_is_fitted
 
 from gridguard.anomaly_metrics import (
@@ -17,7 +16,6 @@ from gridguard.anomaly_metrics import (
 )
 from gridguard.error_analysis import QUALITY_BINS
 from gridguard.features import FEATURE_CONFIGS, build_features
-from gridguard.modeling import candidate_models
 from gridguard.provenance import (
     experiment_metadata,
     file_fingerprint,
@@ -26,6 +24,7 @@ from gridguard.provenance import (
     verify_partition_manifest,
     write_json,
 )
+from gridguard.training import development_partitions, fit_development_baseline
 
 
 class RobustMAD(BaseEstimator):
@@ -118,24 +117,10 @@ def benchmark(
     if output_dir.exists() and any(output_dir.iterdir()):
         raise FileExistsError(f"Choose an empty anomaly output directory: {output_dir}")
     data, parent, original = load_reference_development(input_path, reference_dir)
-    training = np.arange(len(original["train"]))
-    validation_pool = np.arange(len(training), len(data))
-    if set(data.labels.iloc[training]) != {0, 1}:
-        raise ValueError("The supervised training comparator requires both label classes.")
-    labels = data.labels.iloc[validation_pool].to_numpy(dtype=int)
-    if len(labels) < 4 or min(int(labels.sum()), int((1 - labels).sum())) < 2:
-        raise ValueError("Reference validation requires >=4 customers and >=2 per class.")
-    validation, evaluation = train_test_split(
-        validation_pool,
-        test_size=0.5,
-        stratify=labels,
-        random_state=seed,
+    parts = development_partitions(data, original, seed=seed)
+    training, validation, evaluation = (
+        parts[name] for name in ("train", "development_validation", "development_evaluation")
     )
-    parts = {
-        "train": training,
-        "development_validation": validation,
-        "development_evaluation": evaluation,
-    }
     report = experiment_metadata(
         data,
         parts,
@@ -160,9 +145,9 @@ def benchmark(
     features = build_features(train_data, config=feature_config)
     # Use the exact existing RF recipe. Its fitted median imputer is shared by
     # both anomaly detectors; no second preprocessing recipe or refit is added.
-    supervised = candidate_models(seed)["random_forest"]
-    supervised.named_steps["classifier"].set_params(n_jobs=1)
-    supervised.fit(features, train_data.labels.to_numpy(dtype=int))
+    supervised = fit_development_baseline(
+        features, train_data.labels.to_numpy(dtype=int), seed=seed
+    )
     imputer = supervised.named_steps["imputer"]
     imputed = imputer.transform(features)
     isolation = IsolationForest(
