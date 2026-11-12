@@ -1,198 +1,517 @@
-"""Read-only Streamlit report over held-out predictions.
+"""Local, read-only consumption risk analytics. No model loading or training."""
 
-Launch after 'gridguard demo' or 'gridguard train' from the repository root.
-"""
-
-import json
+import os
 from pathlib import Path
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 
+from gridguard.dashboard import (
+    discover_runs,
+    file_signature,
+    filter_queue,
+    load_run,
+    optional_report,
+    prediction_metrics,
+    private_export,
+    quality_groups,
+    queue_metrics,
+)
 from gridguard.data import load_customer_history
-from gridguard.modeling import ranking_order
+from gridguard.modeling import ranking_metrics
 
-st.set_page_config(page_title="GridGuard AI", page_icon="⚡", layout="wide")
+st.set_page_config(
+    page_title="GridGuard AI | Risk analytics", page_icon=":material/bolt:", layout="wide"
+)
 
 
-@st.cache_data(show_spinner=False)
-def read_artifacts(folder: str) -> tuple[dict, pd.DataFrame]:
-    path = Path(folder)
-    report = json.loads((path / "metrics.json").read_text(encoding="utf-8"))
-    if report.get("test") is None:
-        return report, pd.DataFrame()
-    predictions = pd.read_csv(
-        path / "test_predictions.csv", dtype={"customer_id": "string"}, float_precision="round_trip"
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_artifacts(folder, signature):
+    run = load_run(folder)
+    return run, prediction_metrics(run.predictions)
+
+
+@st.cache_data(ttl=300, max_entries=32, show_spinner=False)
+def read_optional(path, modified):
+    return optional_report(path)
+
+
+@st.cache_data(ttl=300, max_entries=16, show_spinner=False)
+def customer_history(path, customer_id, modified):
+    return load_customer_history(path, customer_id)
+
+
+def number(value, percent=False):
+    return (
+        "Unavailable"
+        if value is None or pd.isna(value)
+        else (f"{value:.1%}" if percent else f"{value:,.3f}")
     )
-    predictions = predictions.iloc[ranking_order(predictions.model_score, predictions.customer_id)]
-    return report, predictions
 
 
-@st.cache_data(show_spinner=False)
-def customer_history(csv_path: str, customer_id: str) -> pd.DataFrame:
-    """Scan local CSV in bounded chunks, avoiding a full-file dashboard load."""
-    return load_customer_history(csv_path, customer_id)
+def cards(items):
+    with st.container(horizontal=True):
+        for label, value in items:
+            st.metric(label, value, border=True)
 
 
-st.title("⚡ GridGuard AI")
-st.caption("Electricity consumption intelligence · Customer-level risk ranking · Portfolio demo")
-st.sidebar.header("Report")
-artifact_dir = st.sidebar.text_input("Artifact directory", value="artifacts")
+def chart(figure, title):
+    figure.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="#DCE5F1",
+        colorway=["#38BDF8", "#2DD4BF", "#FBBF24", "#FB7185"],
+        margin=dict(l=16, r=16, t=48, b=24),
+        height=350,
+        title=dict(text=title, font_size=16),
+        legend_title_text="",
+    )
+    figure.update_xaxes(gridcolor="#253449")
+    figure.update_yaxes(gridcolor="#253449")
+    st.plotly_chart(figure, width="stretch", theme=None, alt=title, config={"displaylogo": False})
+
+
+def table(frame, label):
+    st.dataframe(frame, hide_index=True, width="stretch", alt=label)
+
+
+def optional(path):
+    path = Path(path)
+    result, warning = read_optional(str(path), path.stat().st_mtime_ns if path.is_file() else None)
+    if warning:
+        st.caption(warning)
+    return result
+
+
+st.sidebar.title(":material/bolt: GridGuard AI")
+st.sidebar.caption("CONSUMPTION INTELLIGENCE")
+options = ["Custom path", *discover_runs()]
+selected = st.sidebar.selectbox("Saved experiment", options)
+default = os.environ.get("GRIDGUARD_ARTIFACT_DIR", "artifacts")
+artifact_dir = (
+    st.sidebar.text_input("Artifact directory", value=default)
+    if selected == "Custom path"
+    else selected
+)
+page = st.sidebar.radio(
+    "Workspace",
+    ["Overview", "Model performance", "Inspection queue", "Customer analytics", "Data quality"],
+)
+st.sidebar.caption("Local artifacts · Read-only analytics")
+st.title(page)
+st.caption("GridGuard AI / Electricity consumption risk analytics")
 try:
-    report, predictions = read_artifacts(artifact_dir)
-except (FileNotFoundError, OSError, ValueError, json.JSONDecodeError) as exc:
-    st.info("No trained report found. Run the commands below from the repository root.")
-    st.code("gridguard demo\nstreamlit run app/streamlit_app.py", language="bash")
+    run, computed = read_artifacts(artifact_dir, file_signature(artifact_dir))
+except (OSError, ValueError, KeyError, TypeError) as exc:
+    st.info(
+        "Select a local experiment containing metrics.json and, for holdout runs, test_predictions.csv."
+    )
     st.caption(str(exc))
     st.stop()
 
-if report.get("test") is None:
-    st.info(
-        "This is a validation-only experiment. Finalize the selected run to view a holdout report."
-    )
-    st.dataframe(pd.DataFrame.from_dict(report["validation"], orient="index"))
-    st.stop()
-
-dataset = report["dataset"]
-evaluation = report["test"]
-source = dataset["source"]
-if source == "synthetic":
-    st.warning(
-        "SYNTHETIC DEMO: consumption behavior and labels are simulated. "
-        "The metrics below are not evidence of real-world electricity theft detection."
-    )
-else:
-    st.info(
-        "Risk scores are uncalibrated ranking signals, not proof of theft. "
-        "A field investigation requires independent verification."
-    )
-
+report, predictions = run.report, run.predictions
+dataset = report.get("dataset", {})
+validation_only = report.get("test") is None
+validation = report.get("validation", {})
+evaluation = (
+    validation.get(report.get("selected_model"), {})
+    if validation_only
+    else computed or report.get("test", {})
+)
 st.caption(
-    f"Source: {source} · Model: {report['selected_model']} · "
-    f"Evaluation: untouched customer-level test split · "
-    f"{report['split_sizes']['test']:,} test customers"
+    f"{run.kind}  |  {report.get('experiment_id', Path(artifact_dir).name)}  |  "
+    f"{report.get('selected_model', 'Model unavailable').replace('_', ' ')}"
 )
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Test average precision", f"{evaluation['average_precision']:.3f}")
-col2.metric("Test recall @ 0.5", f"{evaluation['recall_0_5']:.1%}")
-col3.metric("Precision @ top 50", f"{evaluation['precision_at_50']:.1%}")
-col4.metric("Test class prevalence", f"{evaluation['positive_prevalence']:.1%}")
-
-tab_queue, tab_models, tab_history, tab_about = st.tabs(
-    ["Inspection queue", "Model evaluation", "Reading history", "Methodology"]
+if validation_only:
+    st.info(
+        "This is a validation-only experiment. No test predictions or customer queue are available."
+    )
+if dataset.get("source") == "synthetic":
+    st.warning(
+        "Synthetic demonstration. Simulated readings and labels do not measure real-world performance."
+    )
+st.caption(
+    "Scores are uncalibrated ranking signals, not evidence of electricity theft. "
+    "Retrospective metrics do not predict future inspection outcomes."
 )
+for warning in run.warnings:
+    st.warning(warning)
 
-with tab_queue:
-    st.subheader("Investigation prioritization")
-    st.caption(
-        "These are held-out test customers. Bands are illustrative thresholds "
-        "(High ≥80, Medium ≥50); they are not operational policy."
+if page == "Overview":
+    cards(
+        [
+            (
+                "Validation AP" if validation_only else "Observed holdout AP",
+                number(evaluation.get("average_precision")),
+            ),
+            ("ROC-AUC", number(evaluation.get("roc_auc"))),
+            (
+                "Customers in experiment",
+                f"{dataset.get('customers', 0):,}" if "customers" in dataset else "Unavailable",
+            ),
+            ("Missing readings · experiment", number(dataset.get("missing_reading_rate"), True)),
+        ]
     )
-    left, right = st.columns(2)
-    with left:
-        capacity = st.slider(
-            "Available inspection slots (top K)",
-            1,
-            min(200, len(predictions)),
-            min(50, len(predictions)),
+    if not predictions.empty:
+        left, right = st.columns(2)
+        with left, st.container(border=True):
+            bands = predictions.risk_band.value_counts().reindex(
+                ["Low", "Medium", "High"], fill_value=0
+            )
+            chart(
+                px.bar(
+                    x=bands.index,
+                    y=bands.values,
+                    color=bands.index,
+                    color_discrete_map={"Low": "#38BDF8", "Medium": "#FBBF24", "High": "#FB7185"},
+                    labels={"x": "Illustrative band", "y": "Customers"},
+                ),
+                "Risk distribution",
+            )
+        with right, st.container(border=True):
+            chart(
+                px.histogram(
+                    predictions,
+                    x="model_score",
+                    nbins=30,
+                    labels={"model_score": "Raw model score"},
+                ),
+                "Score distribution",
+            )
+    with st.container(border=True):
+        st.subheader("Experiment context")
+        table(
+            pd.DataFrame(
+                [
+                    {"Property": key.replace("_", " "), "Value": str(value)}
+                    for key, value in {
+                        "source": dataset.get("source", "Unavailable"),
+                        "feature_configuration": report.get("feature_config", "baseline (legacy)"),
+                        "reading_columns": dataset.get("reading_days", "Unavailable"),
+                        "split_sizes": report.get("split_sizes", "Unavailable"),
+                        "fitted_on": report.get("methodology", {}).get("fitted_on", "Not recorded"),
+                        "provenance": run.provenance,
+                    }.items()
+                ]
+            ),
+            "Experiment context",
         )
-    with right:
-        minimum_score = st.slider("Minimum risk score", 0, 100, 0)
-    filtered = predictions.loc[predictions["risk_score"] >= minimum_score].head(capacity)
-    if filtered.empty:
-        st.info("No customer meets the selected score threshold.")
+        st.caption(
+            "Historical customer-level labels lack event onset dates. The reported holdout has been "
+            "inspected; this is retrospective analysis, not a prospective detection study. "
+            "Bands (high ≥80, medium ≥50) are illustrative. Human verification is required."
+        )
+
+elif page == "Model performance":
+    cards(
+        [
+            ("Average precision", number(evaluation.get("average_precision"))),
+            ("ROC-AUC", number(evaluation.get("roc_auc"))),
+            ("Precision · threshold 0.5", number(evaluation.get("precision_0_5"), True)),
+            ("Recall · threshold 0.5", number(evaluation.get("recall_0_5"), True)),
+        ]
+    )
+    st.caption(
+        f"F1 at 0.5: {number(evaluation.get('f1_0_5'))}. Fixed illustrative threshold; no tuning here."
+    )
+    if evaluation.get("confusion_matrix") is not None:
+        chart(
+            go.Figure(
+                go.Heatmap(
+                    z=evaluation["confusion_matrix"],
+                    x=["Predicted negative", "Predicted positive"],
+                    y=["Actual negative", "Actual positive"],
+                    colorscale="Teal",
+                    texttemplate="%{z}",
+                    showscale=False,
+                )
+            ),
+            "Confusion matrix · threshold 0.5",
+        )
+    if not predictions.empty and "true_label" in predictions:
+        rows = [
+            {
+                "K requested": k,
+                **ranking_metrics(
+                    predictions.true_label.to_numpy(),
+                    predictions.model_score.to_numpy(),
+                    k,
+                    customer_ids=predictions.customer_id,
+                ),
+            }
+            for k in (50, 100, 200)
+        ]
+        ranking = pd.DataFrame(rows)
+        table(ranking, "Retrospective ranking metrics")
+        chart(
+            px.line(
+                ranking,
+                x="evaluated_k",
+                y=["precision", "recall"],
+                markers=True,
+                labels={"evaluated_k": "Actual inspection capacity", "value": "Fraction"},
+            ),
+            "Retrospective precision and recall at capacity",
+        )
+        chart(px.bar(ranking, x="K requested", y="lift"), "Lift over cohort prevalence")
+        st.caption(
+            "K is capped by available customers. Recall uses all positives in the displayed cohort; "
+            "lift divides precision by cohort prevalence. Calculated from saved unrounded scores."
+        )
+    st.subheader("Validation comparison")
+    comparison = (
+        pd.DataFrame.from_dict(validation, orient="index").rename_axis("model").reset_index()
+    )
+    columns = [
+        col
+        for col in (
+            "model",
+            "average_precision",
+            "roc_auc",
+            "precision_at_50",
+            "recall_0_5",
+            "f1_0_5",
+        )
+        if col in comparison
+    ]
+    table(comparison[columns], "Validation model comparison")
+    if "average_precision" in comparison:
+        chart(px.bar(comparison, x="model", y="average_precision"), "Validation average precision")
+    st.caption(
+        "Selection uses validation AP. Holdout analysis here neither trains nor tunes a model."
+    )
+
+elif page == "Inspection queue":
+    if predictions.empty:
+        st.info("Customer predictions are unavailable for this run.")
     else:
-        retrospective_precision = filtered["true_label"].mean()
-        st.metric("Retrospective precision of displayed queue", f"{retrospective_precision:.1%}")
-        st.dataframe(
-            filtered[["customer_id", "risk_score", "risk_band", "review_signal"]],
-            hide_index=True,
-            use_container_width=True,
+        with st.container(border=True):
+            capacity = st.number_input(
+                "Inspection capacity (K)",
+                min_value=1,
+                max_value=len(predictions),
+                value=min(50, len(predictions)),
+                step=1,
+            )
+            bands = st.multiselect(
+                "Risk bands", ["High", "Medium", "Low"], default=["High", "Medium", "Low"]
+            )
+            search = st.text_input(
+                "Search customer ID", help="Literal, case-insensitive local search"
+            )
+        queue = filter_queue(predictions, capacity=capacity, bands=bands, search=search)
+        metrics = queue_metrics(queue, predictions)
+        cards(
+            [
+                ("Customers in queue", str(len(queue))),
+                ("Retrospective precision", number(metrics["precision"], True)),
+                ("Recall of cohort positives", number(metrics["recall"], True)),
+                ("Lift over cohort prevalence", number(metrics["lift"])),
+            ]
         )
-        st.download_button(
-            "Download inspection candidates (CSV)",
-            data=filtered.drop(columns=["true_label"]).to_csv(index=False).encode("utf-8"),
-            file_name="gridguard_inspection_candidates.csv",
-            mime="text/csv",
+        st.caption(
+            "Eligibility filters apply before capacity. Global rank is retained. Raw score descending; "
+            "ties by customer ID ascending. Filtered queue metrics are not unfiltered Precision@K."
         )
-    band_counts = (
-        predictions["risk_band"]
-        .value_counts()
-        .reindex(["High", "Medium", "Low"], fill_value=0)
-        .rename_axis("Band")
-        .reset_index(name="Customers")
-    )
-    st.plotly_chart(
-        px.bar(band_counts, x="Band", y="Customers", title="Test-set risk band distribution"),
-        use_container_width=True,
-    )
+        if queue.empty:
+            st.info("No customers match these filters.")
+        else:
+            table(
+                queue[
+                    [
+                        col
+                        for col in (
+                            "rank",
+                            "customer_id",
+                            "risk_score",
+                            "model_score",
+                            "risk_band",
+                            "review_signal",
+                        )
+                        if col in queue
+                    ]
+                ],
+                "Local inspection queue",
+            )
+            include = st.checkbox("Include customer IDs in private local CSV", value=False)
+            st.download_button(
+                "Download displayed queue",
+                private_export(queue, include_ids=include),
+                "inspection_candidates.csv",
+                "text/csv",
+                icon=":material/download:",
+            )
+            st.caption(
+                "Export omits ground-truth labels and reading indicators. Without IDs it is not anonymous: "
+                "ranks and scores may still link records. Keep all exports private."
+            )
 
-with tab_models:
-    st.subheader("Validation model comparison")
-    st.caption(
-        "Models are selected by validation average precision. "
-        "The test partition is used only once, after model selection."
-    )
-    table = pd.DataFrame.from_dict(report["validation"], orient="index").reset_index(names="model")
-    st.dataframe(
-        table[["model", "average_precision", "roc_auc", "precision_at_50", "recall_0_5", "f1_0_5"]],
-        hide_index=True,
-        use_container_width=True,
-    )
-    st.subheader("Final test evaluation")
-    st.json(evaluation)
-    st.caption(
-        "Confusion matrix rows: actual [negative, positive]; "
-        "columns: predicted [negative, positive] using an illustrative 0.5 cutoff."
-    )
-
-with tab_history:
-    st.subheader("Customer reading history")
-    selected_id = st.selectbox("Held-out customer", predictions["customer_id"].astype(str).tolist())
-    chosen = predictions.loc[predictions["customer_id"] == selected_id].iloc[0]
-    st.write(
-        f"**Risk score:** {chosen['risk_score']}/100 · "
-        f"**Band:** {chosen['risk_band']} · "
-        f"**Reading indicators:** {chosen['review_signal']}"
-    )
-    st.caption(
-        "Reading indicators are simple heuristics and do not explain "
-        "the model's feature contributions."
-    )
-    raw_path = st.text_input("Original CSV on this machine", dataset["input_path"])
-    if Path(raw_path).is_file():
-        try:
-            history = customer_history(raw_path, selected_id)
-            if history.empty:
-                st.info("The selected customer was not found in the specified CSV.")
-            else:
-                st.line_chart(history.set_index("date")["kwh"], y_label="Daily consumption (kWh)")
-                st.caption("Missing days remain missing; they are not interpreted as zero usage.")
-        except (OSError, ValueError) as exc:
-            st.error(f"Could not read consumption history: {exc}")
+elif page == "Customer analytics":
+    if predictions.empty:
+        st.info("Individual customer analytics require saved customer predictions.")
     else:
-        st.info("The original CSV is unavailable. Enter its local file path to view readings.")
+        search = st.text_input(
+            "Find a customer", help="Search locally to narrow the first 100 matches"
+        )
+        matches = predictions.loc[
+            predictions.customer_id.str.contains(search, case=False, regex=False)
+        ].head(100)
+        if matches.empty:
+            st.info("No matching customer.")
+        else:
+            chosen_id = st.selectbox("Customer", matches.customer_id.tolist())
+            chosen = matches.loc[matches.customer_id == chosen_id].iloc[0]
+            cards(
+                [
+                    ("Risk score / 100", str(chosen.risk_score)),
+                    ("Illustrative band", chosen.risk_band),
+                    ("Raw score", f"{chosen.model_score:.6f}"),
+                    ("Global rank", str(chosen["rank"])),
+                ]
+            )
+            st.markdown("**Descriptive reading signals**")
+            st.write(chosen.get("review_signal", "No saved descriptive signals"))
+            st.caption("Heuristic summaries, not model feature attribution or causal explanations.")
+            with st.form("history"):
+                raw_path = st.text_input(
+                    "Original CSV on this machine", dataset.get("input_path", "")
+                )
+                submitted = st.form_submit_button("Load consumption history")
+            if submitted:
+                try:
+                    path = Path(raw_path)
+                    history = customer_history(str(path), chosen_id, path.stat().st_mtime_ns)
+                    if history.empty:
+                        st.info("Customer not found in this file.")
+                    else:
+                        observed = history.kwh.notna().sum()
+                        cards(
+                            [
+                                ("Calendar days", str(len(history))),
+                                (
+                                    "Missing or invalid days",
+                                    number(float(history.kwh.isna().mean()), True),
+                                ),
+                                (
+                                    "Zero readings / observed",
+                                    number(
+                                        float(history.kwh.eq(0).sum() / observed)
+                                        if observed
+                                        else None,
+                                        True,
+                                    ),
+                                ),
+                            ]
+                        )
+                        chart(
+                            px.line(
+                                history,
+                                x="date",
+                                y="kwh",
+                                labels={"kwh": "Daily consumption (kWh)"},
+                            ),
+                            "Consumption history · gaps preserved",
+                        )
+                        chart(
+                            px.scatter(
+                                history.assign(
+                                    status=history.kwh.isna().map(
+                                        {True: "Missing / invalid", False: "Observed"}
+                                    )
+                                ),
+                                x="date",
+                                y="status",
+                            ),
+                            "Reading availability",
+                        )
+                        st.caption(
+                            "Negative, nonnumeric and nonfinite values become missing; calendar gaps remain missing. "
+                            "The selected CSV is a local lookup, not verified against the experiment fingerprint."
+                        )
+                except (OSError, ValueError) as exc:
+                    st.warning(f"History unavailable: {exc}")
 
-with tab_about:
-    st.markdown(
-        """
-        **Data:** one customer per row, at least 60 daily readings, optional binary `FLAG`.
-        Negative readings are treated as missing. The target is never a feature.
-
-        **Features:** statistical consumption distribution, recent-vs-previous 30-day
-        change, weekly use patterns, zero readings, and missingness.
-
-        **Training:** stratified customer-level 60/20/20 split. The logistic regression
-        and random forest models are selected based only on validation average precision.
-        A constant-prior dummy baseline is included for reference.
-
-        **Interpretation:** `risk_score` = rounded model output ×100, not a calibrated
-        probability. Risk bands are arbitrary dashboard labels, not safety-critical rules.
-        Source labels are customer-level, not timestamps of theft events.
-        """
+elif page == "Data quality":
+    st.subheader("Experiment sample")
+    cards(
+        [
+            ("Missing-reading fraction", number(dataset.get("missing_reading_rate"), True)),
+            ("Positive label fraction", number(dataset.get("positive_rate"), True)),
+            ("Missing calendar days", str(dataset.get("missing_calendar_days", "Unavailable"))),
+        ]
     )
-    st.caption(
-        "Not for customer accusations, service interruption, or automated enforcement. "
-        "See docs/model-card.md for limitations."
+    if "positive_customers" in dataset and "customers" in dataset:
+        chart(
+            px.bar(
+                x=["Negative label", "Positive label"],
+                y=[
+                    dataset["customers"] - dataset["positive_customers"],
+                    dataset["positive_customers"],
+                ],
+                labels={"x": "Historical label", "y": "Customers"},
+            ),
+            "Experiment label distribution",
+        )
+    if "missing_ratio" in predictions:
+        chart(
+            px.histogram(predictions, x="missing_ratio", nbins=20),
+            "Holdout missing-reading distribution",
+        )
+    st.subheader("Optional source-data audit")
+    quality_path = st.text_input("Preflight report JSON", "reports/data-quality.json")
+    quality = optional(quality_path)
+    if quality:
+        st.caption(
+            "Source-file audit, not necessarily the experiment sample. Compare source and cohort metadata before use."
+        )
+        keys = [
+            "customers",
+            "reading_columns",
+            "missing_reading_rate",
+            "zero_readings",
+            "negative_readings_masked_in_training",
+            "nonnumeric_nonempty_cells",
+            "nonfinite_readings",
+            "missing_calendar_days",
+        ]
+        table(
+            pd.DataFrame(
+                [
+                    {
+                        "Measure": key.replace("_", " "),
+                        "Value": str(quality.get(key, "Not recorded")),
+                    }
+                    for key in keys
+                ]
+            ),
+            "Source data quality audit",
+        )
+    st.subheader("Aggregate quality groups")
+    report_dir = st.text_input(
+        "Aggregate report directory", str(Path("reports") / Path(artifact_dir).name)
     )
+    analysis_path = (
+        Path(artifact_dir) / "validation_error_analysis.json"
+        if validation_only
+        else Path(report_dir) / "error_analysis.json"
+    )
+    st.caption(f"{'Validation' if validation_only else 'Holdout'} groups · {analysis_path}")
+    analysis = optional(analysis_path)
+    feature = st.selectbox("Group by", ["missing_ratio", "coefficient_variation", "mean_kwh"])
+    groups = quality_groups(analysis, feature)
+    if groups.empty:
+        st.info("No aggregate group metrics available for this selection.")
+    else:
+        table(groups, "Aggregate quality group metrics")
+        if "average_precision" in groups:
+            chart(
+                px.bar(groups, x="group", y="average_precision"),
+                "Average precision by quality group",
+            )
+        st.caption(
+            "Suppressed groups have no rates. Null metrics are undefined, not zero. AP varies with prevalence; "
+            "group differences do not establish causality or fairness. No customer records are loaded from these reports."
+        )

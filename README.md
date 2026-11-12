@@ -38,6 +38,8 @@ streamlit run app/streamlit_app.py
 
 Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
 
+The dark analytics dashboard provides Overview, Model performance, Inspection queue, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. No model training is required to view an existing experiment.
+
 ### Train on a local labeled consumption dataset
 
 Obtain a dataset under terms that permit your intended research use, record its provenance and license, and place the extracted CSV in `data/consumption.csv`.
