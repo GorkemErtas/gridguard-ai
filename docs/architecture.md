@@ -22,6 +22,7 @@ Demonstrate an end-to-end, readable approach to ranking **customer-level** elect
 | Orchestration | \`cli.py\` | Explicit workflows; optional bounded SQLite export |
 | Synthetic operational context | `operational.py` | Seeded SGCC-aligned event generation, foreign-key/date validation and separate descriptive consumption overlap |
 | Post-model review gate | `decision_gate.py` | As-of customer/region/interval matching, explainable decisions and aggregate reports; saved scores and order preserved |
+| Operational context dashboard | `context_dashboard.py` | Confined local paths, saved-output validation/gate replay, private display transforms and source-verified history; no model loading or input writes |
 | Presentation | \`app/streamlit_app.py\` | **Read-only** holdout report, inspection queue and reading plot |
 
 The dashboard consumes saved predictions and metrics; it does not retrain on every page refresh. Models are trained once via the CLI and reused for later inference.

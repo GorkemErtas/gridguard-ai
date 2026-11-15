@@ -111,6 +111,8 @@ Optional [`gridguard calibrate`](docs/probability-calibration.md) creates a sepa
 
 ## Synthetic operational context
 
+The dashboard's **Operational Context** workspace loads saved gate decisions and synthetic datasets for filtering, customer timelines and optional source consumption history. See [dashboard setup, privacy controls and screenshot](docs/operational-context-dashboard.md).
+
 `gridguard generate-context` and `gridguard context-gate` demonstrate context integration using the exact SGCC IDs/date headers while preserving saved scores and ordering. See [schemas, generation assumptions, decision rules and CLI usage](docs/operational-context.md). Generated customer-level context stays local and cannot establish improved ML performance.
 
 ## Tech stack
