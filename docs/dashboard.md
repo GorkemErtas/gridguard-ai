@@ -27,6 +27,8 @@ For this final run, the Data quality section defaults to `reports/pipeline-final
 - **Customer analytics:** local ID search returns at most 100 selectable matches. History loading requires explicit form submission and scans 250 customers per chunk. The daily chart preserves gaps, distinguishes missing/invalid days from observed zeros, and retains extreme observations. Signals are descriptive rules, not model attribution. The source CSV used for history is not fingerprint-verified against the model dataset.
 - **Data quality:** saved sample metadata, label counts, holdout missingness where available, optional source-audit counts (including zeros, negatives and nonnumeric/nonfinite readings), and aggregate error groups. Missing reports and suppressed/undefined group rates stay unavailable rather than becoming zero.
 
+- **Operational Context:** saved SYNTHETIC gate decisions, full-cohort KPIs, filtered inspection table, customer event/subscription timelines and optional fingerprint-verified source history. It operates independently of the legacy experiment selector. See [setup, integrity checks, privacy controls and screenshot](operational-context-dashboard.md).
+
 ## Compatibility, privacy and limitations
 
 The optional **Anomaly Detection** workspace reads `anomaly_benchmark.json` from `GRIDGUARD_ANOMALY_REPORT` or a user-entered path. It works independently of the legacy selector and displays only aggregate saved RF/IF/MAD comparisons, native-score distributions, overlap/Jaccard, tie-aware rank correlations, nonoverlap label rates and supported missing-reading groups. It never loads weights or trains/refits a model, and provides no customer IDs or customer-level downloads. The eight-entry/five-minute cache includes report, manifest and prediction-file signatures. Missing optional reports do not block original workspaces. See [anomaly methodology and reproduction](anomaly-benchmark.md).
@@ -42,6 +44,8 @@ All downloaded CSVs are private customer-level material, even with IDs excluded:
 Caches are bounded (8 experiments, 8 capacity curves, 8 reliability reports, 8 anomaly reports, 8 explainability reports, 32 optional reports, 16 individual histories) with a five-minute TTL; file modification signatures invalidate caches when artifacts change. Capacity curve keys also include the prediction frame. Saved development-report signatures include the report, manifest and prediction CSV; explainability also includes the repeated-importances JSON. Only the selected section executes. The raw CSV is read only on history submission; repeated lookups may still scan a large portion of the file, but memory stays bounded. The dashboard does not validate source-audit provenance or guarantee future model performance. Original risk scores remain uncalibrated; neither raw, calibrated nor anomaly scores establish theft or justify automated enforcement.
 
 ## Verification
+
+The Operational Context workspace adds eight cached validated context views and sixteen source-verified histories, each with a five-minute TTL. Its input signatures cover all gate/context files and the optional original predictions. See [Operational Context verification](operational-context-dashboard.md#screenshot-and-verification) for focused tests and the synthetic-only screenshot.
 
 ```powershell
 .\.venv\Scripts\ruff.exe check .

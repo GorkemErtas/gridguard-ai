@@ -10,6 +10,16 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from gridguard.capacity_planning import FINANCIAL_NOTICE, capacity_plan, financial_scenarios
+from gridguard.context_dashboard import (
+    PROJECT_ROOT,
+    context_signature,
+    customer_events,
+    filter_context,
+    inspection_frame,
+    load_context_view,
+    local_path,
+    verified_context_history,
+)
 from gridguard.dashboard import (
     discover_runs,
     file_signature,
@@ -25,8 +35,10 @@ from gridguard.dashboard import (
     queue_metrics,
 )
 from gridguard.data import load_customer_history
+from gridguard.decision_gate import STATUSES, _day_end
 from gridguard.explainability_metrics import IMPORTANCE_NOTICE
 from gridguard.modeling import ranking_metrics
+from gridguard.operational import time_value
 from gridguard.reliability import ECE_NOTICE
 
 st.set_page_config(
@@ -69,6 +81,18 @@ def read_anomaly(path, signature):
 @st.cache_data(ttl=300, max_entries=8, show_spinner=False)
 def read_explainability(path, signature):
     return load_explainability(path)
+
+
+@st.cache_data(ttl=300, max_entries=8, show_spinner=False)
+def read_context(decision_dir, context_dir, root, predictions_path, signature):
+    return load_context_view(
+        decision_dir, context_dir, root=root, predictions_path=predictions_path or None
+    )
+
+
+@st.cache_data(ttl=300, max_entries=16, show_spinner=False)
+def context_history(path, customer_id, expected_sha256, signature):
+    return verified_context_history(path, customer_id, expected_sha256)
 
 
 def number(value, percent=False):
@@ -124,23 +148,289 @@ artifact_dir = (
     if selected == "Custom path"
     else selected
 )
+workspaces = [
+    "Overview",
+    "Model performance",
+    "Model Reliability",
+    "Model Explainability",
+    "Anomaly Detection",
+    "Inspection queue",
+    "Inspection Capacity Planning",
+    "Customer analytics",
+    "Data quality",
+    "Operational Context",
+]
+initial_workspace = os.environ.get("GRIDGUARD_WORKSPACE", "Overview")
 page = st.sidebar.radio(
     "Workspace",
-    [
-        "Overview",
-        "Model performance",
-        "Model Reliability",
-        "Model Explainability",
-        "Anomaly Detection",
-        "Inspection queue",
-        "Inspection Capacity Planning",
-        "Customer analytics",
-        "Data quality",
-    ],
+    workspaces,
+    index=workspaces.index(initial_workspace) if initial_workspace in workspaces else 0,
 )
 st.sidebar.caption("Local artifacts · Read-only analytics")
 st.title(page)
 st.caption("GridGuard AI / Electricity consumption risk analytics")
+if page == "Operational Context":
+    st.warning(
+        "SYNTHETIC operational context only. Even verified records are simulated. "
+        "Decisions support human review; they do not establish innocence, fraud or improved ML performance."
+    )
+    root = os.environ.get("GRIDGUARD_CONTEXT_ROOT", str(PROJECT_ROOT))
+    with st.expander("Local context sources", expanded=False):
+        decision_dir = st.text_input(
+            "Saved gate output directory",
+            os.environ.get("GRIDGUARD_CONTEXT_DECISIONS", "reports/context-sgcc-phase1"),
+            key="context_decision_dir",
+        )
+        context_dir = st.text_input(
+            "SYNTHETIC operational dataset directory",
+            os.environ.get("GRIDGUARD_CONTEXT_DIR", "artifacts/context-sgcc-phase1"),
+            key="context_dataset_dir",
+        )
+        predictions_path = st.text_input(
+            "Original prediction CSV (optional integrity check)",
+            os.environ.get("GRIDGUARD_CONTEXT_PREDICTIONS", ""),
+            key="context_prediction_path",
+        )
+        st.caption(
+            "Local files within the server-configured data root. No uploads or file changes."
+        )
+    try:
+        signature = context_signature(
+            decision_dir, context_dir, root=root, predictions_path=predictions_path or None
+        )
+        with st.spinner("Validating saved SYNTHETIC context…"):
+            context = read_context(decision_dir, context_dir, root, predictions_path, signature)
+    except (OSError, ValueError, KeyError, TypeError, OverflowError):
+        st.info(
+            "No valid saved operational context is available. Select local directories containing "
+            "context_decisions.csv, context_evaluation.json and the SYNTHETIC datasets."
+        )
+        st.caption(
+            "Check file schemas, fingerprints and the evaluation window. Other workspaces remain available."
+        )
+        st.stop()
+    for warning in context.warnings:
+        st.warning(warning)
+    evaluation = context.report
+    counts = evaluation["customers_per_decision_status"]
+    cards(
+        [
+            ("Total evaluated customers", f"{evaluation['total_customers_evaluated']:,}"),
+            ("Eligible for review", f"{counts['eligible_for_review']:,}"),
+            ("Needs context verification", f"{counts['needs_context_verification']:,}"),
+            ("Insufficient data", f"{counts['insufficient_data']:,}"),
+            (
+                "High-risk requiring verification",
+                str(evaluation["high_risk_customers_requiring_verification"]),
+            ),
+            (
+                "Context coverage",
+                number(
+                    evaluation["context_coverage"].get("subscription_window_coverage_rate"), True
+                ),
+            ),
+        ]
+    )
+    st.caption(
+        f"SYNTHETIC gate window: {evaluation['window_start']} to {evaluation['window_end']} · "
+        f"Available as of {evaluation['evaluation_date']}. Cards describe the complete saved cohort. "
+        "Context coverage is subscription coverage of the entire window; outage/meter absence remains unknown."
+    )
+    st.caption(
+        f"High risk: original score ≥ {evaluation['rules']['high_risk_threshold']:g}/100. "
+        f"Missing-event policy: {evaluation['rules']['missing_event_policy']}. "
+        "Historical ML predictions are unchanged and are not prospective scores at this cutoff."
+    )
+    with st.container(border=True):
+        st.subheader("Inspect SYNTHETIC context decisions")
+        risk_range = st.slider("Original ML risk score", 0, 100, (0, 100), key="context_risk")
+        with st.container(horizontal=True):
+            statuses = st.multiselect(
+                "Decision status", list(STATUSES), default=list(STATUSES), key="context_status"
+            )
+            event_types = st.multiselect(
+                "Matched event type",
+                sorted(context.events.event_type.unique()),
+                key="context_event_type",
+            )
+            verifications = st.multiselect(
+                "Event verification status",
+                ["verified", "unverified", "missing"],
+                key="context_verification",
+            )
+        with st.container(horizontal=True):
+            include_missing = st.checkbox(
+                "Include missing or invalid risk scores", True, key="context_missing_risk"
+            )
+            reveal_ids = st.checkbox(
+                "Reveal customer and event IDs in this local view", False, key="context_reveal_ids"
+            )
+        search = (
+            st.text_input("Find customer ID locally", key="context_search") if reveal_ids else ""
+        )
+        st.caption(
+            "Empty event/verification filters include all customers. Combined filters must match the same event. "
+            "Unknown coverage is not proof that no event occurred. IDs are hidden until explicitly revealed."
+        )
+        filtered = filter_context(
+            context,
+            risk_range=risk_range,
+            statuses=statuses,
+            event_types=event_types,
+            verifications=verifications,
+            search=search,
+            include_missing_scores=include_missing,
+        )
+        st.caption(
+            f"{len(filtered):,} of {len(context.decisions):,} customers match. Saved input order is retained."
+        )
+        if filtered.empty:
+            st.info("No customers match these context filters.")
+            st.stop()
+        view_key = str(hash((signature, tuple(filtered.index), reveal_ids)))
+        page_number = st.number_input(
+            "Inspection page",
+            min_value=1,
+            max_value=max(1, (len(filtered) + 199) // 200),
+            value=1,
+            step=1,
+            key=f"context_page_{view_key}",
+        )
+        visible = filtered.iloc[(page_number - 1) * 200 : page_number * 200]
+        browser_frame = inspection_frame(visible, context.events, reveal_ids=reveal_ids)
+        selection = st.dataframe(
+            browser_frame,
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "customer_id": "Customer ID" if reveal_ids else "Customer (ID hidden)",
+                "original_risk_score": st.column_config.NumberColumn("Original ML risk score"),
+                "decision_status": "Decision status",
+                "evidence_status": "Evidence status",
+                "reason_codes": st.column_config.ListColumn("Reason codes"),
+                "matched_operational_events": st.column_config.ListColumn(
+                    "Matched operational events"
+                ),
+            },
+            on_select="rerun",
+            selection_mode="single-row",
+            key=f"context_table_{view_key}_{page_number}",
+            alt="SYNTHETIC context decisions; customer identifiers hidden unless explicitly revealed",
+        )
+        selected_rows = selection.selection.rows
+        index = selected_rows[0] if selected_rows and selected_rows[0] < len(visible) else 0
+        chosen_index = st.selectbox(
+            "Customer to inspect",
+            visible.index.tolist(),
+            index=index,
+            format_func=lambda value: str(browser_frame.loc[value, "customer_id"]),
+            key=f"context_customer_{view_key}_{page_number}_{index}",
+        )
+    chosen = context.decisions.loc[chosen_index]
+    chosen_score = pd.to_numeric(pd.Series([chosen.original_risk_score]), errors="coerce").iloc[0]
+    score_label = (
+        str(chosen.original_risk_score)
+        if np.isfinite(chosen_score) and 0 <= chosen_score <= 100
+        else "Unavailable"
+    )
+    st.subheader("Customer context drill-down · SYNTHETIC")
+    cards(
+        [
+            ("Original risk score / 100", score_label),
+            ("Gate decision", chosen.decision_status),
+            ("Evidence status", chosen.evidence_status),
+        ]
+    )
+    st.code("\n".join(chosen.reason_codes), language=None)
+    selected_events = customer_events(context, chosen.customer_id, reveal_ids=reveal_ids)
+    resolved = len(selected_events)
+    st.caption(
+        f"{resolved} of {len(chosen.matched_event_ids)} saved matched events available. All periods below are SYNTHETIC."
+    )
+    if selected_events.empty:
+        st.info(
+            "Operational evidence is unavailable or no records matched. Context remains unknown."
+        )
+    else:
+        timeline = px.timeline(
+            selected_events,
+            x_start="start",
+            x_end="end",
+            y="event_type",
+            color="verification_status",
+            color_discrete_map={
+                "verified": "#2DD4BF",
+                "unverified": "#FBBF24",
+                "missing": "#FB7185",
+            },
+            labels={
+                "event_type": "SYNTHETIC event",
+                "verification_status": "Synthetic verification",
+            },
+        )
+        timeline.update_yaxes(autorange="reversed")
+        if st.checkbox("Focus timeline on the gate window", True, key="context_focus_window"):
+            timeline.update_xaxes(
+                range=[time_value(evaluation["window_start"]), _day_end(evaluation["window_end"])]
+            )
+        chart(timeline, "SYNTHETIC outages, meter events and subscription timeline")
+        table(selected_events, "SYNTHETIC matched operational evidence for the selected customer")
+        st.caption(
+            "Timeline endpoints are exclusive; subscription and meter end dates include their full source day."
+        )
+    with st.form("context_history_form"):
+        raw_path = st.text_input(
+            "SGCC source CSV for consumption history",
+            os.environ.get("GRIDGUARD_CONTEXT_SOURCE", "data/consumption.csv"),
+            key="context_source_path",
+        )
+        submitted = st.form_submit_button("Load source consumption history")
+    if submitted:
+        try:
+            path = local_path(raw_path, root, suffix=".csv")
+            history = context_history(
+                str(path),
+                chosen.customer_id,
+                evaluation["source_sha256"],
+                file_signature(path.parent, names=(path.name,)),
+            )
+            if history.empty:
+                st.info("The selected customer has no history in this source.")
+            else:
+                figure = px.line(
+                    history, x="date", y="kwh", labels={"kwh": "Daily consumption (kWh)"}
+                )
+                for event in selected_events.itertuples():
+                    if event.event_type not in ("active", "terminated"):
+                        figure.add_vrect(
+                            x0=event.start,
+                            x1=event.end,
+                            fillcolor="#FBBF24",
+                            opacity=0.15,
+                            line_width=0,
+                        )
+                chart(figure, "Source consumption · shaded periods are SYNTHETIC events")
+                chart(
+                    px.scatter(
+                        history.assign(
+                            availability=history.kwh.isna().map(
+                                {True: "Missing / invalid", False: "Observed"}
+                            )
+                        ),
+                        x="date",
+                        y="availability",
+                    ),
+                    "Source reading availability · gaps preserved",
+                )
+                st.caption(
+                    "Source SHA-256 verified. Readings are unchanged; SYNTHETIC overlap does not establish a causal explanation."
+                )
+        except (OSError, ValueError, KeyError, TypeError):
+            st.info(
+                "History unavailable. Select the exact local source CSV recorded by this context run."
+            )
+    st.stop()
+
 if page == "Model Explainability":
     path = Path(
         st.text_input(
