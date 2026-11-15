@@ -109,6 +109,10 @@ Optional [`gridguard calibrate`](docs/probability-calibration.md) creates a sepa
 
 **Known limitations:** historical labels are customer-level (not theft dates), results from one distribution network may not generalize to another, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
 
+## Synthetic operational context
+
+`gridguard generate-context` and `gridguard context-gate` demonstrate context integration using the exact SGCC IDs/date headers while preserving saved scores and ordering. See [schemas, generation assumptions, decision rules and CLI usage](docs/operational-context.md). Generated customer-level context stays local and cannot establish improved ML performance.
+
 ## Tech stack
 
 Python · pandas · NumPy · scikit-learn · SQLite · Streamlit · Plotly · pytest · Ruff · GitHub Actions
