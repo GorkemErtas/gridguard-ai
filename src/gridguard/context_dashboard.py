@@ -193,7 +193,9 @@ def load_context_view(decision_dir, context_dir, *, root=PROJECT_ROOT, predictio
     ):
         raise ValueError("Invalid IDs, decision/evidence states or SYNTHETIC provenance.")
     for name in ("reason_codes", "matched_event_ids"):
-        decisions[name] = decisions[name].map(_string_list)
+        decisions[name] = pd.Series(
+            [_string_list(value) for value in decisions[name]], index=decisions.index, dtype=object
+        )
     if any("synthetic_context_only" not in codes for codes in decisions.reason_codes):
         raise ValueError("Every decision must declare synthetic context.")
     if any(not set(codes) <= REASON_CODES for codes in decisions.reason_codes):
@@ -399,17 +401,22 @@ def inspection_frame(decisions, events, *, reveal_ids=False):
         else [f"Customer {index + 1}" for index in decisions.index],
     )
     result["original_risk_score"] = pd.to_numeric(result.original_risk_score, errors="coerce")
-    matched = events.groupby("customer_id").event_type.agg(lambda values: sorted(set(values)))
-    result["matched_operational_events"] = decisions.customer_id.map(matched).map(
-        lambda value: value if isinstance(value, list) else []
+    result["reason_codes"] = pd.Series(
+        [list(codes) for codes in decisions.reason_codes], index=decisions.index, dtype=object
     )
+    # Build nested lists in Python: mapping Arrow strings can infer list<null>
+    # for empty matches, which cannot later accept unresolved-evidence strings.
+    matched = {
+        customer: sorted(set(types)) for customer, types in events.groupby("customer_id").event_type
+    }
     available = events.groupby("customer_id").size()
-    for index, row in decisions.iterrows():
+    labels = []
+    for row in decisions.itertuples():
+        values = matched.get(row.customer_id, []).copy()
         if available.get(row.customer_id, 0) < len(row.matched_event_ids):
-            result.at[index, "matched_operational_events"] = [
-                *result.at[index, "matched_operational_events"],
-                "unknown / unresolved evidence",
-            ]
+            values.append("unknown / unresolved evidence")
+        labels.append(values)
+    result["matched_operational_events"] = pd.Series(labels, index=decisions.index, dtype=object)
     result["provenance"] = PROVENANCE
     return result
 

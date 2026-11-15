@@ -139,6 +139,9 @@ def test_parse_replay_and_preserve_exact_source_files(context_files):
     assert not parsed.warnings
     assert parsed.decisions.customer_id.tolist() == files["ids"]
     assert parsed.decisions.original_risk_score.tolist() == [92, 88, 65, 42, 85, 32]
+    for column in ("reason_codes", "matched_event_ids"):
+        assert parsed.decisions[column].dtype == object
+        assert all(isinstance(value, list) for value in parsed.decisions[column])
     assert parsed.report["customers_per_decision_status"] == {
         "eligible_for_review": 1,
         "needs_context_verification": 4,
@@ -187,6 +190,83 @@ def test_display_allowlist_masks_ids_and_does_not_mutate(context_files):
     assert "customer_id" not in events and "event_id" not in events
     assert "event_id" in customer_events(parsed, context_files["ids"][1], reveal_ids=True)
     pd.testing.assert_frame_equal(before, parsed.decisions)
+
+
+@pytest.mark.parametrize("storage", ["python", "pyarrow"])
+@pytest.mark.parametrize(
+    "missing",
+    [None, "meter_events.csv", "outages.csv", "customer_regions.csv", "synthetic_context.json"],
+)
+def test_inspection_lists_are_objects_and_arrow_round_trip(context_files, storage, missing):
+    """Run under both CI dependency jobs, independently of pandas' string default."""
+    pa = pytest.importorskip("pyarrow")
+    if missing:
+        (context_files["context_dir"] / missing).unlink()
+    parsed = view(context_files)
+    parsed.decisions["customer_id"] = parsed.decisions.customer_id.astype(f"string[{storage}]")
+    if storage == "pyarrow":
+        # A caller may already carry Arrow list columns; the browser boundary
+        # must still produce Python lists rather than preserve Arrow metadata.
+        for column in ("reason_codes", "matched_event_ids"):
+            parsed.decisions[column] = pd.Series(
+                parsed.decisions[column].tolist(),
+                index=parsed.decisions.index,
+                dtype=pd.ArrowDtype(pa.list_(pa.string())),
+            )
+    decisions_before, events_before = (
+        parsed.decisions.copy(deep=True),
+        parsed.events.copy(deep=True),
+    )
+    # Nonconsecutive indices catch accidental positional realignment after filtering.
+    selected = filter_context(parsed, risk_range=(80, 100))
+    shown = inspection_frame(selected, parsed.events, reveal_ids=True)
+    for column in ("reason_codes", "matched_operational_events"):
+        assert shown[column].dtype == object
+        assert all(isinstance(value, list) for value in shown[column])
+    assert shown.index.tolist() == selected.index.tolist() == [0, 1, 4]
+    pd.testing.assert_frame_equal(
+        shown[["customer_id", "original_risk_score", "decision_status", "evidence_status"]],
+        selected[["customer_id", "original_risk_score", "decision_status", "evidence_status"]],
+    )
+    assert shown.reason_codes.tolist() == [list(value) for value in selected.reason_codes]
+    available = parsed.events.groupby("customer_id").size()
+    for index, row in selected.iterrows():
+        expected = sorted(
+            set(parsed.events.loc[parsed.events.customer_id.eq(row.customer_id), "event_type"])
+        )
+        if available.get(row.customer_id, 0) < len(row.matched_event_ids):
+            expected.append("unknown / unresolved evidence")
+        assert shown.matched_operational_events.loc[index] == expected
+    # Streamlit AppTest reconstructs browser frames from Arrow. Arrow extension
+    # list dtype metadata used to break that reconstruction with PyArrow 26.
+    restored = pa.Table.from_pandas(shown).to_pandas()
+    for column in ("reason_codes", "matched_operational_events"):
+        assert [list(value) for value in restored[column]] == shown[column].tolist()
+    pd.testing.assert_frame_equal(decisions_before, parsed.decisions)
+    pd.testing.assert_frame_equal(events_before, parsed.events)
+
+
+@pytest.mark.parametrize("empty_filter", [False, True])
+def test_empty_event_lists_keep_object_dtype_and_serialize(context_files, empty_filter):
+    pa = pytest.importorskip("pyarrow")
+    parsed = view(context_files)
+    parsed.events = parsed.events.iloc[:0].copy()
+    parsed.decisions["customer_id"] = parsed.decisions.customer_id.astype("string[pyarrow]")
+    # No recorded matches is different from recorded matches whose evidence is missing.
+    parsed.decisions["matched_event_ids"] = pd.Series(
+        [[] for _ in parsed.decisions.index],
+        index=parsed.decisions.index,
+        dtype=pd.ArrowDtype(pa.list_(pa.null())),
+    )
+    selected = filter_context(parsed, statuses=[] if empty_filter else ["eligible_for_review"])
+    shown = inspection_frame(selected, parsed.events)
+    assert shown.matched_operational_events.dtype == object
+    assert shown.reason_codes.dtype == object
+    assert shown.matched_operational_events.tolist() == [[] for _ in selected.index]
+    assert len(pa.Table.from_pandas(shown).to_pandas()) == len(selected)
+    if not empty_filter:
+        shown.at[shown.index[0], "matched_operational_events"] = ["unknown / unresolved evidence"]
+        assert shown.matched_operational_events.iloc[0] == ["unknown / unresolved evidence"]
 
 
 @pytest.mark.parametrize(
