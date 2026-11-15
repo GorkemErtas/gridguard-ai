@@ -1,5 +1,7 @@
 # Local risk analytics dashboard
 
+The interface now defaults to Turkish, with a persistent TR/EN selector and five top-level sections. The legacy workspace names below remain available as subviews; see the [current navigation map, setup and before/after screenshots](dashboard-tr-en.md). Existing environment variables and CLI commands remain supported.
+
 The dashboard reads existing experiment metadata and saved predictions. It never loads joblib bundles, trains estimators, tunes thresholds or rewrites artifacts. Install the app extra with Streamlit 1.65+ for the responsive native containers, accessible charts and theme options used here. Plotly remains the existing chart dependency. Fonts use the local system sans-serif stack; no remote font request is needed.
 
 ## Launch with the existing final experiment
@@ -13,7 +15,7 @@ $env:GRIDGUARD_ARTIFACT_DIR = 'artifacts/pipeline-final-20261111'
 .\.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
-Open `http://localhost:8501`. The sidebar also discovers `metrics.json` up to two experiment-directory levels below `artifacts/`. Select a saved experiment or use Custom path. The environment variable only chooses the initial path; it contains no metrics. Remove it with `Remove-Item Env:GRIDGUARD_ARTIFACT_DIR` to return to the `artifacts` default.
+Open `http://localhost:8501`. Select EN for the labels used below and expand **Experiment source** in the sidebar. It discovers `metrics.json` up to two experiment-directory levels below `artifacts/`. Select a saved experiment or use Custom path. The environment variable only chooses the initial path; it contains no metrics. Remove it with `Remove-Item Env:GRIDGUARD_ARTIFACT_DIR` to return to the `artifacts` default.
 
 For this final run, the Data quality section defaults to `reports/pipeline-final-20261111/error_analysis.json`. The source audit defaults to `reports/data-quality.json`; choose another existing preflight JSON if needed. A source audit may describe the full CSV while model metadata describe a sample; these scopes are labeled separately. No audit is computed by loading the entire raw dataset during an interaction.
 

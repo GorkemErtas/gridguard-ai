@@ -1,6 +1,6 @@
 # Inspection Capacity Planning
 
-This read-only workspace compares inspection capacities using a selected experiment's saved customer rankings and retrospective holdout labels. Open **Inspection Capacity Planning** in the dashboard sidebar after selecting a final experiment. See the [dashboard launch guide](dashboard.md) for local setup. No estimator is loaded, fitted, tuned or scored again, and no artifact or historical metric is rewritten.
+This read-only workspace compares inspection capacities using a selected experiment's saved customer rankings and retrospective holdout labels. Select EN, then **Operational Review → Inspection Capacity Planning**, after selecting a final experiment under **Experiment source**. See the [dashboard launch guide](dashboard.md) for local setup. No estimator is loaded, fitted, tuned or scored again, and no artifact or historical metric is rewritten.
 
 ## Workflow and scope
 
@@ -69,9 +69,7 @@ from gridguard.dashboard import load_run, private_export
 # Existing artifact validation and provenance checks happen here.
 run = load_run("artifacts/pipeline-final-20261111")
 plan = capacity_plan(run.predictions, capacities=[0, 50, 100, 200])
-illustrative = financial_scenarios(
-    plan, inspection_cost=20.0, recovery_per_positive=100.0
-)
+illustrative = financial_scenarios(plan, inspection_cost=20.0, recovery_per_positive=100.0)
 private_csv = private_export(run.predictions.head(50), include_ids=False)
 ```
 

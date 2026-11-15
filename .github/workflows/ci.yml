@@ -28,6 +28,8 @@ jobs:
           python -c "import sklearn, pandas, pyarrow; print(sklearn.__version__, pandas.__version__, pyarrow.__version__)"
       - name: Lint
         run: ruff check .
+      - name: Check formatting
+        run: ruff format --check .
       - name: Unit and integration tests
         run: pytest -q
       - name: Smoke test synthetic demo

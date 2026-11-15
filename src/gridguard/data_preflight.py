@@ -34,8 +34,9 @@ def inspect_csv(path: str | Path, *, chunk_size: int = 500) -> dict:
     all_readings = 0
     positive_min = positive_max = None
 
-    for chunk in pd.read_csv(path, chunksize=chunk_size, low_memory=False,
-                             dtype={id_col: "string"}):
+    for chunk in pd.read_csv(
+        path, chunksize=chunk_size, low_memory=False, dtype={id_col: "string"}
+    ):
         ids = chunk[id_col].astype("string").str.strip()
         if ids.isna().any() or ids.eq("").any() or ids.duplicated().any():
             raise ValueError("Missing or duplicate customer ID")
@@ -78,7 +79,9 @@ def inspect_csv(path: str | Path, *, chunk_size: int = 500) -> dict:
         "negative_readings_masked_in_training": negative,
         "nonnumeric_nonempty_cells": invalid,
         "nonfinite_readings": nonfinite,
-        "training_missing_reading_rate": (missing + negative) / all_readings if all_readings else None,
+        "training_missing_reading_rate": (missing + negative) / all_readings
+        if all_readings
+        else None,
         "positive_kwh_min": positive_min,
         "positive_kwh_max": positive_max,
     }

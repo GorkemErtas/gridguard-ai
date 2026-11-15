@@ -13,8 +13,8 @@ def make_synthetic(customers: int = 600, days: int = 120, seed: int = 42) -> pd.
     dates = pd.date_range("2025-01-01", periods=days, freq="D")
     base = rng.lognormal(mean=3.3, sigma=0.5, size=(customers, 1))
     seasonality = 1.0 + 0.13 * np.sin(np.arange(days) * 2 * np.pi / 7)
-    readings = base * seasonality[None, :] * rng.lognormal(
-        mean=0.0, sigma=0.18, size=(customers, days)
+    readings = (
+        base * seasonality[None, :] * rng.lognormal(mean=0.0, sigma=0.18, size=(customers, days))
     )
     labels = np.zeros(customers, dtype="int8")
     suspicious = rng.choice(customers, size=max(10, round(customers * 0.09)), replace=False)
