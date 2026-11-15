@@ -28,6 +28,12 @@ permutation_repeats.json
 explainability.json
 errors.csv
 risk_ranking.csv
+# Synthetic context still contains real SGCC identifiers; keep it local anywhere.
+customer_regions.csv
+outages.csv
+meter_events.csv
+subscriptions.csv
+context_decisions.csv
 *.sqlite
 *.db
 

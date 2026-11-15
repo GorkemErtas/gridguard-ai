@@ -46,6 +46,12 @@ jobs:
           gridguard calibrate --input data/calibration-demo.csv --reference-dir artifacts/calibration-reference --output-dir artifacts/calibration-development
           test -f artifacts/calibration-development/reliability.json
           test ! -f artifacts/calibration-development/test_predictions.csv
+      - name: Smoke test independent synthetic operational context
+        run: |
+          gridguard generate-context --input data/demo.csv --reference-metrics artifacts/metrics.json --output-dir artifacts/synthetic-context
+          gridguard context-gate --predictions artifacts/test_predictions.csv --context-dir artifacts/synthetic-context --evaluation-date 2025-03-30 --window-start 2025-03-01 --window-end 2025-03-30 --output-dir reports/synthetic-context
+          test -f artifacts/synthetic-context/context_compatibility.json
+          test -f reports/synthetic-context/context_evaluation.json
       - name: Smoke test development-only anomaly benchmark
         run: |
           gridguard benchmark-anomaly --input data/calibration-demo.csv --reference-dir artifacts/calibration-reference --output-dir artifacts/anomaly-development

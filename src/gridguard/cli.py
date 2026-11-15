@@ -132,8 +132,49 @@ def main(argv: list[str] | None = None) -> None:
     exporting.add_argument("--output", default="data/demo.sqlite")
     exporting.add_argument("--limit-customers", type=int, default=200)
 
+    context = subcommands.add_parser(
+        "generate-context", help="Generate independent SYNTHETIC context for the exact SGCC CSV"
+    )
+    context.add_argument("--input", required=True)
+    context.add_argument("--output-dir", required=True)
+    context.add_argument("--reference-metrics", help="Verify the existing experiment's source SHA256")
+    context.add_argument("--seed", type=int)
+    context.add_argument("--regions", type=int)
+    context.add_argument("--config", help="JSON GenerationConfig settings; explicit flags override")
+
+    gate = subcommands.add_parser("context-gate", help="Annotate saved scores with SYNTHETIC context")
+    gate.add_argument("--predictions", required=True)
+    gate.add_argument("--context-dir", required=True)
+    gate.add_argument("--output-dir", required=True)
+    gate.add_argument("--evaluation-date", required=True)
+    gate.add_argument("--window-start", required=True)
+    gate.add_argument("--window-end", required=True)
+    gate.add_argument("--config", help="JSON GateConfig settings")
+
     args = parser.parse_args(argv)
-    if args.command == "demo":
+    if args.command == "generate-context":
+        from gridguard.operational import GenerationConfig, save_context
+
+        settings = json.loads(Path(args.config).read_text(encoding="utf-8")) if args.config else {}
+        for key in ("seed", "regions"):
+            if getattr(args, key) is not None:
+                settings[key] = getattr(args, key)
+        result = save_context(
+            args.input, output_dir=args.output_dir, config=GenerationConfig(**settings),
+            reference_metrics=args.reference_metrics,
+        )
+        print(json.dumps(result, indent=2))
+    elif args.command == "context-gate":
+        from gridguard.decision_gate import GateConfig, save_decisions
+
+        settings = json.loads(Path(args.config).read_text(encoding="utf-8")) if args.config else {}
+        result = save_decisions(
+            args.predictions, context_dir=args.context_dir, output_dir=args.output_dir,
+            evaluation_date=args.evaluation_date, window_start=args.window_start,
+            window_end=args.window_end, config=GateConfig(**settings),
+        )
+        print(json.dumps(result, indent=2))
+    elif args.command == "demo":
         path = save_synthetic(args.output, customers=args.customers, days=args.days, seed=args.seed)
         result = train(path, output_dir=args.output_dir, source="synthetic", seed=args.seed)
         print("SYNTHETIC DATA ONLY - not indicative of operational detection quality")

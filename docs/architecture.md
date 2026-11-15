@@ -20,6 +20,8 @@ Demonstrate an end-to-end, readable approach to ranking **customer-level** elect
 | Dashboard helpers | `dashboard.py` | Read-only artifact validation, deterministic queues, privacy-preserving exports and optional reports |
 | Training and inference | \`training.py\` | Stratified 60/20/20 split, validation-only selection, final test, serialization, new-data scoring |
 | Orchestration | \`cli.py\` | Explicit workflows; optional bounded SQLite export |
+| Synthetic operational context | `operational.py` | Seeded SGCC-aligned event generation, foreign-key/date validation and separate descriptive consumption overlap |
+| Post-model review gate | `decision_gate.py` | As-of customer/region/interval matching, explainable decisions and aggregate reports; saved scores and order preserved |
 | Presentation | \`app/streamlit_app.py\` | **Read-only** holdout report, inspection queue and reading plot |
 
 The dashboard consumes saved predictions and metrics; it does not retrain on every page refresh. Models are trained once via the CLI and reused for later inference.
