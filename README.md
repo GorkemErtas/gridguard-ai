@@ -1,124 +1,127 @@
 # GridGuard AI
 
-**Electricity consumption analytics, non-technical loss risk scoring, and inspection prioritization.**
+**Elektrik tüketimini analiz eden, müşterileri inceleme önceliğine göre sıralayan ve operasyonel bağlamı görünür kılan karar destek prototipi.**
 
-GridGuard AI is a reproducible, lightweight machine-learning demonstration for electricity distribution analytics. It takes **daily consumption readings by customer**, builds statistical features, compares two classifiers, and ranks held-out customers for possible investigation.
+GridGuard AI, bir elektrik dağıtım şirketinin “Hangi müşteriyi önce incelemeliyiz, karar öncesinde hangi kayıtları doğrulamalıyız?” sorularını araştırır. Python, scikit-learn ve Streamlit kullanır; kayıtlı sonuçları salt okunur bir gösterge panelinde sunar.
 
-> **Important:** A risk score is a model-generated prioritization signal, **not evidence of electricity theft**. This project is a portfolio prototype, not an operational fraud-detection system.
+> Risk puanı **doğrulanmış kaçak kullanım kanıtı değildir**. Bu bir portföy ve araştırma projesidir; otomatik yaptırım veya üretim sistemi olarak tasarlanmamıştır.
 
-## What it does
+## Temel yetenekler
 
-- Validates customer-by-day wide consumption CSVs (`CONS_NO`, `FLAG`, date columns) and a generic `customer_id` equivalent.
-- Extracts consumption and data-quality signals without using the target label as a feature.
-- Splits customers into **train / validation / test (60 / 20 / 20)** with stratification and a fixed random seed.
-- Compares Logistic Regression and Random Forest using **validation average precision (AP)**; reports held-out test metrics and **Precision/Recall/Lift@K**.
-- Saves the selected model, evaluation report, and **out-of-sample test predictions**.
-- Shows an interactive Streamlit dashboard with inspection ranking, per-customer reading history, and model metrics.
-- Compares inspection capacities with retrospective top-K metrics, random baselines, marginal yield and optional illustrative financial scenarios.
-- Supports optional development-only probability calibration and a read-only Model Reliability view, preserving published holdout results.
-- Benchmarks Isolation Forest and robust median/MAD against a fresh fixed RF, with disjoint development cohorts and aggregate complementarity analysis.
-- Explains a fresh development RF with repeated AP permutation importance and analyzes errors on a separate development cohort, without touching the historical holdout.
-- Generates clearly labeled **synthetic data** so the demo runs without downloading a third-party dataset.
-- Supports optional SQLite export and sample SQL queries.
+| Bölüm | Yanıtladığı soru |
+| --- | --- |
+| **Genel Bakış** | Genel risk durumu nedir? |
+| **Risk Analizi** | Önce kimler incelenmeli? Liste, filtreler ve müşteri tüketim geçmişi. |
+| **Operasyonel İnceleme** | Kesinti, sayaç ve abonelik bağlamında ne doğrulanmalı? Kapasite nasıl planlanmalı? |
+| **Model Performansı** | Geçmiş değerlendirme, kalibrasyon, anomali karşılaştırması ve permütasyon önemi ne söylüyor? |
+| **Veri Kalitesi** | Okumalar ne kadar tam ve güvenilir? |
 
-## Quick start
+Arayüz yeni oturumda Türkçe açılır; **TR / EN** seçimi oturum boyunca korunur. Ayrıntılı filtreler ve teknik açıklamalar gerektiğinde açılır. On analitik görünümün tamamı bu beş bölüm altında erişilebilir.
 
-Python **3.11+** recommended.
+## Mimari ve teknolojiler
+
+```text
+SGCC CSV → doğrulama → tüketim özellikleri → kayıtlı model / tahmin / değerlendirme
+                                                    ↓
+Bağımsız SENTETİK olaylar → deterministik karar kapısı → salt okunur Streamlit paneli
+```
+
+Python 3.11+ · pandas · NumPy · scikit-learn · Streamlit · Plotly · pytest · Ruff · GitHub Actions. İsteğe bağlı SQLite dışa aktarımı ve SQL örnekleri korunur. Panel model yüklemez, eğitmez veya yeniden tahmin üretmez; veritabanı, API veya bulut servisi gerektirmez.
+
+## Veri ve önemli sınırlar
+
+- Yerel SGCC dosyası: **42.372 müşteri**, **1.034 okuma sütunu**, 2014-01-01–2016-10-31. Takvimde bir günün sütunu eksiktir. Kaynak şeması `CONS_NO`, `FLAG` ve günlük tarih sütunlarıdır; `customer_id` eşdeğeri de desteklenir.
+- `FLAG`, geçmiş müşteri etiketidir; doğrulanmış olay tarihi veya gelecekteki inceleme sonucu değildir. Eksik okumalar sıfır tüketim sayılmaz.
+- Risk puanı, ham model puanının 100 katının yuvarlanmasıdır; **kalibre edilmiş olasılık değildir**. Risk düzeyleri örnektir, şirket politikası değildir.
+- Operasyonel olaylar **SENTETİK / SYNTHETIC** veridir. Gerçek SGCC kimlikleri ve tarih aralığıyla uyumludur; etiketler, model tahminleri veya anomaliler kullanılarak üretilmez. Sentetik bölgeler gerçek coğrafya değildir. Olay eşleşmemesi, olay yaşanmadığını kanıtlamaz.
+- Gerçek müşteri verileri, tahminler, modeller ve müşteri düzeyindeki sentetik çıktılar depoya eklenmez. Yerel paneli localhost üzerinde kullanın; kimlikler gösterildiğinde ekran görüntüsü veya dışa aktarım paylaşmayın.
+
+## Kayıtlı model değerlendirmesi
+
+`pipeline-final-20261111`: 10.000 müşterilik sabit örneklem; eğitim/doğrulama/test **6.000/2.000/2.000**. `quality` özellikleri kullanan Random Forest, **doğrulama AP'sine** göre seçilmiş ve yalnızca eğitim verisine uydurulmuştur. Aşağıdaki değerler kayıtlı 2.000 müşterilik **geçmiş nihai test** sonucudur:
+
+| Ölçüm | Kayıtlı değer |
+| --- | ---: |
+| Average Precision (AP) | 0.32281366523385974 |
+| ROC-AUC | 0.7883066514472805 |
+| Precision@50 | 0.50 |
+| Precision@100 | 0.43 |
+| Precision@200 | 0.345 |
+| Pozitif etiket oranı | 0.0855 |
+
+0,5 eşiğindeki sınıflandırma matrisi: `[[1779, 50], [130, 41]]`. AP, trapez PR-AUC ile aynı ölçüm değildir. Test grubu daha önce incelenmiştir; bu sonuçlar ileriye dönük, coğrafi veya gerçek operasyonel başarıyı kanıtlamaz. Sentetik bağlamdan ML başarım artışı çıkarılmaz.
+
+Tam ölçümler: [kayıtlı nihai sonuç](docs/experiments/pipeline-final.json), [yöntem ve değerlendirme](docs/pipeline-evaluation.md). Bağımsız geliştirme deneylerinin kalibrasyon, anomali ve açıklanabilirlik sonuçları bu nihai testle birleştirilmez.
+
+## Kurulum
 
 ```bash
 git clone https://github.com/GorkemErtas/gridguard-ai.git
 cd gridguard-ai
 python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
+# PowerShell: .venv\Scripts\Activate.ps1
 # Linux/macOS: source .venv/bin/activate
 python -m pip install -e ".[app,dev]"
-
-# Generate synthetic readings, train models, and evaluate held-out customers
-gridguard demo
-
-# Launch dashboard
-streamlit run app/streamlit_app.py
 ```
 
-Results are written to `artifacts/` and the generated data goes into `data/`. Both are git-ignored.
+## Gösterge panelini çalıştırma
 
-The dark analytics dashboard provides Overview, Model performance, Model Reliability, Anomaly Detection, Model Explainability, Inspection queue, Inspection Capacity Planning, Customer analytics and Data quality views. See the [dashboard guide](docs/dashboard.md) for exact PowerShell commands using existing final artifacts, metric definitions, private exports and compatibility details. The [capacity planning guide](docs/inspection-capacity-planning.md) explains capacity scenarios, marginal yield and the optional illustrative financial calculator. No model training is required to view an existing experiment.
+Mevcut yerel deney dosyalarıyla PowerShell üzerinden:
 
-The optional [anomaly benchmark](docs/anomaly-benchmark.md) adds an **Anomaly Detection** workspace. It compares native anomaly rankings with a fresh development RF without changing published models or reusing the final holdout. Saved reports include ranking overlap, tie-aware correlation and missing-reading groups; anomaly scores are not probabilities or confirmed theft evidence.
-
-The optional [explainability workflow](docs/model-explainability.md), `gridguard explain`, adds a read-only **Model Explainability** workspace. It reports permutation means and repeat variability, predefined-threshold confusion matrices, quality-group errors and outcome distributions from saved development artifacts. These diagnostics concern a fresh fixed baseline, not the historical final model. Correlated features can mask importance; neither importance nor an error label establishes causation or electricity theft.
-
-### Train on a local labeled consumption dataset
-
-Obtain a dataset under terms that permit your intended research use, record its provenance and license, and place the extracted CSV in `data/consumption.csv`.
-
-```bash
-gridguard experiment --input data/consumption.csv --source custom --sample-size 10000 --output-dir artifacts/real-validation
-# Once validation decisions are final, evaluate the frozen winner once:
-gridguard finalize --input data/consumption.csv --experiment-dir artifacts/real-validation --output-dir artifacts/real-final
-streamlit run app/streamlit_app.py
+```powershell
+$env:GRIDGUARD_ARTIFACT_DIR = 'artifacts/pipeline-final-20261111'
+streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
-Choose `artifacts/real-final` in the dashboard. Use empty output directories to preserve earlier experiments. Omit `--sample-size` to use the full file; this changes the cohort and cannot be compared directly with the pilot's fixed test split. The sample is stratified by label. Third-party data are **not included**; confirm rights before use or redistribution.
+`http://localhost:8501` adresini açın. **Deney kaynağı** panelinden başka bir kayıtlı deney seçebilirsiniz. Dosyalar bulunmuyorsa uygulama açıklayıcı bir boş durum gösterir. Üçüncü taraf SGCC verisi depoyla dağıtılmaz; kullanım ve yeniden dağıtım haklarını ayrıca doğrulayın.
 
-See the [local commands](docs/real-data-evaluation.md) and [pipeline audit with measured validation/final results](docs/pipeline-evaluation.md). `train` remains available for a single configuration; use `--validation-only` during development. Existing model bundles keep the baseline feature calculation.
+Operasyonel bağlamın dizinleri, deney seçiminden **ayrıdır**:
 
-### Other commands
+```powershell
+$env:GRIDGUARD_CONTEXT_DIR = 'artifacts/context-sgcc-phase1'
+$env:GRIDGUARD_CONTEXT_DECISIONS = 'reports/context-sgcc-phase1'
+$env:GRIDGUARD_CONTEXT_PREDICTIONS = 'artifacts/pipeline-final-20261111/test_predictions.csv'
+```
+
+Kurulum, bölüm eşlemesi ve önce/sonra ekran görüntüleri: [TR/EN panel rehberi](docs/dashboard-tr-en.md). Dosya güvenliği ve kaynak geçmişi: [operasyonel bağlam rehberi](docs/operational-context-dashboard.md).
+
+## CLI ve yeniden üretilebilirlik
 
 ```bash
-gridguard score --input data/consumption.csv --model artifacts/model.joblib --output reports/risk_ranking.csv
-gridguard export-sqlite --input data/demo.csv --output data/demo.sqlite --limit-customers 200
+# İsteğe bağlı: yalnızca kurgusal okumalarla bağımsız demo deneyi oluşturur.
+gridguard demo --customers 120 --days 90 --output data/local-demo.csv --output-dir artifacts/local-demo
+
+# Mevcut SGCC kaynağına uyumlu sentetik bağlam üretir; modeli yeniden eğitmez.
+gridguard generate-context --input data/consumption.csv --reference-metrics artifacts/pipeline-final-20261111/metrics.json --output-dir artifacts/new-context --seed 42 --regions 20
+gridguard context-gate --predictions artifacts/pipeline-final-20261111/test_predictions.csv --context-dir artifacts/new-context --evaluation-date 2016-11-07 --window-start 2016-10-01 --window-end 2016-10-31 --output-dir reports/new-context
+```
+
+Yeni/boş çıktı dizinleri kullanın; geçmiş dosyaları değiştirmeyin. `train`, `experiment`, `finalize`, `score`, `calibrate`, `benchmark-anomaly`, `explain` ve `export-sqlite` komutları korunur. Ayrıntılı komutlar ve protokol: [CLI iş akışları](docs/cli-workflows.md), [gerçek veri değerlendirmesi](docs/real-data-evaluation.md), [sentetik bağlam şemaları](docs/operational-context.md).
+
+## Test ve doğrulama
+
+```bash
 pytest -q
 ruff check .
+ruff format --check .
 ```
 
-The dashboard defaults to `artifacts/` and can optionally display readings from the original local CSV file. `score` outputs rankings for all supplied customers; **do not interpret training-set predictions as a held-out evaluation**.
+CI; güncel bağımlılıkları ve minimum uyumluluk yapılandırmasını çalıştırır. Testler veri/sıralama bütünlüğünü, salt okunur görünümleri, TR/EN geçişini, karar kapısını ve eksik/kısmi dosya durumlarını kapsar. Küçük kurgusal test fikstürleri gerçek modellerin veya tarihsel çıktıların yerine yazılmaz.
 
-## Architecture
+## Proje yapısı ve belgeler
 
 ```text
-CSV / synthetic generator
-        |
-        v
-  data.py (schema + data quality)
-        |
-        v
-  features.py (customer-level features)
-        |
-        v
-  training.py (stratified split -> compare models -> final test)
-        |
-        +---- model.joblib / metrics.json / test_predictions.csv
-        |
-        +---- app/streamlit_app.py (read-only dashboard)
-
-  cli.py: demo | train | experiment | finalize | score | export-sqlite
-          calibrate | benchmark-anomaly | explain (optional development research)
-  sql/: optional SQLite exploratory analysis
+app/streamlit_app.py     TR/EN gösterge paneli
+src/gridguard/          veri, özellikler, ML, değerlendirme ve bağlam modülleri
+src/gridguard/i18n.py   sunum çevirileri ve görüntüleme yardımcıları
+tests/                 birim, bütünleşim ve Streamlit AppTest testleri
+docs/                  yöntem, kullanım ve sınırlamalar
+data/ artifacts/ reports/   yerel; Git tarafından yok sayılır
 ```
 
-See [architecture](docs/architecture.md) and [model card](docs/model-card.md) for methodology, limitations, and responsible use.
+- [Mimari](docs/architecture.md) · [Model kartı](docs/model-card.md) · [Panel](docs/dashboard-tr-en.md)
+- [Kapasite planlama](docs/inspection-capacity-planning.md) · [Kalibrasyon](docs/probability-calibration.md)
+- [Anomali karşılaştırması](docs/anomaly-benchmark.md) · [Model açıklanabilirliği](docs/model-explainability.md)
+- [Operasyonel bağlam](docs/operational-context.md) · [Kaynak veri atfı ve sınırlar](docs/pipeline-evaluation.md#research-data-attribution)
 
-## Evaluation design
-
-**Why Average Precision?** With a minority positive class, ROC-AUC alone can hide poor precision. Selection uses validation **AP**, followed by a **single** final test evaluation. Precision@K measures the fraction of positives among K inspection candidates. Recall@K measures the fraction of all positives found; lift compares precision with prevalence. Rankings use unrounded probabilities and customer-ID tie breaks. AP is not trapezoidal PR-curve area.
-
-The risk score is `round(100 * model.predict_proba(...))`, **not a calibrated probability**. Display bands (low/medium/high) are illustrative and are not company inspection policy.
-
-Optional [`gridguard calibrate`](docs/probability-calibration.md) creates a separate experiment with disjoint base fitting/selection, calibration fitting/selection and diagnostic roles. It compares uncalibrated, sigmoid and eligible isotonic outputs using proper scores, reliability diagrams and existing ranking metrics. The previously inspected holdout is excluded; independent final calibration performance is not established. **Model Reliability** reads saved diagnostics and never trains a calibrator. Calibrated values concern historical labels and cannot establish confirmed theft.
-
-**Known limitations:** historical labels are customer-level (not theft dates), results from one distribution network may not generalize to another, missing readings can reflect outages or collection problems, and historical labels need independent validation. No individual should be accused or penalized based solely on this output.
-
-## Synthetic operational context
-
-The dashboard's **Operational Context** workspace loads saved gate decisions and synthetic datasets for filtering, customer timelines and optional source consumption history. See [dashboard setup, privacy controls and screenshot](docs/operational-context-dashboard.md).
-
-`gridguard generate-context` and `gridguard context-gate` demonstrate context integration using the exact SGCC IDs/date headers while preserving saved scores and ordering. See [schemas, generation assumptions, decision rules and CLI usage](docs/operational-context.md). Generated customer-level context stays local and cannot establish improved ML performance.
-
-## Tech stack
-
-Python · pandas · NumPy · scikit-learn · SQLite · Streamlit · Plotly · pytest · Ruff · GitHub Actions
-
-## License and data rights
-
-No software license has been selected yet. The source is publicly visible, but reuse rights are not automatically granted. Third-party datasets may have separate, restrictive terms; do not redistribute them without permission.
+İngilizce teknik belgeler ayrıntılı başvuru olarak korunur. Yazılım için henüz lisans seçilmemiştir; kaynağın herkese açık olması yeniden kullanım hakkı vermez. Üçüncü taraf verilerin ayrı koşulları olabilir.

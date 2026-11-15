@@ -291,7 +291,8 @@ def test_dashboard_renders_without_loading_fitting_or_rescoring(saved, monkeypat
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.impute import SimpleImputer
     from sklearn.pipeline import Pipeline
-    from streamlit.testing.v1 import AppTest
+
+    from tests.dashboard_support import app_file, open_workspace
 
     def forbidden(*args, **kwargs):
         pytest.fail("Dashboard cannot load, fit, permute or rescore models")
@@ -305,10 +306,10 @@ def test_dashboard_renders_without_loading_fitting_or_rescoring(saved, monkeypat
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(tmp_path / "no-legacy"))
     monkeypatch.setenv("GRIDGUARD_EXPLAINABILITY_REPORT", str(saved / "explainability.json"))
     snapshot = {path.name: file_fingerprint(path) for path in saved.iterdir()}
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
-    app.sidebar.radio[0].set_value("Model Explainability").run()
+    open_workspace(app, "Model Explainability")
     assert not app.exception
     assert any("Development-only" in warning.value for warning in app.warning)
     assert any("Synthetic demonstration" in warning.value for warning in app.warning)
@@ -320,21 +321,26 @@ def test_dashboard_renders_without_loading_fitting_or_rescoring(saved, monkeypat
     app.selectbox(key="explain_feature").set_value("missing_ratio").run()
     assert not app.exception
     assert snapshot == {path.name: file_fingerprint(path) for path in saved.iterdir()}
+    app.segmented_control(key="language").set_value("tr").run()
+    assert not app.exception
+    assert app.title[0].value == "Model Performansı"
+    assert len(app.get("plotly_chart")) >= 3
+    app.segmented_control(key="language").set_value("en").run()
     app.text_input(key="explain_path").set_value(str(tmp_path / "absent.json")).run()
     assert not app.exception and "No valid saved explainability report" in app.info[0].value
 
 
 def test_legacy_dashboard_remains_available_without_optional_explanations(tmp_path, monkeypatch):
     pytest.importorskip("streamlit")
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file, open_workspace
 
     write_json(tmp_path / "metrics.json", {"test": None, "validation": {}})
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(tmp_path))
     monkeypatch.delenv("GRIDGUARD_EXPLAINABILITY_REPORT", raising=False)
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
-    app.sidebar.radio[0].set_value("Model Explainability").run()
+    open_workspace(app, "Model Explainability")
     assert not app.exception and "No valid saved explainability report" in app.info[0].value
-    app.sidebar.radio[0].set_value("Overview").run()
+    open_workspace(app, "Overview")
     assert not app.exception and any("validation-only" in row.value for row in app.info)

@@ -10,8 +10,8 @@ def test_export_sqlite(tmp_path):
     assert export_sqlite(str(source), str(destination), limit_customers=25) == 25
     with sqlite3.connect(destination) as connection:
         count = connection.execute("SELECT COUNT(*) FROM consumption").fetchone()[0]
-        ids = connection.execute(
-            "SELECT COUNT(DISTINCT customer_id) FROM consumption"
-        ).fetchone()[0]
+        ids = connection.execute("SELECT COUNT(DISTINCT customer_id) FROM consumption").fetchone()[
+            0
+        ]
     assert 0 < count <= 25 * 60
     assert ids == 25

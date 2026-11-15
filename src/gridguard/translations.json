@@ -1,0 +1,2278 @@
+{
+  "**Descriptive reading signals**": {
+    "tr": "**Tüketimden türetilen gözlem işaretleri**",
+    "en": "**Descriptive reading signals**"
+  },
+  ":material/bolt: GridGuard AI": {
+    "tr": ":material/bolt: GridGuard AI",
+    "en": ":material/bolt: GridGuard AI"
+  },
+  "AP and ROC-AUC appear above. Isotonic can introduce ties; sigmoid can also change rankings through reversal or numerical saturation. Actual probabilities and customer-ID tie breaks are used throughout.": {
+    "tr": "AP ve ROC-AUC yukarıdadır. İzotonik eşleme eşit puanlar üretebilir; sigmoid eşleme de ters yön veya sayısal yuvarlama nedeniyle sıralamayı değiştirebilir. Ham olasılıklar ve müşteri kimliğiyle eşitlik çözümü korunur.",
+    "en": "AP and ROC-AUC appear above. Isotonic can introduce ties; sigmoid can also change rankings through reversal or numerical saturation. Actual probabilities and customer-ID tie breaks are used throughout."
+  },
+  "AP permutation importance, standard deviation and negative means": {
+    "tr": "AP permütasyon önemi, standart sapma ve negatif değerler",
+    "en": "AP permutation importance, standard deviation and negative means"
+  },
+  "AP permutation importance: mean with repeat standard deviation": {
+    "tr": "AP permütasyon önemi: ortalama ve tekrar standart sapması",
+    "en": "AP permutation importance: mean with repeat standard deviation"
+  },
+  "Aggregate quality group metrics": {
+    "tr": "Veri kalitesi gruplarının toplu ölçümleri",
+    "en": "Aggregate quality group metrics"
+  },
+  "Aggregate quality groups": {
+    "tr": "Veri kalitesi grupları",
+    "en": "Aggregate quality groups"
+  },
+  "Aggregate report directory": {
+    "tr": "Toplu rapor dizini",
+    "en": "Aggregate report directory"
+  },
+  "Anomaly scores are not probabilities or confirmed theft evidence. Unusual consumption can reflect outages, missing readings or collection errors. Disagreement does not establish that either method is wrong. Historical customer-level labels lack event dates; human review is required.": {
+    "tr": "Anomali puanları olasılık veya doğrulanmış kaçak kanıtı değildir. Sıra dışı tüketim; kesinti, eksik okuma veya veri toplama hatasından kaynaklanabilir. Yöntemlerin farklı sıralaması birinin hatalı olduğunu kanıtlamaz. Geçmiş müşteri etiketlerinin olay tarihi yoktur; insan incelemesi gerekir.",
+    "en": "Anomaly scores are not probabilities or confirmed theft evidence. Unusual consumption can reflect outages, missing readings or collection errors. Disagreement does not establish that either method is wrong. Historical customer-level labels lack event dates; human review is required."
+  },
+  "Artifact directory": {
+    "tr": "Deney dosyalarının dizini",
+    "en": "Artifact directory"
+  },
+  "Average precision": {
+    "tr": "Ortalama kesinlik (AP)",
+    "en": "Average precision"
+  },
+  "Average precision by quality group": {
+    "tr": "Veri kalitesi grubuna göre AP",
+    "en": "Average precision by quality group"
+  },
+  "CONSUMPTION INTELLIGENCE": {
+    "tr": "TÜKETİM ANALİTİĞİ",
+    "en": "CONSUMPTION INTELLIGENCE"
+  },
+  "Calendar days": {
+    "tr": "Takvim günü",
+    "en": "Calendar days"
+  },
+  "Calibrated outputs estimate the dataset's historical positive-label frequency under modeling assumptions. They are not confirmed theft probabilities. Dataset shift, label quality and population representativeness can invalidate calibration; independent human review is required.": {
+    "tr": "Kalibre edilmiş çıktılar, model varsayımları altında veri kümesindeki geçmiş pozitif etiket sıklığını tahmin eder; doğrulanmış kaçak olasılığı değildir. Veri dağılımının değişmesi, etiket kalitesi ve temsil sorunu kalibrasyonu geçersiz kılabilir. Bağımsız insan incelemesi gerekir.",
+    "en": "Calibrated outputs estimate the dataset's historical positive-label frequency under modeling assumptions. They are not confirmed theft probabilities. Dataset shift, label quality and population representativeness can invalidate calibration; independent human review is required."
+  },
+  "Calibration methods, partition roles, seed and software metadata": {
+    "tr": "Kalibrasyon yöntemleri, veri bölümleri, rastgelelik tohumu ve yazılım bilgileri",
+    "en": "Calibration methods, partition roles, seed and software metadata"
+  },
+  "Check file schemas, fingerprints and the evaluation window. Other workspaces remain available.": {
+    "tr": "Dosya şemasını, parmak izlerini ve inceleme dönemini kontrol edin. Diğer bölümlere erişebilirsiniz.",
+    "en": "Check file schemas, fingerprints and the evaluation window. Other workspaces remain available."
+  },
+  "Cohort: {p0:,} customers | Provenance: {p1}": {
+    "tr": "Veri grubu: {p0:,} müşteri | Kaynak doğrulaması: {p1}",
+    "en": "Cohort: {p0:,} customers | Provenance: {p1}"
+  },
+  "Comparison capacities (comma-separated)": {
+    "tr": "Karşılaştırılacak kapasiteler (virgülle ayrılmış)",
+    "en": "Comparison capacities (comma-separated)"
+  },
+  "Configuration and provenance": {
+    "tr": "Ayarlar ve kaynak doğrulaması",
+    "en": "Configuration and provenance"
+  },
+  "Confusion matrix at saved threshold {p0:g}": {
+    "tr": "Kayıtlı {p0:g} eşiğinde sınıflandırma matrisi",
+    "en": "Confusion matrix at saved threshold {p0:g}"
+  },
+  "Confusion matrix · threshold 0.5": {
+    "tr": "Sınıflandırma matrisi · eşik 0,5",
+    "en": "Confusion matrix · threshold 0.5"
+  },
+  "Consumption history · gaps preserved": {
+    "tr": "Tüketim geçmişi · eksik günler korunur",
+    "en": "Consumption history · gaps preserved"
+  },
+  "Context coverage": {
+    "tr": "Bağlam kapsamı",
+    "en": "Context coverage"
+  },
+  "Cost per inspection (currency units)": {
+    "tr": "İnceleme başına maliyet (para birimi)",
+    "en": "Cost per inspection (currency units)"
+  },
+  "Customer": {
+    "tr": "Müşteri",
+    "en": "Customer"
+  },
+  "Customer context drill-down · SYNTHETIC": {
+    "tr": "Müşteri bağlamı · SENTETİK / SYNTHETIC",
+    "en": "Customer context drill-down · SYNTHETIC"
+  },
+  "Customer not found in this file.": {
+    "tr": "Müşteri bu dosyada bulunamadı.",
+    "en": "Customer not found in this file."
+  },
+  "Customer predictions are unavailable for this run.": {
+    "tr": "Bu deney için müşteri tahminleri bulunmuyor.",
+    "en": "Customer predictions are unavailable for this run."
+  },
+  "Customer to inspect": {
+    "tr": "İncelenecek müşteri",
+    "en": "Customer to inspect"
+  },
+  "Customers in experiment": {
+    "tr": "Deneydeki müşteri",
+    "en": "Customers in experiment"
+  },
+  "Customers in queue": {
+    "tr": "İnceleme listesindeki müşteri",
+    "en": "Customers in queue"
+  },
+  "Data-quality error associations at primary threshold 0.5": {
+    "tr": "Ana eşik 0,5 için veri kalitesi ve hata ilişkisi",
+    "en": "Data-quality error associations at primary threshold 0.5"
+  },
+  "Decision status": {
+    "tr": "Karar durumu",
+    "en": "Decision status"
+  },
+  "Development Brier score": {
+    "tr": "Geliştirme Brier puanı",
+    "en": "Development Brier score"
+  },
+  "Development Brier score comparison (lower is better)": {
+    "tr": "Geliştirme Brier puanı karşılaştırması (düşük değer daha iyi)",
+    "en": "Development Brier score comparison (lower is better)"
+  },
+  "Development ECE": {
+    "tr": "Geliştirme ECE",
+    "en": "Development ECE"
+  },
+  "Development Precision, Recall and Lift at predeclared K": {
+    "tr": "Önceden belirlenmiş K değerlerinde geliştirme kesinliği, duyarlılığı ve lift",
+    "en": "Development Precision, Recall and Lift at predeclared K"
+  },
+  "Development customers": {
+    "tr": "Geliştirme grubundaki müşteri",
+    "en": "Development customers"
+  },
+  "Development discrimination by fixed missing-reading-rate groups": {
+    "tr": "Sabit eksik okuma gruplarında geliştirme ayrıştırması",
+    "en": "Development discrimination by fixed missing-reading-rate groups"
+  },
+  "Development discrimination comparison": {
+    "tr": "Geliştirme ayrıştırma karşılaştırması",
+    "en": "Development discrimination comparison"
+  },
+  "Development log loss": {
+    "tr": "Geliştirme logaritmik kaybı",
+    "en": "Development log loss"
+  },
+  "Development ranking comparison": {
+    "tr": "Geliştirme sıralama karşılaştırması",
+    "en": "Development ranking comparison"
+  },
+  "Development reliability diagram": {
+    "tr": "Geliştirme güvenilirlik diyagramı",
+    "en": "Development reliability diagram"
+  },
+  "Development-only analysis of a fresh fixed RF, not the historical final model. Importance and error analysis use separate customer cohorts. The inspected final holdout was excluded; independent final performance is not established.": {
+    "tr": "Bu analiz geçmiş nihai modelin değil, geliştirme verisine uydurulmuş sabit bir rastgele ormanın analizidir. Önem ve hata incelemeleri farklı müşteriler kullanır. Daha önce incelenmiş nihai test grubu dışlanmıştır; bağımsız nihai performans belirlenmiş değildir.",
+    "en": "Development-only analysis of a fresh fixed RF, not the historical final model. Importance and error analysis use separate customer cohorts. The inspected final holdout was excluded; independent final performance is not established."
+  },
+  "Development-only benchmark. Independent final performance is not established. The inspected final holdout was excluded. The RF comparator is newly fitted, not the historical published model. No method or threshold was selected on evaluation outcomes.": {
+    "tr": "Yalnızca geliştirme karşılaştırmasıdır. Bağımsız nihai performans belirlenmiş değildir. Önceden incelenmiş nihai test grubu dışlanmıştır. RF karşılaştırıcısı geçmiş yayımlanmış model değildir; bu görünümde eğitilmez. Değerlendirme sonuçlarından yöntem veya eşik seçilmez.",
+    "en": "Development-only benchmark. Independent final performance is not established. The inspected final holdout was excluded. The RF comparator is newly fitted, not the historical published model. No method or threshold was selected on evaluation outcomes."
+  },
+  "Development-only calibration diagnostics. Independent final performance is not established. The previously inspected final holdout was excluded from this experiment.": {
+    "tr": "Yalnızca geliştirme verisine ait kalibrasyon tanılarıdır. Bağımsız nihai performans belirlenmiş değildir. Önceden incelenmiş nihai test grubu bu deneyden dışlanmıştır.",
+    "en": "Development-only calibration diagnostics. Independent final performance is not established. The previously inspected final holdout was excluded from this experiment."
+  },
+  "Development-only probability and discrimination comparison": {
+    "tr": "Geliştirme grubunda olasılık ve ayrıştırma karşılaştırması",
+    "en": "Development-only probability and discrimination comparison"
+  },
+  "Download capacity inspection candidates": {
+    "tr": "Kapasiteye göre inceleme listesini indir",
+    "en": "Download capacity inspection candidates"
+  },
+  "Download displayed queue": {
+    "tr": "Görüntülenen inceleme listesini indir",
+    "en": "Download displayed queue"
+  },
+  "Each method has its own score units and axis. Absolute score magnitudes are not comparable across methods.": {
+    "tr": "Her yöntemin puan birimi ve ekseni farklıdır. Yöntemlerin mutlak puan büyüklükleri birbiriyle karşılaştırılamaz.",
+    "en": "Each method has its own score units and axis. Absolute score magnitudes are not comparable across methods."
+  },
+  "Eligibility filters apply before capacity. Global rank is retained. Raw score descending; ties by customer ID ascending. Filtered queue metrics are not unfiltered Precision@K.": {
+    "tr": "Önce filtreler, sonra kapasite uygulanır. Genel sıra korunur. Ham puan azalan, eşitlikte müşteri kimliği artan sıradadır. Filtreli listenin ölçümleri, filtresiz Precision@K ile aynı değildir.",
+    "en": "Eligibility filters apply before capacity. Global rank is retained. Raw score descending; ties by customer ID ascending. Filtered queue metrics are not unfiltered Precision@K."
+  },
+  "Eligible for review": {
+    "tr": "İncelemeye uygun",
+    "en": "Eligible for review"
+  },
+  "Empty event/verification filters include all customers. Combined filters must match the same event. Unknown coverage is not proof that no event occurred. IDs are hidden until explicitly revealed.": {
+    "tr": "Boş olay ve doğrulama filtreleri tüm müşterileri kapsar. Birlikte seçilen koşullar aynı olayda eşleşmelidir. Eksik kayıt, olayın yaşanmadığını kanıtlamaz. Kimlikler yalnızca açıkça seçildiğinde gösterilir.",
+    "en": "Empty event/verification filters include all customers. Combined filters must match the same event. Unknown coverage is not proof that no event occurred. IDs are hidden until explicitly revealed."
+  },
+  "Enable illustrative financial calculations": {
+    "tr": "Varsayımsal finansal hesaplamaları etkinleştir",
+    "en": "Enable illustrative financial calculations"
+  },
+  "Enter comma-separated nonnegative whole-number capacities, such as 0, 50, 100.": {
+    "tr": "0, 50, 100 gibi negatif olmayan tam sayı kapasiteleri virgülle ayırarak girin.",
+    "en": "Enter comma-separated nonnegative whole-number capacities, such as 0, 50, 100."
+  },
+  "Error cohort AP": {
+    "tr": "Hata grubunda AP",
+    "en": "Error cohort AP"
+  },
+  "Error cohort Precision and Recall at predefined inspection capacities": {
+    "tr": "Önceden belirlenmiş inceleme kapasitelerinde hata grubunun kesinliği ve duyarlılığı",
+    "en": "Error cohort Precision and Recall at predefined inspection capacities"
+  },
+  "Error evaluation customers": {
+    "tr": "Hata değerlendirmesindeki müşteri",
+    "en": "Error evaluation customers"
+  },
+  "Error rates by predefined group at threshold 0.5": {
+    "tr": "Önceden tanımlı gruplarda 0,5 eşiğindeki hata oranları",
+    "en": "Error rates by predefined group at threshold 0.5"
+  },
+  "Errors at predeclared thresholds": {
+    "tr": "Önceden belirlenmiş eşiklerde hatalar",
+    "en": "Errors at predeclared thresholds"
+  },
+  "Event verification status": {
+    "tr": "Olayın doğrulama durumu",
+    "en": "Event verification status"
+  },
+  "Evidence status": {
+    "tr": "Kanıt durumu",
+    "en": "Evidence status"
+  },
+  "Excluded holdout customers": {
+    "tr": "Dışlanan nihai test müşterisi",
+    "en": "Excluded holdout customers"
+  },
+  "Existing missing-rate bins are reused. Group discrimination needs at least {p0} customers and {p1} per class. These are descriptive safeguards, not power calculations, fairness conclusions or formal privacy guarantees. Null metrics are unavailable.": {
+    "tr": "Mevcut eksik okuma aralıkları kullanılır. Grup ayrıştırması için en az {p0} müşteri ve sınıf başına {p1} örnek gerekir. Bunlar açıklayıcı destek sınırlarıdır; güç analizi, adalet sonucu veya resmi gizlilik garantisi değildir. Boş ölçüm, hesaplanamadığı anlamına gelir.",
+    "en": "Existing missing-rate bins are reused. Group discrimination needs at least {p0} customers and {p1} per class. These are descriptive safeguards, not power calculations, fairness conclusions or formal privacy guarantees. Null metrics are unavailable."
+  },
+  "Experiment context": {
+    "tr": "Deneyin kapsamı",
+    "en": "Experiment context"
+  },
+  "Experiment label distribution": {
+    "tr": "Deneyde etiket dağılımı",
+    "en": "Experiment label distribution"
+  },
+  "Experiment sample": {
+    "tr": "Deney örneklemi",
+    "en": "Experiment sample"
+  },
+  "Explainability methodology, partition roles, seeds and software": {
+    "tr": "Açıklanabilirlik yöntemi, veri rolleri, tohumlar ve yazılım",
+    "en": "Explainability methodology, partition roles, seeds and software"
+  },
+  "Export omits ground-truth labels and reading indicators. Without IDs it is not anonymous: ranks and scores may still link records. Keep all exports private.": {
+    "tr": "İndirme; gerçek etiketleri ve okuma işaretlerini içermez. Kimlikler çıkarılsa da sıra ve puanlar kayıtları ilişkilendirebilir. Tüm dışa aktarımları yerel ve özel tutun.",
+    "en": "Export omits ground-truth labels and reading indicators. Without IDs it is not anonymous: ranks and scores may still link records. Keep all exports private."
+  },
+  "F1 at 0.5: {p0}. Fixed illustrative threshold; no tuning here.": {
+    "tr": "0,5 eşiğinde F1: {p0}. Eşik örnek amaçlı sabittir; bu görünümde ayarlanmaz.",
+    "en": "F1 at 0.5: {p0}. Fixed illustrative threshold; no tuning here."
+  },
+  "Find a customer": {
+    "tr": "Müşteri bul",
+    "en": "Find a customer"
+  },
+  "Find customer ID locally": {
+    "tr": "Yerel müşteri kimliği ara",
+    "en": "Find customer ID locally"
+  },
+  "Fixed method configurations, score definitions and provenance": {
+    "tr": "Sabit yöntem ayarları, puan tanımları ve kaynak bilgisi",
+    "en": "Fixed method configurations, score definitions and provenance"
+  },
+  "Fixed reliability bins, including counts and empty bins": {
+    "tr": "Boş aralıklar dahil güvenilirlik aralıkları ve örnek sayıları",
+    "en": "Fixed reliability bins, including counts and empty bins"
+  },
+  "Focus timeline on the gate window": {
+    "tr": "Zaman çizelgesini inceleme dönemine odakla",
+    "en": "Focus timeline on the gate window"
+  },
+  "For RF comparisons, right-only customers are anomaly-only and left-only customers are supervised-only. Spearman uses average score ranks, without ID tie breaking; constant scores have undefined correlation. Top-K ties use customer ID. Small nonoverlap groups have unavailable label rates. No ensemble is fitted.": {
+    "tr": "RF karşılaştırmasında yalnız sağdaki müşteriler sadece anomali, yalnız soldakiler sadece denetimli yöntemle seçilmiştir. Spearman, eşitliklerde ortalama sıra kullanır; sabit puanlarda tanımsızdır. İlk K seçiminde eşitlikler müşteri kimliğiyle çözülür. Küçük grupların etiket oranları gösterilmez. Birleşik model eğitilmez.",
+    "en": "For RF comparisons, right-only customers are anomaly-only and left-only customers are supervised-only. Spearman uses average score ranks, without ID tie breaking; constant scores have undefined correlation. Top-K ties use customer ID. Small nonoverlap groups have unavailable label rates. No ensemble is fitted."
+  },
+  "Gate decision": {
+    "tr": "Karar kapısı sonucu",
+    "en": "Gate decision"
+  },
+  "Global permutation importance": {
+    "tr": "Genel permütasyon önemi",
+    "en": "Global permutation importance"
+  },
+  "Global rank": {
+    "tr": "Genel öncelik sırası",
+    "en": "Global rank"
+  },
+  "GridGuard AI / Electricity consumption risk analytics": {
+    "tr": "GridGuard AI / Elektrik tüketimi ve inceleme karar desteği",
+    "en": "GridGuard AI / Electricity consumption risk analytics"
+  },
+  "Ground-truth labels are unavailable. Outcome metrics, random baselines and financial scenarios cannot be calculated from raw scores.": {
+    "tr": "Gerçek etiketler bulunmuyor. Sonuç ölçümleri, rastgele seçim karşılaştırması ve finansal senaryolar yalnızca ham puanlardan hesaplanamaz.",
+    "en": "Ground-truth labels are unavailable. Outcome metrics, random baselines and financial scenarios cannot be calculated from raw scores."
+  },
+  "Group by": {
+    "tr": "Gruplama ölçütü",
+    "en": "Group by"
+  },
+  "Group support, false positives, false negatives and rate reliability": {
+    "tr": "Grup büyüklüğü, yanlış pozitifler, yanlış negatifler ve oran güvenilirliği",
+    "en": "Group support, false positives, false negatives and rate reliability"
+  },
+  "Groups always use primary threshold 0.5, independently of the threshold selector above. Small groups below {p0} are suppressed; rates need at least five positives and negatives. Counts are descriptive; missingness can reflect outages or collection problems. Group differences do not establish causal data-quality effects.": {
+    "tr": "Gruplar, yukarıdaki seçimden bağımsız olarak ana eşik 0,5'i kullanır. {p0} müşteriden küçük gruplar bastırılır; oranlar için en az beş pozitif ve beş negatif gerekir. Eksiklik kesinti veya toplama sorunu olabilir. Gruplar arasındaki farklar nedensel veri kalitesi etkisini kanıtlamaz.",
+    "en": "Groups always use primary threshold 0.5, independently of the threshold selector above. Small groups below {p0} are suppressed; rates need at least five positives and negatives. Counts are descriptive; missingness can reflect outages or collection problems. Group differences do not establish causal data-quality effects."
+  },
+  "Heuristic summaries, not model feature attribution or causal explanations.": {
+    "tr": "Bunlar kural tabanlı gözlemlerdir; modelin müşteri bazında açıklaması veya nedensellik kanıtı değildir.",
+    "en": "Heuristic summaries, not model feature attribution or causal explanations."
+  },
+  "High risk: original score ≥ {p0:g}/100. Missing-event policy: {p1}. Historical ML predictions are unchanged and are not prospective scores at this cutoff.": {
+    "tr": "Yüksek risk: özgün puan ≥ {p0:g}/100. Eksik olay politikası: {p1}. Geçmiş ML tahminleri değişmez; bu tarih için ileriye dönük tahmin sayılmaz.",
+    "en": "High risk: original score ≥ {p0:g}/100. Missing-event policy: {p1}. Historical ML predictions are unchanged and are not prospective scores at this cutoff."
+  },
+  "High-risk requiring verification": {
+    "tr": "Doğrulama gereken yüksek risk",
+    "en": "High-risk requiring verification"
+  },
+  "Historical customer-level labels lack event onset dates. The reported holdout has been inspected; this is retrospective analysis, not a prospective detection study. Bands (high ≥80, medium ≥50) are illustrative. Human verification is required.": {
+    "tr": "Geçmiş müşteri etiketlerinde olay başlangıç tarihi yoktur. Buradaki nihai test grubu önceden incelenmiştir; sonuçlar geriye dönük analizdir, ileriye dönük tespit çalışması değildir. Yüksek ≥80 ve orta ≥50 sınırları örnektir. İnsan doğrulaması gerekir.",
+    "en": "Historical customer-level labels lack event onset dates. The reported holdout has been inspected; this is retrospective analysis, not a prospective detection study. Bands (high ≥80, medium ≥50) are illustrative. Human verification is required."
+  },
+  "History unavailable. Select the exact local source CSV recorded by this context run.": {
+    "tr": "Geçmiş yüklenemedi. Bu bağlam çalışmasında kullanılan özgün yerel CSV'yi seçin.",
+    "en": "History unavailable. Select the exact local source CSV recorded by this context run."
+  },
+  "History unavailable: {p0}": {
+    "tr": "Tüketim geçmişi kullanılamıyor: {p0}",
+    "en": "History unavailable: {p0}"
+  },
+  "Holdout missing-reading distribution": {
+    "tr": "Nihai test grubunda eksik okuma dağılımı",
+    "en": "Holdout missing-reading distribution"
+  },
+  "Hypothetical recovery per observed positive (currency units)": {
+    "tr": "Pozitif etiket başına varsayımsal geri kazanım (para birimi)",
+    "en": "Hypothetical recovery per observed positive (currency units)"
+  },
+  "Illustrative band": {
+    "tr": "Örnek risk düzeyi",
+    "en": "Illustrative band"
+  },
+  "Illustrative financial scenario": {
+    "tr": "Varsayımsal finansal senaryo",
+    "en": "Illustrative financial scenario"
+  },
+  "Illustrative financial scenarios, not validated financial forecasts": {
+    "tr": "Örnek finansal senaryolar · doğrulanmış finansal öngörü değildir",
+    "en": "Illustrative financial scenarios, not validated financial forecasts"
+  },
+  "Importance cohort AP": {
+    "tr": "Önem grubunda AP",
+    "en": "Importance cohort AP"
+  },
+  "Importance customers": {
+    "tr": "Önem analizindeki müşteri",
+    "en": "Importance customers"
+  },
+  "Include customer IDs in private local CSV": {
+    "tr": "Özel yerel CSV'ye müşteri kimliklerini dahil et",
+    "en": "Include customer IDs in private local CSV"
+  },
+  "Include missing or invalid risk scores": {
+    "tr": "Eksik veya geçersiz risk puanlarını dahil et",
+    "en": "Include missing or invalid risk scores"
+  },
+  "Individual customer analytics require saved customer predictions.": {
+    "tr": "Müşteri analizi için kayıtlı müşteri tahminleri gerekir.",
+    "en": "Individual customer analytics require saved customer predictions."
+  },
+  "Inspect SYNTHETIC context decisions": {
+    "tr": "Bağlam kararlarını incele · SENTETİK / SYNTHETIC",
+    "en": "Inspect SYNTHETIC context decisions"
+  },
+  "Inspection capacity (K)": {
+    "tr": "İnceleme kapasitesi (K)",
+    "en": "Inspection capacity (K)"
+  },
+  "Inspection capacity planning requires saved customer predictions.": {
+    "tr": "Kapasite planlama için kayıtlı müşteri tahminleri gerekir.",
+    "en": "Inspection capacity planning requires saved customer predictions."
+  },
+  "Inspection page": {
+    "tr": "İnceleme sayfası",
+    "en": "Inspection page"
+  },
+  "Insufficient data": {
+    "tr": "Yetersiz veri",
+    "en": "Insufficient data"
+  },
+  "K is capped by available customers. Recall uses all positives in the displayed cohort; lift divides precision by cohort prevalence. Calculated from saved unrounded scores.": {
+    "tr": "K, mevcut müşteri sayısıyla sınırlıdır. Duyarlılık, gruptaki tüm pozitifleri; lift, grubun pozitif oranını kullanır. Hesaplama yuvarlanmamış kayıtlı puanlara dayanır.",
+    "en": "K is capped by available customers. Recall uses all positives in the displayed cohort; lift divides precision by cohort prevalence. Calculated from saved unrounded scores."
+  },
+  "Lift over cohort prevalence": {
+    "tr": "Grubun pozitif oranına göre lift",
+    "en": "Lift over cohort prevalence"
+  },
+  "Load consumption history": {
+    "tr": "Tüketim geçmişini yükle",
+    "en": "Load consumption history"
+  },
+  "Load source consumption history": {
+    "tr": "Kaynak tüketim geçmişini yükle",
+    "en": "Load source consumption history"
+  },
+  "Local artifacts · Read-only analytics": {
+    "tr": "Yerel dosyalar · Salt okunur analiz",
+    "en": "Local artifacts · Read-only analytics"
+  },
+  "Local context sources": {
+    "tr": "Yerel bağlam dosyaları",
+    "en": "Local context sources"
+  },
+  "Local files within the server-configured data root. No uploads or file changes.": {
+    "tr": "Sunucuda tanımlanan veri dizini içindeki yerel dosyalar okunur. Dosya yükleme veya dosyalarda değişiklik yapılmaz.",
+    "en": "Local files within the server-configured data root. No uploads or file changes."
+  },
+  "Local inspection queue": {
+    "tr": "Yerel inceleme listesi",
+    "en": "Local inspection queue"
+  },
+  "Matched event type": {
+    "tr": "Eşleşen olay türü",
+    "en": "Matched event type"
+  },
+  "Matched operational events": {
+    "tr": "Eşleşen operasyonel olaylar",
+    "en": "Matched operational events"
+  },
+  "Missing calendar days": {
+    "tr": "Eksik takvim günü",
+    "en": "Missing calendar days"
+  },
+  "Missing or invalid days": {
+    "tr": "Eksik veya geçersiz gün",
+    "en": "Missing or invalid days"
+  },
+  "Missing readings · experiment": {
+    "tr": "Eksik okumalar · deney",
+    "en": "Missing readings · experiment"
+  },
+  "Missing-reading fraction": {
+    "tr": "Eksik okuma oranı",
+    "en": "Missing-reading fraction"
+  },
+  "Missing-reading-rate groups": {
+    "tr": "Eksik okuma oranına göre gruplar",
+    "en": "Missing-reading-rate groups"
+  },
+  "Native score distributions": {
+    "tr": "Yöntemlerin özgün puan dağılımları",
+    "en": "Native score distributions"
+  },
+  "Needs context verification": {
+    "tr": "Bağlam doğrulaması gerekli",
+    "en": "Needs context verification"
+  },
+  "Negative, nonnumeric and nonfinite values become missing; calendar gaps remain missing. The selected CSV is a local lookup, not verified against the experiment fingerprint.": {
+    "tr": "Negatif, sayısal olmayan ve sonlu olmayan okumalar eksik kabul edilir; takvim boşlukları korunur. Bu yerel sorgunun kaynağı, deneyin parmak iziyle doğrulanmaz.",
+    "en": "Negative, nonnumeric and nonfinite values become missing; calendar gaps remain missing. The selected CSV is a local lookup, not verified against the experiment fingerprint."
+  },
+  "No aggregate group metrics available for this selection.": {
+    "tr": "Bu seçim için toplu grup ölçümleri bulunmuyor.",
+    "en": "No aggregate group metrics available for this selection."
+  },
+  "No customers match these context filters.": {
+    "tr": "Bağlam filtrelerine uyan müşteri yok. Filtreleri genişletin.",
+    "en": "No customers match these context filters."
+  },
+  "No customers match these filters.": {
+    "tr": "Filtrelere uyan müşteri yok. Filtreleri genişletin.",
+    "en": "No customers match these filters."
+  },
+  "No matching customer.": {
+    "tr": "Eşleşen müşteri bulunamadı.",
+    "en": "No matching customer."
+  },
+  "No valid saved anomaly benchmark is available. Run the optional benchmark workflow first.": {
+    "tr": "Geçerli anomali raporu bulunamadı. Önce isteğe bağlı karşılaştırma iş akışını çalıştırın.",
+    "en": "No valid saved anomaly benchmark is available. Run the optional benchmark workflow first."
+  },
+  "No valid saved explainability report is available. Run the optional explain workflow first.": {
+    "tr": "Geçerli açıklanabilirlik raporu bulunamadı. Önce isteğe bağlı açıklama iş akışını çalıştırın.",
+    "en": "No valid saved explainability report is available. Run the optional explain workflow first."
+  },
+  "No valid saved operational context is available. Select local directories containing context_decisions.csv, context_evaluation.json and the SYNTHETIC datasets.": {
+    "tr": "Kayıtlı operasyonel bağlam bulunamadı. context_decisions.csv, context_evaluation.json ve SENTETİK / SYNTHETIC veri dosyalarını içeren yerel dizinleri seçin.",
+    "en": "No valid saved operational context is available. Select local directories containing context_decisions.csv, context_evaluation.json and the SYNTHETIC datasets."
+  },
+  "No valid saved reliability evaluation is available. Run the optional calibration workflow first.": {
+    "tr": "Geçerli güvenilirlik değerlendirmesi bulunamadı. Önce isteğe bağlı kalibrasyon iş akışını çalıştırın.",
+    "en": "No valid saved reliability evaluation is available. Run the optional calibration workflow first."
+  },
+  "Observed positive labels": {
+    "tr": "Gözlenen pozitif etiket",
+    "en": "Observed positive labels"
+  },
+  "Observed positives in top K": {
+    "tr": "İlk K içindeki pozitif etiket",
+    "en": "Observed positives in top K"
+  },
+  "Operational evidence is unavailable or no records matched. Context remains unknown.": {
+    "tr": "Operasyonel kayıt bulunmuyor veya olay eşleşmedi. Bağlam bilinmiyor; bu, olay yaşanmadığının kanıtı değildir.",
+    "en": "Operational evidence is unavailable or no records matched. Context remains unknown."
+  },
+  "Operational scenario comparison": {
+    "tr": "Operasyonel senaryo karşılaştırması",
+    "en": "Operational scenario comparison"
+  },
+  "Optional source-data audit": {
+    "tr": "İsteğe bağlı kaynak veri denetimi",
+    "en": "Optional source-data audit"
+  },
+  "Original CSV on this machine": {
+    "tr": "Bu bilgisayardaki özgün CSV",
+    "en": "Original CSV on this machine"
+  },
+  "Original ML risk score": {
+    "tr": "Özgün ML risk puanı",
+    "en": "Original ML risk score"
+  },
+  "Original feature": {
+    "tr": "Özgün özellik",
+    "en": "Original feature"
+  },
+  "Original prediction CSV (optional integrity check)": {
+    "tr": "Özgün tahmin CSV'si (isteğe bağlı bütünlük kontrolü)",
+    "en": "Original prediction CSV (optional integrity check)"
+  },
+  "Original risk score / 100": {
+    "tr": "Özgün risk puanı / 100",
+    "en": "Original risk score / 100"
+  },
+  "Permutation importance unavailable: {p0}.": {
+    "tr": "Permütasyon önemi hesaplanamıyor: {p0}.",
+    "en": "Permutation importance unavailable: {p0}."
+  },
+  "Positive label fraction": {
+    "tr": "Pozitif etiket oranı",
+    "en": "Positive label fraction"
+  },
+  "Precision · threshold 0.5": {
+    "tr": "Kesinlik · eşik 0,5",
+    "en": "Precision · threshold 0.5"
+  },
+  "Precision, recall and errors at fixed thresholds": {
+    "tr": "Sabit eşiklerde kesinlik, duyarlılık ve hatalar",
+    "en": "Precision, recall and errors at fixed thresholds"
+  },
+  "Precision, recall and lift before and after calibration": {
+    "tr": "Kalibrasyon öncesi ve sonrası kesinlik, duyarlılık ve lift",
+    "en": "Precision, recall and lift before and after calibration"
+  },
+  "Predefined error groups": {
+    "tr": "Önceden tanımlı hata grupları",
+    "en": "Predefined error groups"
+  },
+  "Preflight report JSON": {
+    "tr": "Ön denetim JSON raporu",
+    "en": "Preflight report JSON"
+  },
+  "Prioritized inspection candidates": {
+    "tr": "Öncelikli inceleme adayları",
+    "en": "Prioritized inspection candidates"
+  },
+  "ROC-AUC": {
+    "tr": "ROC-AUC",
+    "en": "ROC-AUC"
+  },
+  "Random expected positives": {
+    "tr": "Rastgele seçimde beklenen pozitif",
+    "en": "Random expected positives"
+  },
+  "Random selection means uniform sampling without replacement from this same cohort: expected positives = actual K × observed prevalence. It is an expectation, not a simulated outcome. Curves sample at most 101 capacities; scenario rows use exact K. At K=0, precision and lift are undefined. With no positives, recall and lift are undefined.": {
+    "tr": "Rastgele karşılaştırma, aynı gruptan yerine koymadan eşit olasılıklı seçimdir: beklenen pozitif = gerçekleşen K × gözlenen pozitif oranı. Bu bir beklentidir, simülasyon sonucu değildir. Eğriler en çok 101 kapasiteyi örnekler; senaryo satırları tam K kullanır. K=0'da kesinlik ve lift, pozitif yoksa duyarlılık ve lift tanımsızdır.",
+    "en": "Random selection means uniform sampling without replacement from this same cohort: expected positives = actual K × observed prevalence. It is an expectation, not a simulated outcome. Curves sample at most 101 capacities; scenario rows use exact K. At K=0, precision and lift are undefined. With no positives, recall and lift are undefined."
+  },
+  "Raw score": {
+    "tr": "Ham model puanı",
+    "en": "Raw score"
+  },
+  "Raw score descending, customer ID ascending for ties; rounded risk scores do not determine order. CSVs always omit labels and reading signals. IDs are excluded by default. Ranks and scores can still link records; keep exports private. A ranking alone never confirms electricity theft.": {
+    "tr": "Sıra ham puana göre azalan, eşitlikte müşteri kimliğine göre artandır; yuvarlanmış risk puanı sıralamayı belirlemez. CSV'lerde etiketler ve okuma işaretleri yoktur. Kimlikler varsayılan olarak çıkarılır; sıra ve puanlar yine de ilişkilendirilebilir. İndirmeleri özel tutun. Sıralama, doğrulanmış kaçak kanıtı değildir.",
+    "en": "Raw score descending, customer ID ascending for ties; rounded risk scores do not determine order. CSVs always omit labels and reading signals. IDs are excluded by default. Ranks and scores can still link records; keep exports private. A ranking alone never confirms electricity theft."
+  },
+  "Reading availability": {
+    "tr": "Okuma bulunabilirliği",
+    "en": "Reading availability"
+  },
+  "Reason codes": {
+    "tr": "Karar gerekçeleri",
+    "en": "Reason codes"
+  },
+  "Recall of cohort positives": {
+    "tr": "Gruptaki pozitifleri yakalama oranı",
+    "en": "Recall of cohort positives"
+  },
+  "Recall · threshold 0.5": {
+    "tr": "Duyarlılık · eşik 0,5",
+    "en": "Recall · threshold 0.5"
+  },
+  "Retrospective Lift@K": {
+    "tr": "Geriye dönük Lift@K",
+    "en": "Retrospective Lift@K"
+  },
+  "Retrospective Precision@K": {
+    "tr": "Geriye dönük Precision@K",
+    "en": "Retrospective Precision@K"
+  },
+  "Retrospective Recall@K": {
+    "tr": "Geriye dönük Recall@K",
+    "en": "Retrospective Recall@K"
+  },
+  "Retrospective decision support on the full selected cohort. Historical positive labels are observed outcomes, not proof of theft or future inspection success. Choose capacity from operational constraints; do not tune models on this holdout.": {
+    "tr": "Seçilen grubun tamamında geriye dönük karar desteğidir. Geçmiş pozitif etiketler, doğrulanmış kaçak veya gelecekteki inceleme başarısı değildir. Kapasiteyi operasyonel kısıtlarla seçin; bu nihai test grubuyla model ayarlamayın.",
+    "en": "Retrospective decision support on the full selected cohort. Historical positive labels are observed outcomes, not proof of theft or future inspection success. Choose capacity from operational constraints; do not tune models on this holdout."
+  },
+  "Retrospective model selection versus random baseline": {
+    "tr": "Model sıralaması ve rastgele seçim beklentisi",
+    "en": "Retrospective model selection versus random baseline"
+  },
+  "Retrospective operational capacity scenarios": {
+    "tr": "Geriye dönük kapasite senaryoları",
+    "en": "Retrospective operational capacity scenarios"
+  },
+  "Retrospective precision": {
+    "tr": "Geriye dönük kesinlik",
+    "en": "Retrospective precision"
+  },
+  "Retrospective precision and recall at capacity": {
+    "tr": "Kapasiteye göre geriye dönük kesinlik ve duyarlılık",
+    "en": "Retrospective precision and recall at capacity"
+  },
+  "Retrospective ranking metrics": {
+    "tr": "Geriye dönük sıralama ölçümleri",
+    "en": "Retrospective ranking metrics"
+  },
+  "Retrospective {p0}@K": {
+    "tr": "Geriye dönük {p0}@K",
+    "en": "Retrospective {p0}@K"
+  },
+  "Reveal customer and event IDs in this local view": {
+    "tr": "Bu yerel görünümde müşteri ve olay kimliklerini göster",
+    "en": "Reveal customer and event IDs in this local view"
+  },
+  "Risk bands": {
+    "tr": "Risk düzeyleri",
+    "en": "Risk bands"
+  },
+  "Risk distribution": {
+    "tr": "Risk dağılımı",
+    "en": "Risk distribution"
+  },
+  "Risk score / 100": {
+    "tr": "Risk puanı / 100",
+    "en": "Risk score / 100"
+  },
+  "Rows are sorted by requested K. Marginal yield is additional observed positives / additional inspections since the previous row (the first starts at zero). Capped requests can have identical actual K and undefined marginal yield. This view uses the full cohort; Inspection queue eligibility filters do not apply.": {
+    "tr": "Satırlar istenen K'ya göre sıralıdır. Marjinal verim, önceki satıra göre ek pozitif / ek incelemedir; ilk satır sıfırdan başlar. Sınırlanan taleplerde aynı gerçekleşen K ve tanımsız marjinal verim olabilir. Tam grup kullanılır; İnceleme Listesi filtreleri uygulanmaz.",
+    "en": "Rows are sorted by requested K. Marginal yield is additional observed positives / additional inspections since the previous row (the first starts at zero). Capped requests can have identical actual K and undefined marginal yield. This view uses the full cohort; Inspection queue eligibility filters do not apply."
+  },
+  "SGCC source CSV for consumption history": {
+    "tr": "Tüketim geçmişi için SGCC kaynak CSV'si",
+    "en": "SGCC source CSV for consumption history"
+  },
+  "SYNTHETIC gate window: {p0} to {p1} · Available as of {p2}. Cards describe the complete saved cohort. Context coverage is subscription coverage of the entire window; outage/meter absence remains unknown.": {
+    "tr": "SENTETİK / SYNTHETIC dönem: {p0} – {p1} · Bilgi kesim tarihi: {p2}. Kartlar kayıtlı grubun tamamına aittir. Kapsam, dönem boyunca abonelik kaydı bulunmasıdır; kesinti veya sayaç kaydı yokluğu bilinmeyen bağlamdır.",
+    "en": "SYNTHETIC gate window: {p0} to {p1} · Available as of {p2}. Cards describe the complete saved cohort. Context coverage is subscription coverage of the entire window; outage/meter absence remains unknown."
+  },
+  "SYNTHETIC matched operational evidence for the selected customer": {
+    "tr": "Seçilen müşterinin eşleşen kayıtları · SENTETİK / SYNTHETIC",
+    "en": "SYNTHETIC matched operational evidence for the selected customer"
+  },
+  "SYNTHETIC operational context only. Even verified records are simulated. Decisions support human review; they do not establish innocence, fraud or improved ML performance.": {
+    "tr": "SENTETİK / SYNTHETIC operasyonel bağlamdır. Doğrulanmış görünen kayıtlar da kurgusaldır. Kararlar insan incelemesini destekler; masumiyet, kaçak veya ML başarım artışı kanıtı değildir.",
+    "en": "SYNTHETIC operational context only. Even verified records are simulated. Decisions support human review; they do not establish innocence, fraud or improved ML performance."
+  },
+  "SYNTHETIC operational dataset directory": {
+    "tr": "SENTETİK / SYNTHETIC operasyonel veri dizini",
+    "en": "SYNTHETIC operational dataset directory"
+  },
+  "SYNTHETIC outages, meter events and subscription timeline": {
+    "tr": "Kesinti, sayaç ve abonelik zaman çizelgesi · SENTETİK / SYNTHETIC",
+    "en": "SYNTHETIC outages, meter events and subscription timeline"
+  },
+  "Saved aggregate diagnostics only. No customer identifiers, model loading, fitting or model rescoring in this workspace.": {
+    "tr": "Yalnızca kayıtlı toplu tanılar gösterilir. Bu görünümde müşteri kimliği paylaşılmaz; model yükleme, eğitim veya yeniden tahmin yapılmaz.",
+    "en": "Saved aggregate diagnostics only. No customer identifiers, model loading, fitting or model rescoring in this workspace."
+  },
+  "Saved anomaly benchmark": {
+    "tr": "Kayıtlı anomali karşılaştırması",
+    "en": "Saved anomaly benchmark"
+  },
+  "Saved decision threshold": {
+    "tr": "Kayıtlı karar eşiği",
+    "en": "Saved decision threshold"
+  },
+  "Saved development cohort": {
+    "tr": "Kayıtlı geliştirme grubu",
+    "en": "Saved development cohort"
+  },
+  "Saved experiment": {
+    "tr": "Kayıtlı deney",
+    "en": "Saved experiment"
+  },
+  "Saved explainability report": {
+    "tr": "Kayıtlı açıklanabilirlik raporu",
+    "en": "Saved explainability report"
+  },
+  "Saved gate output directory": {
+    "tr": "Kayıtlı karar kapısı çıktı dizini",
+    "en": "Saved gate output directory"
+  },
+  "Saved methodology and provenance": {
+    "tr": "Kayıtlı yöntem ve kaynak bilgisi",
+    "en": "Saved methodology and provenance"
+  },
+  "Saved reliability report": {
+    "tr": "Kayıtlı güvenilirlik raporu",
+    "en": "Saved reliability report"
+  },
+  "Saved repeats: {p0}; seed: {p1}. One repeat yields zero empirical SD, not certainty.": {
+    "tr": "Kayıtlı tekrar: {p0}; tohum: {p1}. Tek tekrarda sıfır standart sapma kesinlik anlamına gelmez.",
+    "en": "Saved repeats: {p0}; seed: {p1}. One repeat yields zero empirical SD, not certainty."
+  },
+  "Score and feature distributions by outcome": {
+    "tr": "Sonuca göre puan ve özellik dağılımları",
+    "en": "Score and feature distributions by outcome"
+  },
+  "Score distribution": {
+    "tr": "Puan dağılımı",
+    "en": "Score distribution"
+  },
+  "Scores are uncalibrated ranking signals, not evidence of electricity theft. Retrospective metrics do not predict future inspection outcomes.": {
+    "tr": "Puanlar önceliklendirme işaretidir, doğrulanmış kaçak kanıtı değildir. Geçmiş ölçümler gelecekteki inceleme sonucunu garanti etmez.",
+    "en": "Scores are uncalibrated ranking signals, not evidence of electricity theft. Retrospective metrics do not predict future inspection outcomes."
+  },
+  "Scores are uncalibrated ranking signals. Outcomes refer to historical positive labels, not confirmed theft. Label noise, inspection selection and missing event dates limit interpretation. These are global associations, not individual or causal explanations.": {
+    "tr": "Puanlar kalibre edilmemiş sıralama işaretleridir. Sonuçlar geçmiş pozitif etiketlere dayanır, doğrulanmış kaçak anlamına gelmez. Etiket hataları, seçilim ve eksik olay tarihleri yorumu sınırlar. Bunlar genel ilişkiler olup müşteri bazında veya nedensel açıklama değildir.",
+    "en": "Scores are uncalibrated ranking signals. Outcomes refer to historical positive labels, not confirmed theft. Label noise, inspection selection and missing event dates limit interpretation. These are global associations, not individual or causal explanations."
+  },
+  "Search customer ID": {
+    "tr": "Müşteri kimliği ara",
+    "en": "Search customer ID"
+  },
+  "Select a local experiment containing metrics.json and, for holdout runs, test_predictions.csv.": {
+    "tr": "metrics.json ve nihai test için test_predictions.csv içeren yerel bir deney seçin.",
+    "en": "Select a local experiment containing metrics.json and, for holdout runs, test_predictions.csv."
+  },
+  "Selected mapping": {
+    "tr": "Seçilen kalibrasyon eşlemesi",
+    "en": "Selected mapping"
+  },
+  "Selected top-K inspection candidates without ground-truth labels": {
+    "tr": "Gerçek etiketler olmadan seçilen ilk K inceleme adayı",
+    "en": "Selected top-K inspection candidates without ground-truth labels"
+  },
+  "Selection uses validation AP. Holdout analysis here neither trains nor tunes a model.": {
+    "tr": "Seçim doğrulama AP'sine dayanır. Buradaki nihai test incelemesi model eğitmez veya ayarlamaz.",
+    "en": "Selection uses validation AP. Holdout analysis here neither trains nor tunes a model."
+  },
+  "Shared bins compare fractions of observed values within each outcome, not outcome prevalence. Features remain un-imputed in diagnostics; missing counts stay visible. Small observed cohorts have no value distributions. Risk score is rounded 100 times the raw ranking score, not a calibrated probability.": {
+    "tr": "Ortak aralıklar, sonuç sıklığını değil her sonuç içindeki gözlenen değer oranını karşılaştırır. Tanılarda eksik değerler doldurulmaz; eksik sayıları görünürdür. Küçük gruplarda dağılım gösterilmez. Risk puanı ham sıralama puanının 100 katının yuvarlanmasıdır; kalibre edilmiş olasılık değildir.",
+    "en": "Shared bins compare fractions of observed values within each outcome, not outcome prevalence. Features remain un-imputed in diagnostics; missing counts stay visible. Small observed cohorts have no value distributions. Risk score is rounded 100 times the raw ranking score, not a calibrated probability."
+  },
+  "Source SHA-256 verified. Readings are unchanged; SYNTHETIC overlap does not establish a causal explanation.": {
+    "tr": "Kaynak SHA-256 doğrulandı. Okumalar değişmedi; SENTETİK / SYNTHETIC örtüşme nedensel açıklama kanıtlamaz.",
+    "en": "Source SHA-256 verified. Readings are unchanged; SYNTHETIC overlap does not establish a causal explanation."
+  },
+  "Source consumption · shaded periods are SYNTHETIC events": {
+    "tr": "Kaynak tüketim · gölgeli dönemler SENTETİK / SYNTHETIC olaylardır",
+    "en": "Source consumption · shaded periods are SYNTHETIC events"
+  },
+  "Source data quality audit": {
+    "tr": "Kaynak veri kalitesi denetimi",
+    "en": "Source data quality audit"
+  },
+  "Source reading availability · gaps preserved": {
+    "tr": "Kaynak okuma bulunabilirliği · boşluklar korunur",
+    "en": "Source reading availability · gaps preserved"
+  },
+  "Source-file audit, not necessarily the experiment sample. Compare source and cohort metadata before use.": {
+    "tr": "Bu kaynak dosyanın denetimidir; deney örneklemiyle aynı olmayabilir. Kullanmadan önce kaynak ve grup kapsamlarını karşılaştırın.",
+    "en": "Source-file audit, not necessarily the experiment sample. Compare source and cohort metadata before use."
+  },
+  "Supervised versus unsupervised development discrimination": {
+    "tr": "Geliştirmede denetimli ve denetimsiz ayrıştırma",
+    "en": "Supervised versus unsupervised development discrimination"
+  },
+  "Suppressed groups have no rates. Null metrics are undefined, not zero. AP varies with prevalence; group differences do not establish causality or fairness. No customer records are loaded from these reports.": {
+    "tr": "Küçük grupların oranları gösterilmez. Boş ölçüm sıfır değil tanımsızdır. AP, pozitif oranıyla değişir; grup farkları nedensellik veya adalet kanıtı değildir. Bu raporlardan müşteri kayıtları yüklenmez.",
+    "en": "Suppressed groups have no rates. Null metrics are undefined, not zero. AP varies with prevalence; group differences do not establish causality or fairness. No customer records are loaded from these reports."
+  },
+  "Synthetic demonstration. Simulated readings and labels do not measure real-world performance.": {
+    "tr": "SENTETİK / SYNTHETIC gösterimdir. Kurgusal okumalar ve etiketler gerçek dünya başarımını ölçmez.",
+    "en": "Synthetic demonstration. Simulated readings and labels do not measure real-world performance."
+  },
+  "Synthetic demonstration; simulated labels do not establish operational detection quality.": {
+    "tr": "SENTETİK / SYNTHETIC gösterimdir. Kurgusal etiketler operasyonel tespit başarısını kanıtlamaz.",
+    "en": "Synthetic demonstration; simulated labels do not establish operational detection quality."
+  },
+  "Synthetic demonstration; simulated outcomes do not establish operational performance.": {
+    "tr": "SENTETİK / SYNTHETIC gösterimdir. Kurgusal sonuçlar operasyonel başarım kanıtı değildir.",
+    "en": "Synthetic demonstration; simulated outcomes do not establish operational performance."
+  },
+  "Synthetic demonstration; these diagnostics do not establish real-world reliability.": {
+    "tr": "SENTETİK / SYNTHETIC gösterimdir. Bu tanılar gerçek dünyada güvenilirliği kanıtlamaz.",
+    "en": "Synthetic demonstration; these diagnostics do not establish real-world reliability."
+  },
+  "The saved mapping was selected by Brier score on calibration_selection, before diagnostic evaluation. No fitting occurs in this view.": {
+    "tr": "Kayıtlı eşleme, tanı değerlendirmesinden önce calibration_selection bölümünde Brier puanına göre seçilmiştir. Bu görünümde model uydurulmaz.",
+    "en": "The saved mapping was selected by Brier score on calibration_selection, before diagnostic evaluation. No fitting occurs in this view."
+  },
+  "The selected customer has no history in this source.": {
+    "tr": "Seçilen müşterinin bu kaynakta tüketim geçmişi yok.",
+    "en": "The selected customer has no history in this source."
+  },
+  "This is a validation-only experiment. No test predictions or customer queue are available.": {
+    "tr": "Bu yalnızca doğrulama deneyidir. Nihai test tahmini veya müşteri inceleme listesi bulunmuyor.",
+    "en": "This is a validation-only experiment. No test predictions or customer queue are available."
+  },
+  "This view reads verified saved aggregates, exposes no customer identifiers, and never loads or trains a model.": {
+    "tr": "Yalnızca doğrulanmış kayıtlı toplu raporlar okunur. Müşteri kimliği gösterilmez; model yüklenmez veya eğitilmez.",
+    "en": "This view reads verified saved aggregates, exposes no customer identifiers, and never loads or trains a model."
+  },
+  "Threshold equality is positive. Only saved thresholds/capacities are shown; no threshold optimization occurs. Undefined rates remain unavailable.": {
+    "tr": "Eşiğe eşit değer pozitiftir. Yalnızca kayıtlı eşikler ve kapasiteler gösterilir; eşik optimizasyonu yapılmaz. Tanımsız oranlar hesaplanamadı olarak kalır.",
+    "en": "Threshold equality is positive. Only saved thresholds/capacities are shown; no threshold optimization occurs. Undefined rates remain unavailable."
+  },
+  "Tie-aware Spearman rank correlation": {
+    "tr": "Eşit puanları dikkate alan Spearman sıra korelasyonu",
+    "en": "Tie-aware Spearman rank correlation"
+  },
+  "Timeline endpoints are exclusive; subscription and meter end dates include their full source day.": {
+    "tr": "Bitiş anları aralığa dahil değildir. Abonelik ve sayaç kaynak bitiş tarihleri, ilgili günün tamamını içerir.",
+    "en": "Timeline endpoints are exclusive; subscription and meter end dates include their full source day."
+  },
+  "Top-K intersections, Jaccard and nonoverlap label rates": {
+    "tr": "İlk K kesişimi, Jaccard ve ayrışan grupların etiket oranı",
+    "en": "Top-K intersections, Jaccard and nonoverlap label rates"
+  },
+  "Top-K overlap and complementarity": {
+    "tr": "İlk K örtüşmesi ve tamamlayıcılık",
+    "en": "Top-K overlap and complementarity"
+  },
+  "Total evaluated customers": {
+    "tr": "Değerlendirilen müşteri",
+    "en": "Total evaluated customers"
+  },
+  "Training customers": {
+    "tr": "Eğitim müşterisi",
+    "en": "Training customers"
+  },
+  "Use the same currency units for both inputs. Every actual inspection incurs the entered cost. Each observed positive is assigned the hypothetical recovery value. Random selection uses the same capacity and cost. Net = recovery minus inspection costs; other costs, collection rates and timing are excluded.": {
+    "tr": "İki girdide de aynı para birimini kullanın. Her inceleme maliyet oluşturur; her pozitif etikete varsayımsal geri kazanım atanır. Rastgele seçim aynı kapasite ve maliyeti kullanır. Net = geri kazanım − inceleme maliyeti. Diğer maliyetler, tahsilat oranı ve zamanlama dahil değildir.",
+    "en": "Use the same currency units for both inputs. Every actual inspection incurs the entered cost. Each observed positive is assigned the hypothetical recovery value. Random selection uses the same capacity and cost. Net = recovery minus inspection costs; other costs, collection rates and timing are excluded."
+  },
+  "Validating saved SYNTHETIC context…": {
+    "tr": "SENTETİK / SYNTHETIC bağlam doğrulanıyor…",
+    "en": "Validating saved SYNTHETIC context…"
+  },
+  "Validation average precision": {
+    "tr": "Doğrulama ortalama kesinliği",
+    "en": "Validation average precision"
+  },
+  "Validation comparison": {
+    "tr": "Doğrulama karşılaştırması",
+    "en": "Validation comparison"
+  },
+  "Validation model comparison": {
+    "tr": "Doğrulama modellerinin karşılaştırması",
+    "en": "Validation model comparison"
+  },
+  "Zero readings / observed": {
+    "tr": "Sıfır okuma / gözlenen okuma",
+    "en": "Zero readings / observed"
+  },
+  "true_positive": {
+    "tr": "Gerçek pozitif",
+    "en": "True positive"
+  },
+  "{p0:,} of {p1:,} customers match. Saved input order is retained.": {
+    "tr": "{p1:,} müşteriden {p0:,} tanesi eşleşti. Kayıtlı sıra korunur.",
+    "en": "{p0:,} of {p1:,} customers match. Saved input order is retained."
+  },
+  "{p0}  |  {p1}  |  {p2}": {
+    "tr": "{p0}  |  {p1}  |  {p2}",
+    "en": "{p0}  |  {p1}  |  {p2}"
+  },
+  "{p0} groups · {p1}": {
+    "tr": "{p0} grupları · {p1}",
+    "en": "{p0} groups · {p1}"
+  },
+  "{p0} of {p1} saved matched events available. All periods below are SYNTHETIC.": {
+    "tr": "Kayıtlı {p1} olaydan {p0} tanesine erişiliyor. Aşağıdaki tüm dönemler SENTETİK / SYNTHETIC veridir.",
+    "en": "{p0} of {p1} saved matched events available. All periods below are SYNTHETIC."
+  },
+  "{p0} outcome counts, observed values and suppression status": {
+    "tr": "{p0} sonuç sayıları, gözlenen değerler ve bastırma durumu",
+    "en": "{p0} outcome counts, observed values and suppression status"
+  },
+  "{p0}: binned distributions at threshold {p1:g}": {
+    "tr": "{p0}: {p1:g} eşiğinde aralıklı dağılım",
+    "en": "{p0}: binned distributions at threshold {p1:g}"
+  },
+  "{p0}: native score distribution": {
+    "tr": "{p0}: yöntemin özgün puan dağılımı",
+    "en": "{p0}: native score distribution"
+  },
+  "{p0}: {p1}": {
+    "tr": "{p0}: {p1}",
+    "en": "{p0}: {p1}"
+  },
+  "navigation.overview": {
+    "tr": "Genel Bakış",
+    "en": "Overview"
+  },
+  "navigation.risk": {
+    "tr": "Risk Analizi",
+    "en": "Risk Analysis"
+  },
+  "navigation.operations": {
+    "tr": "Operasyonel İnceleme",
+    "en": "Operational Review"
+  },
+  "navigation.model": {
+    "tr": "Model Performansı",
+    "en": "Model Performance"
+  },
+  "navigation.quality": {
+    "tr": "Veri Kalitesi",
+    "en": "Data Quality"
+  },
+  "Overview": {
+    "tr": "Genel Bakış",
+    "en": "Overview"
+  },
+  "Inspection queue": {
+    "tr": "İnceleme Listesi",
+    "en": "Inspection queue"
+  },
+  "Customer analytics": {
+    "tr": "Müşteri Analizi",
+    "en": "Customer analytics"
+  },
+  "Operational Context": {
+    "tr": "Operasyonel Bağlam",
+    "en": "Operational Context"
+  },
+  "Inspection Capacity Planning": {
+    "tr": "Kapasite Planlama",
+    "en": "Inspection Capacity Planning"
+  },
+  "Model performance": {
+    "tr": "Değerlendirme Özeti",
+    "en": "Model performance"
+  },
+  "Model Reliability": {
+    "tr": "Model Güvenilirliği",
+    "en": "Model Reliability"
+  },
+  "Anomaly Detection": {
+    "tr": "Anomali Tespiti",
+    "en": "Anomaly Detection"
+  },
+  "Model Explainability": {
+    "tr": "Model Açıklanabilirliği",
+    "en": "Model Explainability"
+  },
+  "Data quality": {
+    "tr": "Veri Kalitesi",
+    "en": "Data quality"
+  },
+  "Workspace": {
+    "tr": "Bölüm",
+    "en": "Workspace"
+  },
+  "Analysis view": {
+    "tr": "Analiz görünümü",
+    "en": "Analysis view"
+  },
+  "Experiment source": {
+    "tr": "Deney kaynağı",
+    "en": "Experiment source"
+  },
+  "Custom path": {
+    "tr": "Özel dizin",
+    "en": "Custom path"
+  },
+  "Unavailable": {
+    "tr": "Hesaplanamadı",
+    "en": "Unavailable"
+  },
+  "Technical details": {
+    "tr": "Teknik ayrıntılar",
+    "en": "Technical details"
+  },
+  "Advanced filters": {
+    "tr": "Gelişmiş filtreler",
+    "en": "Advanced filters"
+  },
+  "Detailed evidence columns": {
+    "tr": "Ayrıntılı kanıt sütunları",
+    "en": "Detailed evidence columns"
+  },
+  "Original diagnostic details": {
+    "tr": "Özgün tanı bilgisi",
+    "en": "Original diagnostic details"
+  },
+  "Saved diagnostic requires attention.": {
+    "tr": "Kayıtlı tanı veya kaynak doğrulaması dikkat gerektiriyor. Teknik ayrıntıları inceleyin.",
+    "en": "Saved diagnostic requires attention."
+  },
+  "Data source could not be loaded. Check the selected local files.": {
+    "tr": "Veri kaynağı yüklenemedi. Seçilen yerel dosyaları kontrol edin.",
+    "en": "Data source could not be loaded. Check the selected local files."
+  },
+  "Source and provenance": {
+    "tr": "Kaynak ve doğrulama bilgisi",
+    "en": "Source and provenance"
+  },
+  "Threshold, group and distribution details": {
+    "tr": "Eşik, grup ve dağılım ayrıntıları",
+    "en": "Threshold, group and distribution details"
+  },
+  "Comparison details": {
+    "tr": "Karşılaştırma ayrıntıları",
+    "en": "Comparison details"
+  },
+  "Calibration details": {
+    "tr": "Kalibrasyon ayrıntıları",
+    "en": "Calibration details"
+  },
+  "Customer {number}": {
+    "tr": "Müşteri {number}",
+    "en": "Customer {number}"
+  },
+  "Page": {
+    "tr": "Sayfa",
+    "en": "Page"
+  },
+  "Showing {shown} of {total} rows.": {
+    "tr": "{total} satırın {shown} tanesi gösteriliyor.",
+    "en": "Showing {shown} of {total} rows."
+  },
+  "What is the overall situation?": {
+    "tr": "Genel durum nedir?",
+    "en": "What is the overall situation?"
+  },
+  "Which customers should be examined first?": {
+    "tr": "Önce hangi müşteriler incelenmeli?",
+    "en": "Which customers should be examined first?"
+  },
+  "Which operational circumstances need verification?": {
+    "tr": "İnceleme öncesinde hangi operasyonel koşullar doğrulanmalı?",
+    "en": "Which operational circumstances need verification?"
+  },
+  "How reliable are the saved model results?": {
+    "tr": "Kayıtlı model sonuçları ne kadar güvenilir?",
+    "en": "How reliable are the saved model results?"
+  },
+  "How complete and trustworthy are the readings?": {
+    "tr": "Okumalar ne kadar tam ve güvenilir?",
+    "en": "How complete and trustworthy are the readings?"
+  },
+  "Model scores prioritize review; they do not confirm theft.": {
+    "tr": "Model puanı incelemeyi önceliklendirir; kaçak kullanımını doğrulamaz.",
+    "en": "Model scores prioritize review; they do not confirm theft."
+  },
+  "AP summarizes ranking quality for the historical positive labels; it is not trapezoidal PR-AUC.": {
+    "tr": "AP, geçmiş pozitif etiketler için sıralama kalitesini özetler; trapez yöntemiyle hesaplanan PR-AUC değildir.",
+    "en": "AP summarizes ranking quality for the historical positive labels; it is not trapezoidal PR-AUC."
+  },
+  "ROC-AUC measures separation across thresholds; assess AP as well when positives are rare.": {
+    "tr": "ROC-AUC, eşikler boyunca ayrıştırmayı ölçer; pozitifler azsa AP ile birlikte değerlendirin.",
+    "en": "ROC-AUC measures separation across thresholds; assess AP as well when positives are rare."
+  },
+  "Precision is the observed positive-label fraction in the selected group.": {
+    "tr": "Kesinlik, seçilen gruptaki gözlenen pozitif etiket oranıdır.",
+    "en": "Precision is the observed positive-label fraction in the selected group."
+  },
+  "Recall is the fraction of all cohort positives found in the selected group.": {
+    "tr": "Duyarlılık, grubun tüm pozitiflerinden seçilenlerde bulunan paydır.",
+    "en": "Recall is the fraction of all cohort positives found in the selected group."
+  },
+  "Lift compares precision with the full cohort's positive-label rate.": {
+    "tr": "Lift, kesinliği tüm grubun pozitif etiket oranıyla karşılaştırır.",
+    "en": "Lift compares precision with the full cohort's positive-label rate."
+  },
+  "Brier score measures squared probability error; lower is better.": {
+    "tr": "Brier puanı olasılık hatalarının karesini ölçer; düşük değer daha iyidir.",
+    "en": "Brier score measures squared probability error; lower is better."
+  },
+  "ECE depends on binning and sample size and does not prove calibration.": {
+    "tr": "ECE, aralık seçimine ve örnek sayısına bağlıdır; kalibrasyonu kanıtlamaz.",
+    "en": "ECE depends on binning and sample size and does not prove calibration."
+  },
+  "Missing event records remain unknown; all operational context here is synthetic.": {
+    "tr": "Eksik olay kaydı bilinmeyen bağlamdır; buradaki tüm operasyonel bağlam sentetiktir.",
+    "en": "Missing event records remain unknown; all operational context here is synthetic."
+  },
+  "These are synthetic region assignments, not actual network geography.": {
+    "tr": "Bölge atamaları sentetiktir; gerçek şebeke coğrafyası değildir.",
+    "en": "These are synthetic region assignments, not actual network geography."
+  },
+  "Coverage and high-risk details": {
+    "tr": "Kapsam ve yüksek risk ayrıntıları",
+    "en": "Coverage and high-risk details"
+  },
+  "No strong rule-based indicator": {
+    "tr": "Güçlü kural tabanlı işaret yok",
+    "en": "No strong rule-based indicator"
+  },
+  "No saved descriptive signals": {
+    "tr": "Kayıtlı açıklayıcı işaret yok",
+    "en": "No saved descriptive signals"
+  },
+  "Recent consumption drop": {
+    "tr": "Son dönemde tüketim düşüşü",
+    "en": "Recent consumption drop"
+  },
+  "High missing-reading rate": {
+    "tr": "Yüksek eksik okuma oranı",
+    "en": "High missing-reading rate"
+  },
+  "Unusually variable consumption": {
+    "tr": "Olağandan değişken tüketim",
+    "en": "Unusually variable consumption"
+  },
+  "Frequent zero readings": {
+    "tr": "Sık sıfır okuma",
+    "en": "Frequent zero readings"
+  },
+  "Literal, case-insensitive local search": {
+    "tr": "Yerel arama; büyük/küçük harf duyarsız, düzenli ifade içermez",
+    "en": "Literal, case-insensitive local search"
+  },
+  "Search locally to narrow the first 100 matches": {
+    "tr": "İlk 100 eşleşmeyi daraltmak için yerel arama yapın",
+    "en": "Search locally to narrow the first 100 matches"
+  },
+  "Original prediction file not supplied: saved ML score provenance is unverified.": {
+    "tr": "Özgün tahmin dosyası seçilmedi; kayıtlı ML puanlarının kaynak doğrulaması yapılamadı.",
+    "en": "Original prediction file not supplied: saved ML score provenance is unverified."
+  },
+  "SYNTHETIC metadata is missing: operational events and replay validation are unavailable.": {
+    "tr": "SENTETİK / SYNTHETIC üstveri bulunmuyor; olaylar ve karar tekrarı doğrulanamıyor.",
+    "en": "SYNTHETIC metadata is missing: operational events and replay validation are unavailable."
+  },
+  "Partial SYNTHETIC context: {files}. Saved decisions remain available; missing evidence is unknown.": {
+    "tr": "Kısmi SENTETİK / SYNTHETIC bağlam: {files}. Kayıtlı kararlar korunur; eksik kanıt bilinmiyor.",
+    "en": "Partial SYNTHETIC context: {files}. Saved decisions remain available; missing evidence is unknown."
+  },
+  "SYNTHETIC": {
+    "tr": "SENTETİK / SYNTHETIC",
+    "en": "SENTETİK / SYNTHETIC"
+  },
+  "synthetic": {
+    "tr": "SENTETİK / SYNTHETIC",
+    "en": "Synthetic"
+  },
+  "Synthetic": {
+    "tr": "SENTETİK / SYNTHETIC",
+    "en": "Synthetic"
+  },
+  "custom": {
+    "tr": "Yerel tüketim verisi",
+    "en": "Local consumption data"
+  },
+  "Consumption data": {
+    "tr": "Tüketim verisi",
+    "en": "Consumption data"
+  },
+  "Validation-only": {
+    "tr": "Yalnızca doğrulama",
+    "en": "Validation-only"
+  },
+  "Validation": {
+    "tr": "Doğrulama",
+    "en": "Validation"
+  },
+  "Holdout": {
+    "tr": "Nihai test",
+    "en": "Holdout"
+  },
+  "Final holdout": {
+    "tr": "Geçmiş nihai test",
+    "en": "Final holdout"
+  },
+  "eligible_for_review": {
+    "tr": "İncelemeye uygun",
+    "en": "Eligible for review"
+  },
+  "needs_context_verification": {
+    "tr": "Bağlam doğrulaması gerekli",
+    "en": "Needs context verification"
+  },
+  "insufficient_data": {
+    "tr": "Yetersiz veri",
+    "en": "Insufficient data"
+  },
+  "synthetic_only": {
+    "tr": "Yalnızca sentetik kanıt",
+    "en": "Synthetic only"
+  },
+  "synthetic_partial_unknown": {
+    "tr": "Sentetik · kısmi veya bilinmeyen",
+    "en": "Synthetic · partial or unknown"
+  },
+  "synthetic_unverified": {
+    "tr": "Sentetik · doğrulanmamış",
+    "en": "Synthetic · unverified"
+  },
+  "planned_outage": {
+    "tr": "Planlı kesinti",
+    "en": "Planned outage"
+  },
+  "unplanned_outage": {
+    "tr": "Plansız kesinti",
+    "en": "Unplanned outage"
+  },
+  "communication_failure": {
+    "tr": "Haberleşme kesintisi",
+    "en": "Communication failure"
+  },
+  "meter_fault": {
+    "tr": "Sayaç arızası",
+    "en": "Meter fault"
+  },
+  "meter_replacement": {
+    "tr": "Sayaç değişimi",
+    "en": "Meter replacement"
+  },
+  "active": {
+    "tr": "Aktif abonelik",
+    "en": "Active subscription"
+  },
+  "terminated": {
+    "tr": "Sonlandırılmış abonelik",
+    "en": "Terminated subscription"
+  },
+  "verified": {
+    "tr": "Doğrulanmış (sentetik kayıt)",
+    "en": "Verified (synthetic record)"
+  },
+  "unverified": {
+    "tr": "Doğrulanmamış",
+    "en": "Unverified"
+  },
+  "missing": {
+    "tr": "Eksik",
+    "en": "Missing"
+  },
+  "unknown / unresolved evidence": {
+    "tr": "Bilinmeyen / erişilemeyen kanıt",
+    "en": "unknown / unresolved evidence"
+  },
+  "annotate": {
+    "tr": "Bilinmeyen bağlamı not et",
+    "en": "Annotate unknown context"
+  },
+  "verify": {
+    "tr": "Bağlam doğrulaması iste",
+    "en": "Require context verification"
+  },
+  "High": {
+    "tr": "Yüksek",
+    "en": "High"
+  },
+  "Medium": {
+    "tr": "Orta",
+    "en": "Medium"
+  },
+  "Low": {
+    "tr": "Düşük",
+    "en": "Low"
+  },
+  "True Positive": {
+    "tr": "Gerçek pozitif",
+    "en": "True Positive"
+  },
+  "False Positive": {
+    "tr": "Yanlış pozitif",
+    "en": "False Positive"
+  },
+  "True Negative": {
+    "tr": "Gerçek negatif",
+    "en": "True Negative"
+  },
+  "False Negative": {
+    "tr": "Yanlış negatif",
+    "en": "False Negative"
+  },
+  "Predicted negative": {
+    "tr": "Tahmin: negatif",
+    "en": "Predicted negative"
+  },
+  "Predicted positive": {
+    "tr": "Tahmin: pozitif",
+    "en": "Predicted positive"
+  },
+  "Observed negative": {
+    "tr": "Gözlenen: negatif",
+    "en": "Observed negative"
+  },
+  "Observed positive": {
+    "tr": "Gözlenen: pozitif",
+    "en": "Observed positive"
+  },
+  "Actual negative": {
+    "tr": "Gerçek etiket: negatif",
+    "en": "Actual negative"
+  },
+  "Actual positive": {
+    "tr": "Gerçek etiket: pozitif",
+    "en": "Actual positive"
+  },
+  "TN": {
+    "tr": "Gerçek negatif (TN)",
+    "en": "TN"
+  },
+  "FP": {
+    "tr": "Yanlış pozitif (FP)",
+    "en": "FP"
+  },
+  "FN": {
+    "tr": "Yanlış negatif (FN)",
+    "en": "FN"
+  },
+  "TP": {
+    "tr": "Gerçek pozitif (TP)",
+    "en": "TP"
+  },
+  "Missing / invalid": {
+    "tr": "Eksik / geçersiz",
+    "en": "Missing / invalid"
+  },
+  "Observed": {
+    "tr": "Gözlenen",
+    "en": "Observed"
+  },
+  "Reference diagonal": {
+    "tr": "Referans doğrusu",
+    "en": "Reference diagonal"
+  },
+  "Mean predicted positive-label probability": {
+    "tr": "Ortalama pozitif etiket olasılığı",
+    "en": "Mean predicted positive-label probability"
+  },
+  "Observed positive-label fraction": {
+    "tr": "Gözlenen pozitif etiket oranı",
+    "en": "Observed positive-label fraction"
+  },
+  "Positive-label fraction": {
+    "tr": "Pozitif etiket oranı",
+    "en": "Positive-label fraction"
+  },
+  "Mean probability": {
+    "tr": "Ortalama olasılık",
+    "en": "Mean probability"
+  },
+  "Customers": {
+    "tr": "Müşteri sayısı",
+    "en": "Customers"
+  },
+  "Mean AP decrease": {
+    "tr": "Ortalama AP düşüşü",
+    "en": "Mean AP decrease"
+  },
+  "Daily consumption (kWh)": {
+    "tr": "Günlük tüketim (kWh)",
+    "en": "Daily consumption (kWh)"
+  },
+  "Actual inspection capacity": {
+    "tr": "Gerçekleşen inceleme kapasitesi",
+    "en": "Actual inspection capacity"
+  },
+  "Inspections (K)": {
+    "tr": "İnceleme sayısı (K)",
+    "en": "Inspections (K)"
+  },
+  "Inspections": {
+    "tr": "İnceleme sayısı",
+    "en": "Inspections"
+  },
+  "Positive labels": {
+    "tr": "Pozitif etiketler",
+    "en": "Positive labels"
+  },
+  "Model ranking": {
+    "tr": "Model sıralaması",
+    "en": "Model ranking"
+  },
+  "Model ranking (observed)": {
+    "tr": "Model sıralaması (gözlenen)",
+    "en": "Model ranking (observed)"
+  },
+  "Random selection (expected)": {
+    "tr": "Rastgele seçim (beklenen)",
+    "en": "Random selection (expected)"
+  },
+  "Fraction": {
+    "tr": "Oran",
+    "en": "Fraction"
+  },
+  "Precision": {
+    "tr": "Kesinlik",
+    "en": "Precision"
+  },
+  "Recall": {
+    "tr": "Duyarlılık",
+    "en": "Recall"
+  },
+  "Requested K": {
+    "tr": "İstenen K",
+    "en": "Requested K"
+  },
+  "Actual K": {
+    "tr": "Gerçekleşen K",
+    "en": "Actual K"
+  },
+  "K requested": {
+    "tr": "İstenen K",
+    "en": "K requested"
+  },
+  "Precision@K": {
+    "tr": "Kesinlik@K",
+    "en": "Precision@K"
+  },
+  "Recall@K": {
+    "tr": "Duyarlılık@K",
+    "en": "Recall@K"
+  },
+  "Lift@K": {
+    "tr": "Lift@K",
+    "en": "Lift@K"
+  },
+  "Observed positives": {
+    "tr": "Gözlenen pozitif etiket",
+    "en": "Observed positives"
+  },
+  "Additional inspections": {
+    "tr": "Ek inceleme",
+    "en": "Additional inspections"
+  },
+  "Additional observed positives": {
+    "tr": "Ek gözlenen pozitif etiket",
+    "en": "Additional observed positives"
+  },
+  "Marginal yield": {
+    "tr": "Marjinal verim",
+    "en": "Marginal yield"
+  },
+  "Total inspection cost": {
+    "tr": "Toplam inceleme maliyeti",
+    "en": "Total inspection cost"
+  },
+  "Hypothetical model recovery": {
+    "tr": "Varsayımsal model geri kazanımı",
+    "en": "Hypothetical model recovery"
+  },
+  "Hypothetical random recovery": {
+    "tr": "Varsayımsal rastgele seçim geri kazanımı",
+    "en": "Hypothetical random recovery"
+  },
+  "Illustrative model net": {
+    "tr": "Örnek model neti",
+    "en": "Illustrative model net"
+  },
+  "Illustrative random net": {
+    "tr": "Örnek rastgele seçim neti",
+    "en": "Illustrative random net"
+  },
+  "Property": {
+    "tr": "Özellik",
+    "en": "Property"
+  },
+  "Value": {
+    "tr": "Değer",
+    "en": "Value"
+  },
+  "Customer ID": {
+    "tr": "Müşteri kimliği",
+    "en": "Customer ID"
+  },
+  "Customer (ID hidden)": {
+    "tr": "Müşteri (kimlik gizli)",
+    "en": "Customer (ID hidden)"
+  },
+  "SYNTHETIC event": {
+    "tr": "SENTETİK / SYNTHETIC olay",
+    "en": "SYNTHETIC event"
+  },
+  "Synthetic verification": {
+    "tr": "Sentetik doğrulama",
+    "en": "Synthetic verification"
+  },
+  "customer_id": {
+    "tr": "Müşteri kimliği",
+    "en": "Customer ID"
+  },
+  "rank": {
+    "tr": "Öncelik sırası",
+    "en": "Rank"
+  },
+  "risk_score": {
+    "tr": "Risk puanı",
+    "en": "Risk score"
+  },
+  "original_risk_score": {
+    "tr": "Özgün ML risk puanı",
+    "en": "Original ML risk score"
+  },
+  "model_score": {
+    "tr": "Ham model puanı",
+    "en": "Raw model score"
+  },
+  "risk_band": {
+    "tr": "Risk düzeyi",
+    "en": "Risk band"
+  },
+  "review_signal": {
+    "tr": "Gözlem işaretleri",
+    "en": "Reading signals"
+  },
+  "decision_status": {
+    "tr": "Karar durumu",
+    "en": "Decision status"
+  },
+  "evidence_status": {
+    "tr": "Kanıt durumu",
+    "en": "Evidence status"
+  },
+  "reason_codes": {
+    "tr": "Karar gerekçeleri",
+    "en": "Reason codes"
+  },
+  "matched_operational_events": {
+    "tr": "Eşleşen operasyonel olaylar",
+    "en": "Matched operational events"
+  },
+  "event_type": {
+    "tr": "Olay türü",
+    "en": "Event type"
+  },
+  "event_id": {
+    "tr": "Olay kimliği",
+    "en": "Event ID"
+  },
+  "start": {
+    "tr": "Başlangıç",
+    "en": "Start"
+  },
+  "end": {
+    "tr": "Bitiş (hariç)",
+    "en": "End (exclusive)"
+  },
+  "provenance": {
+    "tr": "Veri kaynağı",
+    "en": "Provenance"
+  },
+  "verification_status": {
+    "tr": "Doğrulama durumu",
+    "en": "Verification status"
+  },
+  "date": {
+    "tr": "Tarih",
+    "en": "Date"
+  },
+  "availability": {
+    "tr": "Okuma bulunabilirliği",
+    "en": "Availability"
+  },
+  "count": {
+    "tr": "Sayı",
+    "en": "Count"
+  },
+  "score": {
+    "tr": "Puan",
+    "en": "Score"
+  },
+  "value": {
+    "tr": "Değer",
+    "en": "Value"
+  },
+  "variable": {
+    "tr": "Ölçüm",
+    "en": "Metric"
+  },
+  "fraction": {
+    "tr": "Oran",
+    "en": "Fraction"
+  },
+  "model": {
+    "tr": "Model",
+    "en": "Model"
+  },
+  "method": {
+    "tr": "Yöntem",
+    "en": "Method"
+  },
+  "group": {
+    "tr": "Grup",
+    "en": "Group"
+  },
+  "customers": {
+    "tr": "Müşteri sayısı",
+    "en": "Customers"
+  },
+  "positive_customers": {
+    "tr": "Pozitif etiketli müşteri",
+    "en": "Positive customers"
+  },
+  "positive_labels": {
+    "tr": "Pozitif etiket",
+    "en": "Positive labels"
+  },
+  "positives": {
+    "tr": "Pozitif etiket sayısı",
+    "en": "Positives"
+  },
+  "average_precision": {
+    "tr": "Ortalama kesinlik (AP)",
+    "en": "Average precision"
+  },
+  "roc_auc": {
+    "tr": "ROC-AUC",
+    "en": "ROC-AUC"
+  },
+  "precision": {
+    "tr": "Kesinlik",
+    "en": "Precision"
+  },
+  "recall": {
+    "tr": "Duyarlılık",
+    "en": "Recall"
+  },
+  "lift": {
+    "tr": "Lift",
+    "en": "Lift"
+  },
+  "precision_at_50": {
+    "tr": "Kesinlik@50",
+    "en": "Precision@50"
+  },
+  "precision_at_100": {
+    "tr": "Kesinlik@100",
+    "en": "Precision@100"
+  },
+  "precision_at_200": {
+    "tr": "Kesinlik@200",
+    "en": "Precision@200"
+  },
+  "precision_0_5": {
+    "tr": "Kesinlik (eşik 0,5)",
+    "en": "Precision at 0.5"
+  },
+  "recall_0_5": {
+    "tr": "Duyarlılık (eşik 0,5)",
+    "en": "Recall at 0.5"
+  },
+  "f1_0_5": {
+    "tr": "F1 (eşik 0,5)",
+    "en": "F1 at 0.5"
+  },
+  "true_negative": {
+    "tr": "Gerçek negatif",
+    "en": "True negative"
+  },
+  "false_positive": {
+    "tr": "Yanlış pozitif",
+    "en": "False positive"
+  },
+  "false_negative": {
+    "tr": "Yanlış negatif",
+    "en": "False negative"
+  },
+  "false_positive_rate": {
+    "tr": "Yanlış pozitif oranı",
+    "en": "False positive rate"
+  },
+  "false_negative_rate": {
+    "tr": "Yanlış negatif oranı",
+    "en": "False negative rate"
+  },
+  "rate_status": {
+    "tr": "Oran desteği",
+    "en": "Rate support"
+  },
+  "status": {
+    "tr": "Durum",
+    "en": "Status"
+  },
+  "available": {
+    "tr": "Hesaplandı",
+    "en": "Available"
+  },
+  "single_class": {
+    "tr": "Tek sınıf",
+    "en": "Single class"
+  },
+  "suppressed": {
+    "tr": "Küçük örneklem · gösterilmiyor",
+    "en": "Suppressed"
+  },
+  "insufficient_support": {
+    "tr": "Yetersiz örneklem",
+    "en": "Insufficient support"
+  },
+  "threshold": {
+    "tr": "Eşik",
+    "en": "Threshold"
+  },
+  "requested_k": {
+    "tr": "İstenen K",
+    "en": "Requested K"
+  },
+  "evaluated_k": {
+    "tr": "Gerçekleşen K",
+    "en": "Actual K"
+  },
+  "positives_found": {
+    "tr": "Bulunan pozitif etiket",
+    "en": "Positives found"
+  },
+  "positive_rate": {
+    "tr": "Pozitif etiket oranı",
+    "en": "Positive rate"
+  },
+  "brier_score": {
+    "tr": "Brier puanı",
+    "en": "Brier score"
+  },
+  "log_loss": {
+    "tr": "Logaritmik kayıp",
+    "en": "Log loss"
+  },
+  "ece": {
+    "tr": "ECE",
+    "en": "ECE"
+  },
+  "lower": {
+    "tr": "Alt sınır",
+    "en": "Lower"
+  },
+  "upper": {
+    "tr": "Üst sınır",
+    "en": "Upper"
+  },
+  "mean_probability": {
+    "tr": "Ortalama olasılık",
+    "en": "Mean probability"
+  },
+  "positive_fraction": {
+    "tr": "Pozitif etiket oranı",
+    "en": "Positive fraction"
+  },
+  "development_evaluation": {
+    "tr": "Geliştirme değerlendirmesi",
+    "en": "Development evaluation"
+  },
+  "development_validation": {
+    "tr": "Geliştirme doğrulaması",
+    "en": "Development validation"
+  },
+  "uncalibrated": {
+    "tr": "Kalibre edilmemiş",
+    "en": "Uncalibrated"
+  },
+  "sigmoid": {
+    "tr": "Sigmoid",
+    "en": "Sigmoid"
+  },
+  "isotonic": {
+    "tr": "İzotonik",
+    "en": "Isotonic"
+  },
+  "supervised_rf": {
+    "tr": "Denetimli RF",
+    "en": "Supervised RF"
+  },
+  "isolation_forest": {
+    "tr": "Isolation Forest",
+    "en": "Isolation Forest"
+  },
+  "robust_mad": {
+    "tr": "Dayanıklı medyan/MAD",
+    "en": "Robust median/MAD"
+  },
+  "logistic_regression": {
+    "tr": "Lojistik regresyon",
+    "en": "Logistic regression"
+  },
+  "random_forest": {
+    "tr": "Rastgele orman",
+    "en": "Random forest"
+  },
+  "dummy_prior": {
+    "tr": "Sabit önsel karşılaştırması",
+    "en": "Prior baseline"
+  },
+  "missing_ratio": {
+    "tr": "Eksik okuma oranı",
+    "en": "Missing-reading rate"
+  },
+  "coefficient_variation": {
+    "tr": "Değişim katsayısı",
+    "en": "Coefficient of variation"
+  },
+  "mean_kwh": {
+    "tr": "Ortalama tüketim (kWh)",
+    "en": "Mean consumption (kWh)"
+  },
+  "median_kwh": {
+    "tr": "Medyan tüketim (kWh)",
+    "en": "Median consumption (kWh)"
+  },
+  "std_kwh": {
+    "tr": "Tüketim standart sapması",
+    "en": "Consumption SD"
+  },
+  "p95_kwh": {
+    "tr": "Yüzde 95 tüketim dilimi",
+    "en": "95th consumption percentile"
+  },
+  "maximum_kwh": {
+    "tr": "En yüksek tüketim",
+    "en": "Maximum consumption"
+  },
+  "zero_ratio": {
+    "tr": "Sıfır okuma oranı",
+    "en": "Zero-reading rate"
+  },
+  "active_ratio": {
+    "tr": "Pozitif okuma oranı",
+    "en": "Positive-reading rate"
+  },
+  "recent_kwh": {
+    "tr": "Son dönem tüketimi",
+    "en": "Recent consumption"
+  },
+  "previous_kwh": {
+    "tr": "Önceki dönem tüketimi",
+    "en": "Previous consumption"
+  },
+  "recent_previous_ratio": {
+    "tr": "Son / önceki dönem oranı",
+    "en": "Recent/previous ratio"
+  },
+  "recent_drop_ratio": {
+    "tr": "Son dönem düşüş oranı",
+    "en": "Recent drop ratio"
+  },
+  "mean_daily_change": {
+    "tr": "Ortalama günlük değişim",
+    "en": "Mean daily change"
+  },
+  "weekend_weekday_ratio": {
+    "tr": "Hafta sonu / içi oranı",
+    "en": "Weekend/weekday ratio"
+  },
+  "longest_missing_days": {
+    "tr": "En uzun eksik gün serisi",
+    "en": "Longest missing-day streak"
+  },
+  "longest_zero_days": {
+    "tr": "En uzun sıfır gün serisi",
+    "en": "Longest zero-day streak"
+  },
+  "iqr_kwh": {
+    "tr": "Çeyrekler arası tüketim aralığı",
+    "en": "Consumption IQR"
+  },
+  "feature": {
+    "tr": "Özellik",
+    "en": "Feature"
+  },
+  "mean_decrease": {
+    "tr": "Ortalama AP düşüşü",
+    "en": "Mean AP decrease"
+  },
+  "std_decrease": {
+    "tr": "AP düşüşünün standart sapması",
+    "en": "SD of AP decrease"
+  },
+  "negative_mean": {
+    "tr": "Negatif ortalama",
+    "en": "Negative mean"
+  },
+  "outcome": {
+    "tr": "Gözlenen sonuç",
+    "en": "Outcome"
+  },
+  "observed_values": {
+    "tr": "Gözlenen değer",
+    "en": "Observed values"
+  },
+  "missing_values": {
+    "tr": "Eksik değer",
+    "en": "Missing values"
+  },
+  "distinct scores": {
+    "tr": "Farklı puan sayısı",
+    "en": "distinct scores"
+  },
+  "left": {
+    "tr": "Sol yöntem",
+    "en": "left"
+  },
+  "right": {
+    "tr": "Sağ yöntem",
+    "en": "right"
+  },
+  "Spearman rho": {
+    "tr": "Spearman rho",
+    "en": "Spearman rho"
+  },
+  "intersection": {
+    "tr": "Kesişim",
+    "en": "Intersection"
+  },
+  "union": {
+    "tr": "Birleşim",
+    "en": "Union"
+  },
+  "jaccard": {
+    "tr": "Jaccard",
+    "en": "Jaccard"
+  },
+  "left_only_customers": {
+    "tr": "Yalnız sol yöntemdeki müşteri",
+    "en": "Left-only customers"
+  },
+  "right_only_customers": {
+    "tr": "Yalnız sağ yöntemdeki müşteri",
+    "en": "Right-only customers"
+  },
+  "left_only_positive_rate": {
+    "tr": "Yalnız soldaki pozitif oranı",
+    "en": "Left-only positive rate"
+  },
+  "right_only_positive_rate": {
+    "tr": "Yalnız sağdaki pozitif oranı",
+    "en": "Right-only positive rate"
+  },
+  "left_rate_status": {
+    "tr": "Sol grup desteği",
+    "en": "Left support"
+  },
+  "right_rate_status": {
+    "tr": "Sağ grup desteği",
+    "en": "Right support"
+  },
+  "experiment": {
+    "tr": "Deney",
+    "en": "Experiment"
+  },
+  "source": {
+    "tr": "Kaynak",
+    "en": "Source"
+  },
+  "dataset fingerprint": {
+    "tr": "Veri kümesi parmak izi",
+    "en": "dataset fingerprint"
+  },
+  "feature configuration": {
+    "tr": "Özellik yapılandırması",
+    "en": "feature configuration"
+  },
+  "model parameters": {
+    "tr": "Model parametreleri",
+    "en": "model parameters"
+  },
+  "score definitions": {
+    "tr": "Puan tanımları",
+    "en": "score definitions"
+  },
+  "partitions": {
+    "tr": "Veri bölümleri",
+    "en": "Partitions"
+  },
+  "methodology": {
+    "tr": "Yöntem bilgisi",
+    "en": "Methodology"
+  },
+  "software": {
+    "tr": "Yazılım sürümleri",
+    "en": "Software"
+  },
+  "configuration": {
+    "tr": "Yapılandırma",
+    "en": "Configuration"
+  },
+  "skipped methods": {
+    "tr": "Uygulanmayan yöntemler",
+    "en": "skipped methods"
+  },
+  "base model": {
+    "tr": "Temel model",
+    "en": "base model"
+  },
+  "positive_prevalence": {
+    "tr": "Pozitif etiket oranı",
+    "en": "Positive prevalence"
+  },
+  "synthetic_context_only": {
+    "tr": "Yalnızca sentetik bağlam",
+    "en": "synthetic_context_only"
+  },
+  "invalid_or_missing_risk_score": {
+    "tr": "Risk puanı eksik veya geçersiz",
+    "en": "invalid_or_missing_risk_score"
+  },
+  "missing_or_invalid_region_mapping": {
+    "tr": "Sentetik bölge eşlemesi eksik veya geçersiz",
+    "en": "missing_or_invalid_region_mapping"
+  },
+  "invalid_context_records": {
+    "tr": "Bağlam kayıtlarında veri kalitesi sorunu",
+    "en": "invalid_context_records"
+  },
+  "conflicting_subscription_intervals": {
+    "tr": "Çelişen abonelik dönemleri",
+    "en": "conflicting_subscription_intervals"
+  },
+  "subscription_coverage_unknown": {
+    "tr": "Abonelik kapsamı bilinmiyor",
+    "en": "subscription_coverage_unknown"
+  },
+  "no_matching_outages_unknown": {
+    "tr": "Kesinti eşleşmedi; durum bilinmiyor",
+    "en": "no_matching_outages_unknown"
+  },
+  "no_matching_meter_events_unknown": {
+    "tr": "Sayaç olayı eşleşmedi; durum bilinmiyor",
+    "en": "no_matching_meter_events_unknown"
+  },
+  "missing_evidence": {
+    "tr": "Doğrulama bilgisi eksik",
+    "en": "missing_evidence"
+  },
+  "unverified_evidence": {
+    "tr": "Kanıt doğrulanmamış",
+    "en": "unverified_evidence"
+  },
+  "active_subscription_context": {
+    "tr": "Aktif abonelik kaydı",
+    "en": "active_subscription_context"
+  },
+  "configured_irrelevant_meter_event": {
+    "tr": "Kural gereği bilgilendirici sayaç olayı",
+    "en": "configured_irrelevant_meter_event"
+  },
+  "unlinked_invalid_context": {
+    "tr": "İlişkilendirilemeyen geçersiz bağlam kaydı",
+    "en": "unlinked_invalid_context"
+  },
+  "overlapping_planned_outage": {
+    "tr": "Dönemle örtüşen planlı kesinti",
+    "en": "overlapping_planned_outage"
+  },
+  "overlapping_unplanned_outage": {
+    "tr": "Dönemle örtüşen plansız kesinti",
+    "en": "overlapping_unplanned_outage"
+  },
+  "overlapping_communication_failure": {
+    "tr": "Dönemle örtüşen haberleşme kesintisi",
+    "en": "overlapping_communication_failure"
+  },
+  "overlapping_meter_fault": {
+    "tr": "Dönemle örtüşen sayaç arızası",
+    "en": "overlapping_meter_fault"
+  },
+  "overlapping_meter_replacement": {
+    "tr": "Dönemle örtüşen sayaç değişimi",
+    "en": "overlapping_meter_replacement"
+  },
+  "overlapping_terminated": {
+    "tr": "Dönemle örtüşen sonlandırılmış abonelik",
+    "en": "overlapping_terminated"
+  },
+  "invalid_provenance": {
+    "tr": "Veri kaynağı bilgisi geçersiz",
+    "en": "invalid_provenance"
+  },
+  "orphan_customer_reference": {
+    "tr": "Kaynakta bulunmayan müşteri referansı",
+    "en": "orphan_customer_reference"
+  },
+  "invalid_region_reference": {
+    "tr": "Geçersiz sentetik bölge referansı",
+    "en": "invalid_region_reference"
+  },
+  "missing_or_invalid_availability": {
+    "tr": "Kayıt erişim zamanı eksik veya geçersiz",
+    "en": "missing_or_invalid_availability"
+  },
+  "missing_event_id": {
+    "tr": "Olay kimliği eksik",
+    "en": "missing_event_id"
+  },
+  "invalid_event_interval": {
+    "tr": "Olay dönemi geçersiz",
+    "en": "invalid_event_interval"
+  },
+  "outside_observation_period": {
+    "tr": "Gözlem dönemi dışında kayıt",
+    "en": "outside_observation_period"
+  },
+  "invalid_event_type": {
+    "tr": "Olay türü geçersiz",
+    "en": "invalid_event_type"
+  },
+  "invalid_subscription_state": {
+    "tr": "Abonelik durumu geçersiz",
+    "en": "invalid_subscription_state"
+  },
+  "invalid_verification_status": {
+    "tr": "Doğrulama durumu geçersiz",
+    "en": "invalid_verification_status"
+  },
+  "duplicate_event_id": {
+    "tr": "Yinelenen olay kimliği",
+    "en": "duplicate_event_id"
+  },
+  "ECE uses fixed equal-width bins and sample-weighted absolute bin gaps. It depends on bin edges and sample size, hides within-bin errors, and is not a proper scoring rule or proof of calibration. Empty bins have no estimated event rate. Brier score and log loss assess overall probability quality, not calibration alone.": {
+    "en": "ECE uses fixed equal-width bins and sample-weighted absolute bin gaps. It depends on bin edges and sample size, hides within-bin errors, and is not a proper scoring rule or proof of calibration. Empty bins have no estimated event rate. Brier score and log loss assess overall probability quality, not calibration alone.",
+    "tr": "ECE eşit genişlikli aralıkları ve örnek sayısıyla ağırlıklı mutlak farkları kullanır. Aralık seçimine ve örneklem büyüklüğüne bağlıdır; aralık içi hataları gizler. Uygun bir puanlama kuralı veya kalibrasyon kanıtı değildir. Boş aralıklar için oran tahmin edilmez. Brier ve logaritmik kayıp genel olasılık kalitesini değerlendirir, yalnızca kalibrasyonu değil."
+  },
+  "Permutation importance measures model-specific AP sensitivity, not causal effects or individual attribution. Correlated features can share/mask importance, and independent shuffling can create unrealistic combinations. Negative decreases are retained. Repeat standard deviations describe permutation randomness, not confidence intervals or uncertainty from sampling/training. Values near machine precision are numerical noise and do not support feature rankings. Small cohorts can give unstable estimates.": {
+    "en": "Permutation importance measures model-specific AP sensitivity, not causal effects or individual attribution. Correlated features can share/mask importance, and independent shuffling can create unrealistic combinations. Negative decreases are retained. Repeat standard deviations describe permutation randomness, not confidence intervals or uncertainty from sampling/training. Values near machine precision are numerical noise and do not support feature rankings. Small cohorts can give unstable estimates.",
+    "tr": "Permütasyon önemi modelin AP duyarlılığını ölçer; nedensellik veya müşteri bazında açıklama değildir. İlişkili özellikler önemi paylaşabilir veya gizleyebilir; bağımsız karıştırma gerçekçi olmayan birleşimler üretebilir. Negatif değerler korunur. Tekrar standart sapmaları karıştırma rastgeleliğini açıklar; güven aralığı, örnekleme veya eğitim belirsizliği değildir. Sayısal hassasiyet düzeyindeki değerler sıralamayı desteklemez. Küçük gruplarda sonuçlar kararsız olabilir."
+  },
+  "Illustrative scenario only, not validated financial forecasts. Hypothetical recovery assumes the same user-supplied value per observed positive; historical labels do not establish recoverable losses or confirmed electricity theft.": {
+    "en": "Illustrative scenario only, not validated financial forecasts. Hypothetical recovery assumes the same user-supplied value per observed positive; historical labels do not establish recoverable losses or confirmed electricity theft.",
+    "tr": "Yalnızca varsayımsal senaryodur; doğrulanmış finansal öngörü değildir. Her pozitif etikete kullanıcının girdiği aynı geri kazanım değeri atanır. Geçmiş etiketler, tahsil edilebilir kaybı veya doğrulanmış kaçak kullanımını kanıtlamaz."
+  },
+  "Validation AP": {
+    "tr": "Doğrulama AP",
+    "en": "Validation AP"
+  },
+  "Observed holdout AP": {
+    "tr": "Geçmiş test AP",
+    "en": "Observed holdout AP"
+  },
+  "Raw model score": {
+    "tr": "Ham model puanı",
+    "en": "Raw model score"
+  },
+  "Model unavailable": {
+    "tr": "Model bulunmuyor",
+    "en": "Model unavailable"
+  },
+  "Not recorded": {
+    "tr": "Kaydedilmemiş",
+    "en": "Not recorded"
+  },
+  "Negative label": {
+    "tr": "Negatif etiket",
+    "en": "Negative label"
+  },
+  "Positive label": {
+    "tr": "Pozitif etiket",
+    "en": "Positive label"
+  },
+  "Historical label": {
+    "tr": "Geçmiş etiket",
+    "en": "Historical label"
+  },
+  "Measure": {
+    "tr": "Ölçüm",
+    "en": "Measure"
+  },
+  "reading_columns": {
+    "tr": "Okuma sütunu",
+    "en": "reading_columns"
+  },
+  "split_sizes": {
+    "tr": "Veri bölümü büyüklükleri",
+    "en": "split_sizes"
+  },
+  "fitted_on": {
+    "tr": "Eğitim kapsamı",
+    "en": "fitted_on"
+  },
+  "missing_reading_rate": {
+    "tr": "Eksik okuma oranı",
+    "en": "missing_reading_rate"
+  },
+  "zero_readings": {
+    "tr": "Sıfır okuma",
+    "en": "zero_readings"
+  },
+  "negative_readings_masked_in_training": {
+    "tr": "Eksik kabul edilen negatif okuma",
+    "en": "negative_readings_masked_in_training"
+  },
+  "nonnumeric_nonempty_cells": {
+    "tr": "Sayısal olmayan dolu hücre",
+    "en": "nonnumeric_nonempty_cells"
+  },
+  "nonfinite_readings": {
+    "tr": "Sonlu olmayan okuma",
+    "en": "nonfinite_readings"
+  },
+  "missing_calendar_days": {
+    "tr": "Eksik takvim günü",
+    "en": "missing_calendar_days"
+  },
+  "date_start": {
+    "tr": "Başlangıç tarihi",
+    "en": "date_start"
+  },
+  "date_end": {
+    "tr": "Bitiş tarihi",
+    "en": "date_end"
+  },
+  "legacy_unverified: only schema and split size checked; membership not recorded": {
+    "tr": "Eski deney: yalnızca şema ve grup büyüklüğü doğrulandı; müşteri üyeliği kaydedilmemiş.",
+    "en": "legacy_unverified: only schema and split size checked; membership not recorded"
+  },
+  "verified: prediction checksum and disjoint customer partition manifest": {
+    "tr": "Tahmin özeti ve ayrık müşteri bölümleri doğrulandı.",
+    "en": "verified: prediction checksum and disjoint customer partition manifest"
+  },
+  "Unverified: optional local split manifest unavailable": {
+    "tr": "Müşteri üyeliği doğrulanamadı: yerel bölüm dosyası bulunmuyor.",
+    "en": "Unverified: optional local split manifest unavailable"
+  },
+  "Test predictions not produced": {
+    "tr": "Test tahminleri üretilmedi",
+    "en": "Test predictions not produced"
+  },
+  "SYNTHETIC context decisions; customer identifiers hidden unless explicitly revealed": {
+    "tr": "SENTETİK / SYNTHETIC bağlam kararları; kimlikler açıkça seçilmedikçe gizlidir",
+    "en": "SYNTHETIC context decisions; customer identifiers hidden unless explicitly revealed"
+  },
+  "Start with {count} high-risk customers in this historical cohort. Operational context uses a separate bundle.": {
+    "tr": "Bu geçmiş veri grubunda {count} yüksek riskli müşteri var. Önceliklendirme için Risk Analizi bölümünü kullanın. Operasyonel bağlam ayrı dosyalardan okunur.",
+    "en": "Start with {count} high-risk customers in this historical cohort. Operational context uses a separate bundle."
+  }
+}

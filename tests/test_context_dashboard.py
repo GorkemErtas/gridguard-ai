@@ -16,6 +16,7 @@ from gridguard.context_dashboard import (
 from gridguard.decision_gate import save_decisions
 from gridguard.operational import PROVENANCE, GenerationConfig, generate_context
 from gridguard.provenance import file_fingerprint, write_json
+from tests.dashboard_support import open_workspace
 
 
 @pytest.fixture
@@ -429,7 +430,7 @@ def test_missing_risk_can_be_filtered_without_changing_saved_score(context_files
 
 def app_for(files, monkeypatch):
     pytest.importorskip("streamlit")
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file
 
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(files["root"] / "missing-legacy"))
     monkeypatch.setenv("GRIDGUARD_CONTEXT_ROOT", str(files["root"]))
@@ -438,7 +439,7 @@ def app_for(files, monkeypatch):
     monkeypatch.setenv("GRIDGUARD_CONTEXT_PREDICTIONS", str(files["predictions_path"]))
     monkeypatch.setenv("GRIDGUARD_CONTEXT_SOURCE", str(files["source"]))
     monkeypatch.setenv("GRIDGUARD_WORKSPACE", "Operational Context")
-    return AppTest.from_file(
+    return app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=30
     ).run()
 
@@ -497,7 +498,7 @@ def test_missing_context_workspace_does_not_break_legacy(context_files, monkeypa
     app.text_input(key="context_dataset_dir").set_value("missing-context").run()
     assert not app.exception
     assert any("No valid saved operational context" in item.value for item in app.info)
-    app.sidebar.radio[0].set_value("Overview").run()
+    open_workspace(app, "Overview")
     assert not app.exception
     assert any("Select a local experiment" in item.value for item in app.info)
 

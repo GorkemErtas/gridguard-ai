@@ -138,7 +138,7 @@ $env:GRIDGUARD_ANOMALY_REPORT = 'artifacts/anomaly-development/anomaly_benchmark
 .\.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py --server.address 127.0.0.1
 ```
 
-Choose **Anomaly Detection** and a saved development cohort. The workspace works independently of the legacy selector and caches eight aggregate reports for five minutes, invalidated by report/manifest/prediction signatures. It exposes no customer IDs or customer-level download. It displays metric comparisons, native distributions, top-K overlap, tie-aware correlations, nonoverlap rates, quality groups and provenance. Rendering never loads weights, trains/refits or predicts from a model. Missing optional artifacts leave other workspaces usable.
+Select EN, then **Model Performance → Anomaly Detection**, and choose a saved development cohort. The workspace works independently of the legacy selector and caches eight aggregate reports for five minutes, invalidated by report/manifest/prediction signatures. It exposes no customer IDs or customer-level download. It displays metric comparisons, native distributions, top-K overlap, tie-aware correlations, nonoverlap rates, quality groups and provenance. Rendering never loads weights, trains/refits or predicts from a model. Missing optional artifacts leave other workspaces usable.
 
 ## Limitations and next steps
 

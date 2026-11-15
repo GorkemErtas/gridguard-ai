@@ -306,7 +306,8 @@ def test_dashboard_is_read_only_private_and_independent_of_legacy_run(
     from pathlib import Path
 
     from sklearn.ensemble import RandomForestClassifier
-    from streamlit.testing.v1 import AppTest
+
+    from tests.dashboard_support import app_file, open_workspace
 
     def forbidden(*args, **kwargs):
         pytest.fail("The saved benchmark view must not load or fit any model")
@@ -317,10 +318,10 @@ def test_dashboard_is_read_only_private_and_independent_of_legacy_run(
         monkeypatch.setattr(estimator, "fit", forbidden)
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(tmp_path / "no-legacy-run"))
     monkeypatch.setenv("GRIDGUARD_ANOMALY_REPORT", str(saved_anomaly / "anomaly_benchmark.json"))
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
-    app.sidebar.radio[0].set_value("Anomaly Detection").run()
+    open_workspace(app, "Anomaly Detection")
     assert not app.exception
     assert any("Development-only benchmark" in warning.value for warning in app.warning)
     assert any("Synthetic demonstration" in warning.value for warning in app.warning)
@@ -334,6 +335,11 @@ def test_dashboard_is_read_only_private_and_independent_of_legacy_run(
     app.selectbox(key="anomaly_partition").set_value("development_validation").run()
     assert not app.exception
     assert before == {path.name: path.read_bytes() for path in saved_anomaly.iterdir()}
+    app.segmented_control(key="language").set_value("tr").run()
+    assert not app.exception
+    assert app.title[0].value == "Model Performansı"
+    assert len(app.get("plotly_chart")) == 4
+    app.segmented_control(key="language").set_value("en").run()
     app.text_input(key="anomaly_path").set_value(str(tmp_path / "absent.json")).run()
     assert not app.exception
     assert "No valid saved anomaly benchmark" in app.info[0].value
@@ -343,17 +349,17 @@ def test_legacy_dashboard_without_optional_anomaly_artifacts(tmp_path, monkeypat
     pytest.importorskip("streamlit")
     from pathlib import Path
 
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file, open_workspace
 
     write_json(tmp_path / "metrics.json", {"test": None, "validation": {}})
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(tmp_path))
     monkeypatch.delenv("GRIDGUARD_ANOMALY_REPORT", raising=False)
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
-    app.sidebar.radio[0].set_value("Anomaly Detection").run()
+    open_workspace(app, "Anomaly Detection")
     assert not app.exception
     assert "No valid saved anomaly benchmark" in app.info[0].value
-    app.sidebar.radio[0].set_value("Overview").run()
+    open_workspace(app, "Overview")
     assert not app.exception
     assert any("validation-only" in info.value for info in app.info)

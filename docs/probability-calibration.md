@@ -96,7 +96,7 @@ $env:GRIDGUARD_RELIABILITY_REPORT = 'artifacts/calibration-development/reliabili
 .\.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py --server.address 127.0.0.1
 ```
 
-Choose **Model Reliability**, or enter its report path directly. This view works independently of the legacy selector, including without a legacy `metrics.json`. It shows the development-only warning, reliability diagram, bin counts, Brier/log-loss/ECE/AP/ROC-AUC, ranking comparison and fitting/selection metadata. Missing calibration artifacts do not break other workspaces. Its eight-entry/five-minute cache includes report, manifest and diagnostic CSV signatures. No estimator loading or fitting occurs while rendering.
+Select EN, then **Model Performance → Model Reliability**, and choose the saved report path. This view works independently of the legacy selector, including without a legacy `metrics.json`. It shows the development-only warning, reliability diagram, bin counts, Brier/log-loss/ECE/AP/ROC-AUC, ranking comparison and fitting/selection metadata. Missing calibration artifacts do not break other workspaces. Its eight-entry/five-minute cache includes report, manifest and diagnostic CSV signatures. No estimator loading or fitting occurs while rendering.
 
 Even after calibration, outputs concern **historical dataset labels**, not confirmed theft probabilities. Dataset shift, biased/noisy labels and an unrepresentative calibration population can invalidate deployment reliability. Independent human review remains necessary; calibration cannot justify allegations, disconnection or billing actions.
 

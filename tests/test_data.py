@@ -95,8 +95,13 @@ def test_customer_history_uses_calendar_and_loader_reading_policy(tmp_path):
     frame.loc[0, dates[0]] = -10
     frame.loc[0, dates[1]] = np.inf
     frame = frame.drop(columns=dates[2])
-    frame = frame.rename(columns={col: pd.Timestamp(col).strftime("%Y/%m/%d")
-                                  for col in frame if col not in ("CONS_NO", "FLAG")})
+    frame = frame.rename(
+        columns={
+            col: pd.Timestamp(col).strftime("%Y/%m/%d")
+            for col in frame
+            if col not in ("CONS_NO", "FLAG")
+        }
+    )
     frame.loc[0, "CONS_NO"] = "  review-customer  "
     path = tmp_path / "history.csv"
     frame.to_csv(path, index=False)

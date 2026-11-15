@@ -138,12 +138,10 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     pytest.importorskip("streamlit")
     from pathlib import Path
 
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file, open_workspace
 
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(dashboard_artifacts))
-    app = AppTest.from_file(
-        str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=15
-    )
+    app = app_file(str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=15)
     app.run()
     assert not app.exception
     for section in [
@@ -156,7 +154,7 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
         "Customer analytics",
         "Data quality",
     ]:
-        app.sidebar.radio[0].set_value(section).run()
+        open_workspace(app, section)
         assert not app.exception, section
     from gridguard.synthetic import make_synthetic
 
@@ -164,12 +162,12 @@ def test_all_dashboard_sections_smoke(dashboard_artifacts, monkeypatch):
     readings.loc[0, "CONS_NO"] = "a"
     raw_path = dashboard_artifacts.parent / "history.csv"
     readings.to_csv(raw_path, index=False)
-    app.sidebar.radio[0].set_value("Customer analytics").run()
+    open_workspace(app, "Customer analytics")
     app.text_input[1].set_value(str(raw_path))
     app.button[0].click().run()
     assert not app.exception
     assert any(metric.label == "Calendar days" and metric.value == "61" for metric in app.metric)
-    app.sidebar.radio[0].set_value("Inspection queue").run()
+    open_workspace(app, "Inspection queue")
     app.multiselect[0].set_value([]).run()
     assert "No customers" in app.info[0].value
 
@@ -178,13 +176,13 @@ def planning_app(folder, monkeypatch):
     pytest.importorskip("streamlit")
     from pathlib import Path
 
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file, open_workspace
 
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(folder))
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=15
     ).run()
-    app.sidebar.radio[0].set_value("Inspection Capacity Planning").run()
+    open_workspace(app, "Inspection Capacity Planning")
     assert not app.exception
     return app
 

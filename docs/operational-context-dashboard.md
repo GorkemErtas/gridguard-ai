@@ -1,5 +1,7 @@
 # Operational Context dashboard
 
+Current navigation: **Operasyonel İnceleme → Operasyonel Bağlam** in Turkish, or **Operational Review → Operational Context** in English. The app starts in Turkish; select EN for the labels used in this technical guide. See the [TR/EN navigation guide](dashboard-tr-en.md) for the current layout. The screenshot below shows the earlier ten-workspace layout using invented customers.
+
 The workspace integrates the saved [Phase 1 operational context and decision gate](operational-context.md) into the existing dark dashboard. **Every operational record is SYNTHETIC**, including records marked `verified`. It supports inspection and human review without changing saved ML scores, rankings, training, evaluation or historical artifacts.
 
 ## Setup
@@ -18,7 +20,7 @@ $env:GRIDGUARD_WORKSPACE = 'Operational Context'
 .\.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501
 ```
 
-Skip both CLI generation/gate commands when those outputs already exist; they require new/empty destinations. Open `http://localhost:8501` and select **Operational Context** in the sidebar. The optional `GRIDGUARD_WORKSPACE` setting chooses the initial page; the default remains Overview. Expand **Local context sources** to choose local directories and an optional original prediction CSV. The legacy experiment selector does not control this workspace.
+Skip both CLI generation/gate commands when those outputs already exist; they require new/empty destinations. Open `http://localhost:8501`, select EN, then **Operational Review → Operational Context**. The optional `GRIDGUARD_WORKSPACE` setting chooses the initial view; the default is **Genel Bakış / Overview**. Expand **Local context sources** to choose local directories and an optional original prediction CSV. The legacy experiment selector does not control this workspace.
 
 | Input | Required files |
 | --- | --- |
@@ -31,7 +33,7 @@ There are no new dependencies, database, API, upload flow, estimator loading or 
 
 ## KPI definitions and filters
 
-The six cards describe the **entire saved cohort**: total customers, eligible for review, needs context verification, insufficient data, high-risk customers requiring verification/more data, and context coverage. High risk uses the recorded gate threshold. **Context coverage is subscription coverage of the entire evaluation window**; it does not establish coverage of outages or meter problems. Filters do not recalculate these full-cohort KPIs.
+The four primary cards describe the **entire saved cohort**: total customers, eligible for review, needs context verification and insufficient data. **Coverage and high-risk details** contains the other two cards: high-risk customers requiring verification/more data, and context coverage. High risk uses the recorded gate threshold. **Context coverage is subscription coverage of the entire evaluation window**; it does not establish coverage of outages or meter problems. Filters do not recalculate these full-cohort KPIs. Event/status/verification filters are available under **Advanced filters**.
 
 The table filters by original risk score, decision status, matched event type and verification status. Event type and verification must match the **same event**, so a verified outage does not make an unverified meter fault a verified match. Empty event/verification filters impose no restriction; clearing every decision status yields no customers. Missing/invalid scores can remain visible for insufficient-data review or be excluded explicitly. Customer ID search is literal and available after revealing identifiers.
 

@@ -28,7 +28,8 @@ def test_reliability_view_renders_without_training_or_legacy_artifacts(
     import joblib
     from sklearn.calibration import CalibratedClassifierCV
     from sklearn.pipeline import Pipeline
-    from streamlit.testing.v1 import AppTest
+
+    from tests.dashboard_support import app_file, open_workspace
 
     def forbidden(*args, **kwargs):
         pytest.fail("The reliability view must never load estimators or fit models/calibrators")
@@ -41,10 +42,10 @@ def test_reliability_view_renders_without_training_or_legacy_artifacts(
         "GRIDGUARD_RELIABILITY_REPORT", str(reliability_artifacts / "reliability.json")
     )
     snapshot = {path.name: file_fingerprint(path) for path in reliability_artifacts.iterdir()}
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
-    app.sidebar.radio[0].set_value("Model Reliability").run()
+    open_workspace(app, "Model Reliability")
     assert not app.exception
     assert any("Development-only" in item.value for item in app.warning)
     assert any("Synthetic demonstration" in item.value for item in app.warning)
@@ -61,6 +62,11 @@ def test_reliability_view_renders_without_training_or_legacy_artifacts(
     assert snapshot == {
         path.name: file_fingerprint(path) for path in reliability_artifacts.iterdir()
     }
+    app.segmented_control(key="language").set_value("tr").run()
+    assert not app.exception
+    assert app.title[0].value == "Model Performansı"
+    assert len(app.get("plotly_chart")) == 2
+    app.segmented_control(key="language").set_value("en").run()
     app.text_input(key="reliability_path").set_value(str(tmp_path / "missing.json")).run()
     assert not app.exception
     assert "No valid saved reliability evaluation" in app.info[0].value
@@ -122,18 +128,18 @@ def test_reliability_cache_signature_includes_diagnostic_files(reliability_artif
 
 def test_legacy_dashboard_handles_missing_reliability_view(tmp_path, monkeypatch):
     pytest.importorskip("streamlit")
-    from streamlit.testing.v1 import AppTest
+    from tests.dashboard_support import app_file, open_workspace
 
     (tmp_path / "metrics.json").write_text(json.dumps({"test": None, "validation": {}}))
     monkeypatch.setenv("GRIDGUARD_ARTIFACT_DIR", str(tmp_path))
     monkeypatch.delenv("GRIDGUARD_RELIABILITY_REPORT", raising=False)
-    app = AppTest.from_file(
+    app = app_file(
         str(Path(__file__).parents[1] / "app/streamlit_app.py"), default_timeout=20
     ).run()
     assert not app.exception
-    app.sidebar.radio[0].set_value("Model Reliability").run()
+    open_workspace(app, "Model Reliability")
     assert not app.exception
     assert "No valid saved reliability evaluation" in app.info[0].value
-    app.sidebar.radio[0].set_value("Overview").run()
+    open_workspace(app, "Overview")
     assert not app.exception
     assert any("validation-only" in item.value for item in app.info)
